@@ -3,14 +3,16 @@ package com.ysj.lib.route.remote
 import android.database.MatrixCursor
 import android.os.Bundle
 import android.util.Log
+import com.ysj.lib.route.Caches
+import com.ysj.lib.route.annotation.RouteBean
 
 /**
- * 路由服务
+ * 夸进程的路由服务
  *
  * @author Ysj
  * Create time: 2020/8/18
  */
-class RouteService private constructor() : IRouteService.Stub() {
+internal class RouteService private constructor() : IRouteService.Stub() {
 
     private object Holder {
         val instance = RouteService()
@@ -28,8 +30,10 @@ class RouteService private constructor() : IRouteService.Stub() {
     val cursor = Cursor()
 
     override fun registerRouteGroup(group: String, param: RemoteParam) {
-//        Caches.routeCache
-        Log.i(TAG, "registerRouteGroup: $param")
+        val routeMap = HashMap<String, RouteBean>()
+        param.params.entries.forEach { routeMap[it.key] = (it.value as RouteWrapper).routeBean }
+        Caches.routeCache[group] = routeMap
+        Log.i(TAG, "registerRouteGroup: $group , $routeMap")
     }
 
     class Cursor : MatrixCursor(arrayOf(ROUTE_SERVICE)) {

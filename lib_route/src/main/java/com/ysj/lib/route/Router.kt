@@ -4,10 +4,8 @@ import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import com.ysj.lib.route.annotation.PACKAGE_NAME_ROUTE
-import com.ysj.lib.route.annotation.PREFIX_ROUTE
-import com.ysj.lib.route.annotation.RouteTypes
-import com.ysj.lib.route.annotation.subGroupFromPath
+import com.ysj.lib.route.annotation.*
+import com.ysj.lib.route.remote.*
 import com.ysj.lib.route.template.IProviderRoute
 import java.security.InvalidParameterException
 
@@ -60,4 +58,26 @@ class Router private constructor() {
         return null
     }
 
+    fun registerRouteGroup(routeProvider: IProviderRoute) {
+        RouteProvider.application.contentResolver.query(
+            RouteProvider.getMainRouteProviderUri(),
+            null,
+            null,
+            null,
+            null
+        )?.also {
+            val map = HashMap<String, RouteBean>()
+            routeProvider.loadInto(map)
+            val remoteParam = RemoteParam()
+            var group = ""
+            for (entry in map) {
+                remoteParam.params[entry.key] = RouteWrapper(entry.value)
+                if (group.isEmpty()) group = entry.value.group
+            }
+            if (group.isEmpty()) return
+            IRouteService.Stub
+                .asInterface(it.extras.getBinder(RouteService.ROUTE_SERVICE))
+                ?.registerRouteGroup(group, remoteParam)
+        }?.close()
+    }
 }
