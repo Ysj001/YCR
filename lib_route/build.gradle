@@ -35,5 +35,4 @@ dependencies {
     implementation androidSupport[0].value
     api base[1].value
     api project(path: ':lib_route_annotation')
-    api project(path: ':lib_android_internal')
 }

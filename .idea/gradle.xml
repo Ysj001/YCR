@@ -12,7 +12,6 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/lib_android_internal" />
             <option value="$PROJECT_DIR$/lib_base" />
             <option value="$PROJECT_DIR$/lib_route" />
             <option value="$PROJECT_DIR$/lib_route_annotation" />
