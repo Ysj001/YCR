@@ -14,7 +14,7 @@ dependencies {
     implementation localGroovy()
     // 必须
     implementation "com.android.tools.build:gradle:4.0.1"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
 repositories {

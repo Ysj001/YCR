@@ -4,7 +4,7 @@ apply plugin: 'kotlin-kapt'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     // 注解处理器
     compileOnly 'com.google.auto.service:auto-service:1.0-rc6'
     kapt 'com.google.auto.service:auto-service:1.0-rc6'
