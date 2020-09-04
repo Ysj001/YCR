@@ -1,9 +1,10 @@
 apply plugin: 'com.android.application'
+//apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'maven'
-//apply plugin: 'route-plugin'
+apply plugin: 'route-plugin'
 
 def isRelease = rootProject.ext.isRelease
 
@@ -57,9 +58,8 @@ uploadArchives {
             version '1.0.0'
             groupId 'com.ysj.lib.route.module'
             artifactId 'm1'
-            description '组件化路由插件'
-            // 打包类型，若不写默认为 jar（pom|jar|war）
-            packaging 'jar'
+            description '模块 m1'
+            packaging 'aar'
         }
     }
 }

@@ -6,10 +6,15 @@ import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.utils.FileUtils
 import com.ysj.lib.route.plugin.core.visitor.AllClassVisitor
+import com.ysj.lib.route.plugin.core.visitor.PreVisitor
 import org.gradle.api.Project
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import java.io.FileOutputStream
+import java.io.InputStream
+import java.util.jar.JarFile
+import java.util.jar.JarOutputStream
+import java.util.zip.ZipEntry
 
 /**
  * 路由的 Transform
@@ -52,6 +57,8 @@ class RouteTransform(private val project: Project) : Transform() {
                                            outputProvider,
                                            isIncremental ->
             if (!isIncremental) outputProvider.deleteAll()
+            // 预处理，用于提前获取信息
+            inputs.forEach { prePrecess(it.jarInputs, it.directoryInputs) }
             inputs.forEach {
                 // 处理 jar
                 it.jarInputs.forEach { input -> processJar(input, outputProvider) }
@@ -62,10 +69,41 @@ class RouteTransform(private val project: Project) : Transform() {
     }
 
     private fun processJar(input: JarInput, output: TransformOutputProvider) {
-        FileUtils.copyFile(
-            input.file,
-            output.getContentLocation(input.name, input.contentTypes, input.scopes, Format.JAR)
+        val src = input.file
+        val dest = output.getContentLocation(
+            input.name,
+            input.contentTypes,
+            input.scopes,
+            Format.JAR
         )
+        if (!src.name.startsWith("classes")) {
+            FileUtils.copyFile(src, dest)
+            return
+        }
+        val jarFile = JarFile(src)
+        val jos = JarOutputStream(dest.outputStream())
+        jarFile.entries().toList()
+            .filter { true }
+            .forEach {
+                val inputStream = jarFile.getInputStream(it)
+                val zipEntry = ZipEntry(it.name)
+                if (it.name.endsWith(".class")) {
+                    //                    logger.quiet("process jar element --> ${element.name}")
+                    val cr = ClassReader(inputStream)
+                    val cw = ClassWriter(cr, ClassWriter.COMPUTE_MAXS)
+                    val cv = AllClassVisitor(cw)
+                    cr.accept(cv, ClassReader.EXPAND_FRAMES)
+                    jos.putNextEntry(zipEntry)
+                    jos.write(cw.toByteArray())
+                } else {
+                    jos.putNextEntry(zipEntry)
+                    jos.write(inputStream.readBytes())
+                }
+                jos.closeEntry()
+                inputStream.close()
+            }
+        jos.close()
+        jarFile.close()
     }
 
     private fun processDir(input: DirectoryInput, output: TransformOutputProvider) {
@@ -95,7 +133,32 @@ class RouteTransform(private val project: Project) : Transform() {
         FileUtils.copyDirectory(src, dest)
     }
 
-    private fun doTransform(
+    private fun prePrecess(jis: Collection<JarInput>, dis: Collection<DirectoryInput>) {
+        jis.filter { it.file.name.startsWith("classes") }
+            .forEach { input ->
+                val jarFile = JarFile(input.file)
+                jarFile.entries().toList()
+                    .filter { it.name.endsWith(".class") }
+                    .forEach { preVisitor(jarFile.getInputStream(it)) }
+            }
+        dis.forEach { input ->
+            input.file.walk()
+                .filter { it.isFile }
+                .filter { it.extension in listOf("class") }
+                .filter { it.name !in listOf("BuildConfig.class") }
+                .forEach { preVisitor(it.inputStream()) }
+        }
+    }
+
+    private fun preVisitor(inputStream: InputStream) {
+        val cr = ClassReader(inputStream)
+        val cw = ClassWriter(cr, 0)
+        val cv = PreVisitor(cw)
+        cr.accept(cv, ClassReader.EXPAND_FRAMES)
+        inputStream.close()
+    }
+
+    private inline fun doTransform(
         transformInvocation: TransformInvocation,
         block: (
             context: Context,
@@ -117,7 +180,7 @@ class RouteTransform(private val project: Project) : Transform() {
             transformInvocation.outputProvider,
             transformInvocation.isIncremental
         )
-        logger.quiet(">>> process time: ${System.currentTimeMillis() - startTime}")
+        logger.quiet(">>> process time: ${System.currentTimeMillis() - startTime} ms")
         logger.quiet("=================== $PLUGIN_NAME transform end   ===================")
     }
 }

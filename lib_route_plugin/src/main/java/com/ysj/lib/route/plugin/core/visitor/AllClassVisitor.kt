@@ -2,10 +2,10 @@ package com.ysj.lib.route.plugin.core.visitor
 
 import com.android.build.gradle.internal.LoggerWrapper
 import com.ysj.lib.route.plugin.core.visitor.entity.ClassInfo
-import org.objectweb.asm.AnnotationVisitor
+import com.ysj.lib.route.plugin.core.visitor.entity.MethodInfo
 import org.objectweb.asm.ClassVisitor
+import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
-import org.objectweb.asm.TypePath
 
 /**
  * 处理所有 class
@@ -39,33 +39,34 @@ class AllClassVisitor(visitor: ClassVisitor) : ClassVisitor(Opcodes.ASM7, visito
         logger.quiet("class visitor: $classInfo")
     }
 
-    override fun visitAnnotation(descriptor: String?, visible: Boolean): AnnotationVisitor {
-        logger.quiet("annotation visitor: $descriptor , $visible")
-        return super.visitAnnotation(descriptor, visible)
-    }
-
-    override fun visitTypeAnnotation(
-        typeRef: Int,
-        typePath: TypePath?,
-        descriptor: String?,
-        visible: Boolean
-    ): AnnotationVisitor {
-        logger.quiet("type annotation visitor: $descriptor , $visible , $typeRef , $typePath")
-        return super.visitTypeAnnotation(typeRef, typePath, descriptor, visible)
-    }
-
-//    override fun visitMethod(
-//        access: Int,
-//        name: String?,
-//        descriptor: String?,
-//        signature: String?,
-//        exceptions: Array<out String>?
-//    ): MethodVisitor? {
-//        val mv = super.visitMethod(access, name, descriptor, signature, exceptions)
-//        val methodInfo = MethodInfo(access, name, descriptor, signature, exceptions)
-//        logger.quiet("method visitor: $methodInfo")
-//        return MethodVisitorFactory.get(classInfo, methodInfo, mv)
+//    override fun visitAnnotation(descriptor: String?, visible: Boolean): AnnotationVisitor {
+//        logger.quiet("annotation visitor: $descriptor , $visible")
+//        return super.visitAnnotation(descriptor, visible)
 //    }
+//
+//    override fun visitTypeAnnotation(
+//        typeRef: Int,
+//        typePath: TypePath?,
+//        descriptor: String?,
+//        visible: Boolean
+//    ): AnnotationVisitor {
+//        logger.quiet("type annotation visitor: $descriptor , $visible , $typeRef , $typePath")
+//        return super.visitTypeAnnotation(typeRef, typePath, descriptor, visible)
+//    }
+
+    override fun visitMethod(
+        access: Int,
+        name: String?,
+        descriptor: String?,
+        signature: String?,
+        exceptions: Array<out String>?
+    ): MethodVisitor? {
+        val mv = super.visitMethod(access, name, descriptor, signature, exceptions)
+        val methodInfo = MethodInfo(access, name, descriptor, signature, exceptions)
+        val mmv = VisitorFactory.get(classInfo, methodInfo, mv)
+        if (mmv != mv) logger.quiet("method visitor: $methodInfo")
+        return mmv
+    }
 
     private fun checkAccess(access: Int, flag: Int): Boolean {
         return (access and flag) == flag

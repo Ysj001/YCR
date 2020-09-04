@@ -5,6 +5,10 @@ import android.content.ContentProvider
 import android.content.ContentValues
 import android.database.Cursor
 import android.net.Uri
+import android.util.Log
+import com.ysj.lib.route.annotation.RouteBean
+import com.ysj.lib.route.template.IProviderRoute
+
 
 /**
  * 用于实现路由跨进程通信
@@ -51,4 +55,35 @@ class RouteProvider : ContentProvider() {
     ) = 0
 
     override fun getType(uri: Uri): String? = null
+
+    /**
+     * 用于插装调用的方法
+     */
+    private fun registerRouteGroup(routeProvider: IProviderRoute) {
+        context?.contentResolver?.query(
+            RouteProvider.getMainRouteProviderUri(),
+            null,
+            null,
+            null,
+            null
+        )?.also {
+            try {
+                val map = HashMap<String, RouteBean>()
+                routeProvider.loadInto(map)
+                val remoteParam = RemoteParam()
+                var group = ""
+                for (entry in map) {
+                    remoteParam.params[entry.key] = RouteWrapper(entry.value)
+                    if (group.isEmpty()) group = entry.value.group
+                }
+                if (group.isEmpty()) return
+                IRouteService.Stub
+                    .asInterface(it.extras.getBinder(RouteService.ROUTE_SERVICE))
+                    ?.registerRouteGroup(group, remoteParam)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e(TAG, "register route group failure")
+            }
+        }?.close()
+    }
 }

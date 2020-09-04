@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.ysj.lib.route.annotation.Route
 
-@Route("/m1/MainActivity2")
+@Route("/m2/MainActivity2")
 class MainActivity2 : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
