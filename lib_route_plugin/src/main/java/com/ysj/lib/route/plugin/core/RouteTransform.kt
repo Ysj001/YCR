@@ -30,6 +30,8 @@ class RouteTransform(private val project: Project) : Transform() {
 
     private val logger = LoggerWrapper.getLogger(javaClass)
 
+    lateinit var extensions: RouteExtensions
+
     override fun getName() = PLUGIN_NAME
 
     /**
@@ -57,6 +59,11 @@ class RouteTransform(private val project: Project) : Transform() {
                                            outputProvider,
                                            isIncremental ->
             if (!isIncremental) outputProvider.deleteAll()
+            // 不处理主模块
+            if (extensions.main) {
+                defaultProcess(inputs, outputProvider)
+                return@doTransform
+            }
             // 预处理，用于提前获取信息
             inputs.forEach { prePrecess(it.jarInputs, it.directoryInputs) }
             inputs.forEach {
@@ -119,7 +126,7 @@ class RouteTransform(private val project: Project) : Transform() {
             .filter { it.extension in listOf("class") }
             .filter { it.name !in listOf("BuildConfig.class") }
             .forEach {
-                logger.quiet("process file --> ${it.name}")
+//                logger.quiet("process file --> ${it.name}")
                 val inputStream = it.inputStream()
                 val cr = ClassReader(inputStream)
                 val cw = ClassWriter(cr, 0)
@@ -156,6 +163,34 @@ class RouteTransform(private val project: Project) : Transform() {
         val cv = PreVisitor(cw)
         cr.accept(cv, ClassReader.EXPAND_FRAMES)
         inputStream.close()
+    }
+
+    private fun defaultProcess(
+        inputs: Collection<TransformInput>,
+        output: TransformOutputProvider
+    ) {
+        inputs.forEach {
+            it.jarInputs.forEach { input ->
+                FileUtils.copyFile(
+                    input.file, output.getContentLocation(
+                        input.name,
+                        input.contentTypes,
+                        input.scopes,
+                        Format.JAR
+                    )
+                )
+            }
+            it.directoryInputs.forEach { input ->
+                FileUtils.copyDirectory(
+                    input.file, output.getContentLocation(
+                        input.name,
+                        input.contentTypes,
+                        input.scopes,
+                        Format.DIRECTORY
+                    )
+                )
+            }
+        }
     }
 
     private inline fun doTransform(

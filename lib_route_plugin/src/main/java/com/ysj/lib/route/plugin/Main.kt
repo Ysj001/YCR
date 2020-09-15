@@ -1,6 +1,7 @@
 package com.ysj.lib.route.plugin
 
 import com.android.build.gradle.AppExtension
+import com.ysj.lib.route.plugin.core.RouteExtensions
 import com.ysj.lib.route.plugin.core.RouteTransform
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -13,14 +14,18 @@ import org.gradle.api.Project
 class Main : Plugin<Project> {
 
     override fun apply(project: Project) {
+        // 创建路由的扩展
+        val routeExtensions = project.extensions.create(
+            "route",
+            RouteExtensions::class.java
+        )
         val android = project.extensions.getByType(AppExtension::class.java)
+        val routeTransform = RouteTransform(project)
+        android.registerTransform(routeTransform)
         project.afterEvaluate {
-            println("Plugin 1 --> ${android.defaultConfig}")
-            println("Plugin 2 --> ${android.defaultConfig.applicationId}")
-            println("Plugin 3 --> ${project.dependencies}")
+            println("route ext param -> $routeExtensions")
+            routeTransform.extensions = routeExtensions
         }
-        val transform = RouteTransform(project)
-        android.registerTransform(transform)
     }
 
 }

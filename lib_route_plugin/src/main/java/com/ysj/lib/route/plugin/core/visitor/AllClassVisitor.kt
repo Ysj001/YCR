@@ -36,7 +36,7 @@ class AllClassVisitor(visitor: ClassVisitor) : ClassVisitor(Opcodes.ASM7, visito
             superName,
             interfaces
         )
-        logger.quiet("class visitor: $classInfo")
+//        logger.quiet("class visitor: $classInfo")
     }
 
 //    override fun visitAnnotation(descriptor: String?, visible: Boolean): AnnotationVisitor {
@@ -64,7 +64,7 @@ class AllClassVisitor(visitor: ClassVisitor) : ClassVisitor(Opcodes.ASM7, visito
         val mv = super.visitMethod(access, name, descriptor, signature, exceptions)
         val methodInfo = MethodInfo(access, name, descriptor, signature, exceptions)
         val mmv = VisitorFactory.get(classInfo, methodInfo, mv)
-        if (mmv != mv) logger.quiet("method visitor: $methodInfo")
+//        if (mmv != mv) logger.quiet("method visitor: $methodInfo")
         return mmv
     }
 

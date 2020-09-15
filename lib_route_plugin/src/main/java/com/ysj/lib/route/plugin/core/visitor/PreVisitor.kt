@@ -14,7 +14,7 @@ import org.objectweb.asm.Opcodes
 class PreVisitor(visitor: ClassVisitor) : ClassVisitor(Opcodes.ASM7, visitor) {
 
     companion object {
-        val cacheClassInfo = ArrayList<ClassInfo>()
+        val cacheClassInfo = HashSet<ClassInfo>()
     }
 
     private val logger = LoggerWrapper.getLogger(javaClass)

@@ -2,7 +2,12 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
-//apply plugin: 'route-plugin'
+apply plugin: 'route-plugin'
+
+route {
+    // 向 route-plugin 标识该 module 是主组件
+    main = true
+}
 
 android {
     compileSdkVersion 29
@@ -38,7 +43,8 @@ android {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation project(':lib_base')
-    kapt project(path: ':lib_route_apt')
 
+    kapt project(path: ':lib_route_apt')
+//    kapt "com.ysj.lib.route:route-compiler:1.0.0"
 //    implementation project(':module_m1')
 }

@@ -46,8 +46,9 @@ android {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation project(path: ':lib_base')
-    kapt project(path: ':lib_route_apt')
 
+    kapt project(path: ':lib_route_apt')
+//    kapt "com.ysj.lib.route:route-compiler:1.0.0"
 }
 
 uploadArchives {
