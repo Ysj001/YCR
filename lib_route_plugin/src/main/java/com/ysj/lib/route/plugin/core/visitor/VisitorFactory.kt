@@ -2,6 +2,7 @@ package com.ysj.lib.route.plugin.core.visitor
 
 import com.ysj.lib.route.plugin.core.visitor.entity.ClassInfo
 import com.ysj.lib.route.plugin.core.visitor.entity.MethodInfo
+import com.ysj.lib.route.plugin.core.visitor.field.BaseFieldVisitor
 import com.ysj.lib.route.plugin.core.visitor.method.BaseMethodVisitor
 import com.ysj.lib.route.plugin.core.visitor.method.OnCreateVisitor
 import org.objectweb.asm.MethodVisitor
@@ -14,6 +15,10 @@ import org.objectweb.asm.MethodVisitor
  */
 object VisitorFactory {
 
+    private val fieldVisitors: ArrayList<BaseFieldVisitor> = arrayListOf(
+
+    )
+
     private val methodVisitors: ArrayList<BaseMethodVisitor> = arrayListOf(
         OnCreateVisitor()
     )
@@ -25,7 +30,7 @@ object VisitorFactory {
         methodVisitors.forEach {
             if (it.match(classInfo, methodInfo)) return it.also {
                 it.classInfo = classInfo
-                it.setMethodVisitor(mv)
+                it.attach(mv)
             }
         }
         return mv

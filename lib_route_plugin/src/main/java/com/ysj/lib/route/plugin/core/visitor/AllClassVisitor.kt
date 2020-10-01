@@ -4,6 +4,7 @@ import com.android.build.gradle.internal.LoggerWrapper
 import com.ysj.lib.route.plugin.core.visitor.entity.ClassInfo
 import com.ysj.lib.route.plugin.core.visitor.entity.MethodInfo
 import org.objectweb.asm.ClassVisitor
+import org.objectweb.asm.FieldVisitor
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 
@@ -39,20 +40,17 @@ class AllClassVisitor(visitor: ClassVisitor) : ClassVisitor(Opcodes.ASM7, visito
 //        logger.quiet("class visitor: $classInfo")
     }
 
-//    override fun visitAnnotation(descriptor: String?, visible: Boolean): AnnotationVisitor {
-//        logger.quiet("annotation visitor: $descriptor , $visible")
-//        return super.visitAnnotation(descriptor, visible)
-//    }
-//
-//    override fun visitTypeAnnotation(
-//        typeRef: Int,
-//        typePath: TypePath?,
-//        descriptor: String?,
-//        visible: Boolean
-//    ): AnnotationVisitor {
-//        logger.quiet("type annotation visitor: $descriptor , $visible , $typeRef , $typePath")
-//        return super.visitTypeAnnotation(typeRef, typePath, descriptor, visible)
-//    }
+    override fun visitField(
+        access: Int,
+        name: String?,
+        descriptor: String?,
+        signature: String?,
+        value: Any?
+    ): FieldVisitor {
+        val fv = super.visitField(access, name, descriptor, signature, value)
+
+        return fv
+    }
 
     override fun visitMethod(
         access: Int,

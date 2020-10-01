@@ -3,7 +3,6 @@ package com.ysj.lib.route.plugin.core.visitor.method
 import com.ysj.lib.route.plugin.core.visitor.PreVisitor
 import com.ysj.lib.route.plugin.core.visitor.entity.ClassInfo
 import com.ysj.lib.route.plugin.core.visitor.entity.MethodInfo
-import org.objectweb.asm.Label
 import org.objectweb.asm.Opcodes
 
 /**
@@ -21,16 +20,14 @@ class OnCreateVisitor : BaseMethodVisitor(
 ) {
 
     override fun match(classInfo: ClassInfo, methodInfo: MethodInfo) =
-        classInfo.name == "com/ysj/lib/route/remote/RouteProvider" && this.methodInfo == methodInfo
+            classInfo.name == "com/ysj/lib/route/RouteProvider" && this.methodInfo == methodInfo
 
-    override fun visitCode() {
-        super.visitCode()
-        with(mv) {
+    override fun visitInsn(opcode: Int) {
+        if (opcode == Opcodes.IRETURN) with(mv) {
             // registerRouteGroup("xxx class name")
             PreVisitor.cacheClassInfo
                 .filter { it.interfaces.contains("com/ysj/lib/route/template/IProviderRoute") }
                 .forEach {
-                    visitLineNumber(34, Label())
                     visitVarInsn(Opcodes.ALOAD, 0)
                     visitTypeInsn(Opcodes.NEW, it.name)
                     visitInsn(Opcodes.DUP)
@@ -43,7 +40,7 @@ class OnCreateVisitor : BaseMethodVisitor(
                     )
                     visitMethodInsn(
                         Opcodes.INVOKESPECIAL,
-                        "com/ysj/lib/route/remote/RouteProvider",
+                        "com/ysj/lib/route/RouteProvider",
                         "registerRouteGroup",
                         "(Lcom/ysj/lib/route/template/IProviderRoute;)V",
                         false
@@ -51,6 +48,7 @@ class OnCreateVisitor : BaseMethodVisitor(
                     logger.quiet("注册了 ${it.name}")
                 }
         }
+        super.visitInsn(opcode)
     }
 
 }

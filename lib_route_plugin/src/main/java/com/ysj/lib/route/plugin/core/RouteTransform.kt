@@ -59,11 +59,7 @@ class RouteTransform(private val project: Project) : Transform() {
                                            outputProvider,
                                            isIncremental ->
             if (!isIncremental) outputProvider.deleteAll()
-            // 不处理主模块
-            if (extensions.main) {
-                defaultProcess(inputs, outputProvider)
-                return@doTransform
-            }
+            PreVisitor.cacheClassInfo.clear()
             // 预处理，用于提前获取信息
             inputs.forEach { prePrecess(it.jarInputs, it.directoryInputs) }
             inputs.forEach {
