@@ -8,3 +8,5 @@ package com.ysj.lib.route.apt
  */
 
 const val AFFECT_ACTIVITY = "android.app.Activity"
+
+const val AFFECT_ACTION = "com.ysj.lib.route.template.IActionProcessor"

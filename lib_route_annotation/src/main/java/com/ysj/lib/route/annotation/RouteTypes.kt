@@ -9,7 +9,10 @@ package com.ysj.lib.route.annotation
 inline class RouteTypes(val name: String) {
 
     companion object {
+
         val ACTIVITY = RouteTypes("ACTIVITY")
+
+        val ACTION = RouteTypes("ACTION")
     }
 
 }

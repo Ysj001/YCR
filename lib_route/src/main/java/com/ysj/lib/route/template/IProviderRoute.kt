@@ -8,10 +8,10 @@ import com.ysj.lib.route.annotation.RouteBean
  * @author Ysj
  * Create time: 2020/8/6
  */
-interface IProviderRoute {
+interface IProviderRoute : Template {
 
     /**
-     * 加载路由路径
+     * 加载路由 key: path，value: 路由信息
      */
     fun loadInto(atlas: MutableMap<String, RouteBean>)
 }

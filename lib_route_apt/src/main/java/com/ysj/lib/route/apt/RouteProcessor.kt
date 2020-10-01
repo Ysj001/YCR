@@ -37,8 +37,9 @@ class RouteProcessor : BaseProcess() {
         printlnMessage("开始处理 --> $moduleName module")
     }
 
-    override fun process(annotations: MutableSet<out TypeElement>, roundEnv: RoundEnvironment)
-            : Boolean {
+    override fun process(
+        annotations: MutableSet<out TypeElement>, roundEnv: RoundEnvironment
+    ): Boolean {
         if (moduleName == "null") return false
         if (annotations.isEmpty()) return false
         // 获取所有被 @Route 注解的 element
@@ -59,8 +60,6 @@ class RouteProcessor : BaseProcess() {
     private fun processRouter(elements: MutableSet<out Element>) {
         // 用于记录用于生成文件所需要的参数，key：group，value：该 group 下的所有路由信息
         val params = HashMap<String, MutableList<RouteBean>>()
-        // Activity 的类型
-        val activityType = elementUtils.getTypeElement(AFFECT_ACTIVITY).asType()
         elements.forEach {
             val route: Route = it.getAnnotation(Route::class.java)
             var group: String = route.group
@@ -81,11 +80,21 @@ class RouteProcessor : BaseProcess() {
                 this.group = group
                 typeElement = it as TypeElement
             }
-            // 检查注解作用的 element 是不是 Activity 类型
-            if (typeUtils.isSubtype(it.asType(), activityType)) {
-                routeBean.types = RouteTypes.ACTIVITY
-            } else {
-                printlnError("""@Router 注解目前只能用于 Activity 上""")
+            // 检查注解作用的 element 类型
+            when {
+                typeUtils.isSubtype(it.asType(), elementUtils.getTypeElement(AFFECT_ACTIVITY).asType()) -> {
+                    routeBean.types = RouteTypes.ACTIVITY
+                }
+                typeUtils.isSubtype(it.asType(), elementUtils.getTypeElement(AFFECT_ACTION).asType()) -> {
+                    routeBean.types = RouteTypes.ACTION
+                }
+                else -> {
+                    printlnError("""
+                        @Router 注解目前只能用于:
+                        -  $AFFECT_ACTIVITY
+                        -  $AFFECT_ACTION
+                    """.trimMargin())
+                }
             }
             routeBeans.add(routeBean)
             printlnMessage("@Route --- 已处理：group:$group , path:$path")
@@ -97,7 +106,7 @@ class RouteProcessor : BaseProcess() {
     private fun createRouteFile(params: Map<String, MutableList<RouteBean>>) {
         if (params.isEmpty()) return
         params.forEach { entry ->
-            // 生成如下方法
+            // 生成类似如下方法
             // override fun loadInto(atlas: MutableMap<String, RouteBean>) {
             //        atlas["/app/MainActivity"] = RouteBean().apply {
             //            group = "app"
@@ -107,15 +116,13 @@ class RouteProcessor : BaseProcess() {
             //            moduleId = "com.ysj.lib.router"
             //        }
             // }
-            val loadInto = FunSpec.builder("loadInto")
-                .addModifiers(KModifier.PUBLIC, KModifier.OVERRIDE)
-                .addParameter(
-                    "atlas",
-                    MUTABLE_MAP.parameterizedBy(
-                        STRING,
-                        ClassName.bestGuess(RouteBean::class.java.name)
-                    )
-                )
+            val loadInto =
+                    FunSpec.builder("loadInto").addModifiers(KModifier.PUBLIC, KModifier.OVERRIDE)
+                        .addParameter(
+                            "atlas", MUTABLE_MAP.parameterizedBy(
+                                STRING, ClassName.bestGuess(RouteBean::class.java.name)
+                            )
+                        )
             entry.value.forEach { routeBean ->
                 loadInto.addStatement(
                     """
@@ -134,11 +141,8 @@ class RouteProcessor : BaseProcess() {
             val typeSpec = TypeSpec.classBuilder(PREFIX_ROUTE + entry.key)
                 .addModifiers(KModifier.PUBLIC)
                 .addSuperinterface(ClassName.bestGuess(TEMPLATE_PATH))
-                .addFunction(loadInto.build())
-                .build()
-            FileSpec.builder(PACKAGE_NAME_ROUTE, typeSpec.name!!)
-                .addType(typeSpec)
-                .build()
+                .addFunction(loadInto.build()).build()
+            FileSpec.builder(PACKAGE_NAME_ROUTE, typeSpec.name!!).addType(typeSpec).build()
                 .writeTo(filer)
         }
     }

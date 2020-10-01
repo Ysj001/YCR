@@ -11,11 +11,11 @@ import android.os.Parcelable
  */
 class RemoteParam() : Parcelable {
 
-    var params: HashMap<String, Parcelable> = HashMap()
+    var params: HashMap<String, Any> = HashMap()
         private set
 
     constructor(parcel: Parcel) : this() {
-        parcel.readMap(params as Map<String, Parcelable>, javaClass.classLoader)
+        parcel.readMap(params as Map<String, Any>, javaClass.classLoader)
     }
 
     override fun toString() = "\n($params)"

@@ -11,15 +11,23 @@ import java.io.Serializable
  * @author Ysj
  * Create time: 2020/8/4
  */
-class Postman : RouteBean, Serializable {
+class Postman(group: String, path: String) : RouteBean(group, path), Serializable {
 
     // 路由所携带的数据
-    private val mBundle = Bundle()
+    val bundle = Bundle()
 
-    constructor()
-    constructor(group: String, path: String) : super(group, path)
+    // 行为名称
+    var actionName: String = ""
+        private set
 
-    fun navigation(context: Context) = Router.getInstance().navigation(context, this)
+    fun <T> navigation(context: Context) = Router.getInstance().navigation<T>(context, this)
+
+    /**
+     * 执行行为
+     *
+     * @param actionName 要执行的行为的名称
+     */
+    fun doAction(actionName: String) = apply { this.actionName = actionName }
 
     /**
      * Inserts an int value into the mapping of this Bundle, replacing
@@ -28,10 +36,7 @@ class Postman : RouteBean, Serializable {
      * @param key a String, or null
      * @param value an int
      */
-    fun withInt(key: String?, value: Int): Postman {
-        mBundle.putInt(key, value)
-        return this
-    }
+    fun withInt(key: String?, value: Int) = apply { bundle.putInt(key, value) }
 
     /**
      * Inserts a long value into the mapping of this Bundle, replacing
@@ -40,10 +45,7 @@ class Postman : RouteBean, Serializable {
      * @param key a String, or null
      * @param value a long
      */
-    fun withLong(key: String?, value: Long): Postman {
-        mBundle.putLong(key, value)
-        return this
-    }
+    fun withLong(key: String?, value: Long) = apply { bundle.putLong(key, value) }
 
     /**
      * Inserts a Boolean value into the mapping of this Bundle, replacing
@@ -52,10 +54,7 @@ class Postman : RouteBean, Serializable {
      * @param key a String, or null
      * @param value a boolean
      */
-    fun withBoolean(key: String?, value: Boolean): Postman {
-        mBundle.putBoolean(key, value)
-        return this
-    }
+    fun withBoolean(key: String?, value: Boolean) = apply { bundle.putBoolean(key, value) }
 
     /**
      * Inserts a String value into the mapping of this Bundle, replacing
@@ -64,20 +63,13 @@ class Postman : RouteBean, Serializable {
      * @param key a String, or null
      * @param value a String, or null
      */
-    fun withString(key: String?, value: String?): Postman {
-        mBundle.putString(key, value)
-        return this
-    }
+    fun withString(key: String?, value: String?) = apply { bundle.putString(key, value) }
 
     /**
      * Inserts all mappings from the given Bundle into this Bundle.
      *
      * @param bundle a Bundle
      */
-    fun withAll(bundle: Bundle): Postman {
-        bundle.putAll(bundle)
-        return this
-    }
+    fun withAll(bundle: Bundle) = apply { bundle.putAll(bundle) }
 
-    fun getExtras() = mBundle
 }
