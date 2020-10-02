@@ -15,4 +15,9 @@ interface IRouteService {
      * 查找路由
      */
     RouteWrapper findRouteBean(String group, String path);
+
+    /**
+     * 执行行为
+     */
+    RemoteParam doAction(String className, String actionName);
 }

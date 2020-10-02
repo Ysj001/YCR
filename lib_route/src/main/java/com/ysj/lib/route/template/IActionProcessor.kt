@@ -1,5 +1,8 @@
 package com.ysj.lib.route.template
 
+import android.os.Parcelable
+import java.io.Serializable
+
 /**
  * 用于提供行为
  *
@@ -10,5 +13,11 @@ package com.ysj.lib.route.template
  */
 interface IActionProcessor : Template {
 
-    fun <T> doAction(actionName: String): T
+    /**
+     * 执行行为
+     *
+     * @param actionName 行为的名字
+     * @return 类型必须是 [Serializable] 或 [Parcelable] 的子类
+     */
+    fun doAction(actionName: String): Any?
 }

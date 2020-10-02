@@ -34,13 +34,15 @@ internal class RouteProvider : ContentProvider() {
         var instance: RouteProvider? = null
     }
 
+    /** 提供给全局获取 [Application] */
     lateinit var application: Application
         private set
 
-    /** 该值是主模块中的 */
-    lateinit var routerService: IRouteService
+    /** 提供给全局获取主模块中的 [IRouteService] */
+    lateinit var routeService: IRouteService
         private set
 
+    /** 提供给其他进程获取本进程的 [IRouteService] */
     private lateinit var cursor: Cursor
 
     override fun onCreate(): Boolean {
@@ -68,6 +70,20 @@ internal class RouteProvider : ContentProvider() {
         selectionArgs: Array<out String>?
     ) = 0
 
+    fun getRouteService(applicationId: String): IRouteService? {
+        return application.contentResolver
+            .query(
+                Uri.parse("content://${applicationId}.RouteProvider"),
+                null, null, null, null
+            )
+            ?.let {
+                val routerService = IRouteService.Stub
+                    .asInterface(it.extras.getBinder(RouteService.ROUTE_SERVICE))
+                it.close()
+                routerService
+            }
+    }
+
     /** 用于插装调用的方法 */
     private fun registerRouteGroup(routeProvider: IProviderRoute) {
         val map = HashMap<String, RouteBean>()
@@ -85,7 +101,7 @@ internal class RouteProvider : ContentProvider() {
                 if (group.isEmpty()) group = entry.value.group
             }
             if (group.isEmpty()) return
-            routerService.registerRouteGroup(group, remoteParam)
+            routeService.registerRouteGroup(group, remoteParam)
         } catch (e: Exception) {
             e.printStackTrace()
             Log.e(TAG, "register route group failure")
@@ -94,20 +110,12 @@ internal class RouteProvider : ContentProvider() {
 
     /** 初始化主模块的 [IRouteService] */
     private fun initRouteService() {
-        if (application.packageName == mainApplicationId) routerService = RouteService()
-        else application.contentResolver
-            .query(
-                Uri.parse("content://${mainApplicationId}.RouteProvider"),
-                null, null, null, null
-            )
-            ?.also {
-                routerService = IRouteService.Stub
-                    .asInterface(it.extras.getBinder(RouteService.ROUTE_SERVICE))
-            }
-            ?.close()
+        val routeService = RouteService()
+        this.routeService = if (application.packageName == mainApplicationId) routeService
+        else getRouteService(mainApplicationId)!!
         cursor = object : MatrixCursor(arrayOf(RouteService.ROUTE_SERVICE)) {
             override fun getExtras() = Bundle().apply {
-                putBinder(RouteService.ROUTE_SERVICE, routerService as IBinder)
+                putBinder(RouteService.ROUTE_SERVICE, routeService as IBinder)
             }
         }
     }
