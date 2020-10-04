@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.os.IBinder
 import android.os.Parcelable
 import com.ysj.lib.route.annotation.RouteBean
+import com.ysj.lib.route.callback.RouteResultCallback
 import java.io.Serializable
 
 /**
@@ -19,15 +20,36 @@ class Postman(group: String, path: String) : RouteBean(group, path), Serializabl
     /** 路由所携带的数据 */
     val bundle = Bundle()
 
-    /** [Activity] 的 resultCode */
-    var resultCode: Int = -1
+    /** [Activity] 的 requestCode */
+    var requestCode: Int = -1
         private set
 
     /** 要执行的行为名称 */
     var actionName: String = ""
         private set
 
-    fun <T> navigation(context: Context) = Router.getInstance().navigation<T>(context, this)
+    internal var routeResultCallback: RouteResultCallback<Any>? = null
+
+    /**
+     * 路由调用链的最后一步，开始路由导航
+     */
+    fun navigation(context: Context) = Router.getInstance().navigation(context, this)
+
+    /**
+     * 用于获取路由的结果，只会在路由成功时回调，如果导航过程中被拦截或者异常则不会执行
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun <T> doOnResult(callback: RouteResultCallback<T>) = apply {
+        this.routeResultCallback = callback as? RouteResultCallback<Any>
+    }
+
+    @JvmSynthetic
+    @Suppress("UNCHECKED_CAST")
+    fun <T> doOnResult(callback: (T?) -> Unit) = apply {
+        this.routeResultCallback = object : RouteResultCallback<Any> {
+            override fun onResult(result: Any?) = callback(result as? T?)
+        }
+    }
 
     /**
      * 设置要执行的行为
@@ -36,7 +58,13 @@ class Postman(group: String, path: String) : RouteBean(group, path), Serializabl
      */
     fun withRouteAction(actionName: String) = apply { this.actionName = actionName }
 
-    fun withResultCode(resultCode: Int) = apply { this.resultCode = resultCode }
+    /**
+     * 设置 [Activity] 的 requestCode
+     *
+     * @param requestCode
+     * int: If >= 0, this code will be returned in onActivityResult() when the activity exits.
+     */
+    fun withRequestCode(requestCode: Int) = apply { this.requestCode = requestCode }
 
     /**
      * Inserts an int value into the mapping of this Bundle, replacing

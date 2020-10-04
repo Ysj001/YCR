@@ -33,8 +33,7 @@ class Router private constructor() {
 
     fun build(path: String) = Postman(subGroupFromPath(path), path)
 
-    @Suppress("UNCHECKED_CAST")
-    fun <T> navigation(context: Context, postman: Postman): T? {
+    fun navigation(context: Context, postman: Postman) {
         val routeClassName = "${PACKAGE_NAME_ROUTE}.${PREFIX_ROUTE}${postman.group}"
         val routes = Caches.routeCache[postman.group] ?: HashMap()
         try {
@@ -45,14 +44,15 @@ class Router private constructor() {
                     Caches.routeCache[postman.group] = routes
                 }
             }
-            return (routes[postman.path]
+            val routeBean = (routes[postman.path]
                 ?: findRouteBean(postman.group, postman.path)
                 ?: throw InvalidParameterException("找不到路由: ${postman.path}"))
-                .let { handleRoute(context, it, postman) } as? T
+            // TODO: 拦截器
+            val routeResult = handleRoute(context, routeBean, postman)
+            postman.routeResultCallback?.onResult(routeResult)
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        return null
     }
 
     private fun handleRoute(context: Context, routeBean: RouteBean, postman: Postman) =
@@ -60,7 +60,7 @@ class Router private constructor() {
             RouteTypes.ACTIVITY -> {
                 val intent = Intent()
                 intent.component = ComponentName(routeBean.moduleId, routeBean.className)
-                if (context is Activity) context.startActivityForResult(intent, -1)
+                if (context is Activity) context.startActivityForResult(intent, postman.requestCode)
                 else context.startActivity(intent.apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 })

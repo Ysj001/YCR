@@ -23,14 +23,14 @@ class MainActivity : AppCompatActivity() {
             btnToM1App -> {
                 Router.getInstance()
                     .build("/m1/MainActivity")
-                    .navigation<Unit>(this)
+                    .navigation(this)
             }
             btnDoM1Action -> {
-                val result = Router.getInstance()
+                Router.getInstance()
                     .build("/m1/actions")
                     .withRouteAction("m1_test_action1")
-                    .navigation<String>(this)
-                Log.i(TAG, "onClick: $result")
+                    .doOnResult { result: String? -> Log.i(TAG, "onClick: $result") }
+                    .navigation(this)
             }
         }
     }

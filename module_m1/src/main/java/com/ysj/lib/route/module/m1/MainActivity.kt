@@ -20,13 +20,13 @@ class MainActivity : AppCompatActivity() {
             btnToMainApp -> {
                 Router.getInstance()
                     .build("/app/MainActivity")
-                    .navigation<Unit>(this)
+                    .navigation(this)
             }
             btnDoAppAction -> {
                 Router.getInstance()
                     .build("/app/actions")
                     .withRouteAction("app_test_action")
-                    .navigation<Unit>(this)
+                    .navigation(this)
             }
         }
     }
