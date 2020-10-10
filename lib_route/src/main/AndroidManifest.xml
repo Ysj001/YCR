@@ -3,7 +3,7 @@
 
     <application>
         <provider
-            android:name=".RouteProvider"
+            android:name=".remote.RemoteRouteProvider"
             android:authorities="${applicationId}.RouteProvider"
             android:exported="true" />
     </application>

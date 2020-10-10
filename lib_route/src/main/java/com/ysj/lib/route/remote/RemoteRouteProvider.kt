@@ -1,4 +1,4 @@
-package com.ysj.lib.route
+package com.ysj.lib.route.remote
 
 import android.app.Application
 import android.content.ContentProvider
@@ -10,10 +10,6 @@ import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
 import com.ysj.lib.route.annotation.RouteBean
-import com.ysj.lib.route.remote.IRouteService
-import com.ysj.lib.route.remote.RemoteParam
-import com.ysj.lib.route.remote.RouteService
-import com.ysj.lib.route.remote.RouteWrapper
 import com.ysj.lib.route.template.IProviderRoute
 
 
@@ -23,7 +19,7 @@ import com.ysj.lib.route.template.IProviderRoute
  * @author Ysj
  * Create time: 2020/8/17
  */
-internal class RouteProvider : ContentProvider() {
+internal class RemoteRouteProvider : ContentProvider() {
 
     companion object {
         private const val TAG = "RouteProvider"
@@ -31,7 +27,7 @@ internal class RouteProvider : ContentProvider() {
         /** 主组件的 application id */
         const val mainApplicationId = "com.ysj.lib.router"
 
-        var instance: RouteProvider? = null
+        var instance: RemoteRouteProvider? = null
     }
 
     /** 提供给全局获取 [Application] */
@@ -78,7 +74,7 @@ internal class RouteProvider : ContentProvider() {
             )
             ?.let {
                 val routerService = IRouteService.Stub
-                    .asInterface(it.extras.getBinder(RouteService.ROUTE_SERVICE))
+                    .asInterface(it.extras.getBinder(RemoteRouteService.ROUTE_SERVICE))
                 it.close()
                 routerService
             }
@@ -97,7 +93,7 @@ internal class RouteProvider : ContentProvider() {
             val remoteParam = RemoteParam()
             var group = ""
             for (entry in map) {
-                remoteParam.params[entry.key] = RouteWrapper(entry.value)
+                remoteParam.params[entry.key] = RemoteRouteBean(entry.value)
                 if (group.isEmpty()) group = entry.value.group
             }
             if (group.isEmpty()) return
@@ -110,12 +106,12 @@ internal class RouteProvider : ContentProvider() {
 
     /** 初始化主模块的 [IRouteService] */
     private fun initRouteService() {
-        val routeService = RouteService()
+        val routeService = RemoteRouteService()
         this.routeService = if (application.packageName == mainApplicationId) routeService
         else getRouteService(mainApplicationId)!!
-        cursor = object : MatrixCursor(arrayOf(RouteService.ROUTE_SERVICE)) {
+        cursor = object : MatrixCursor(arrayOf(RemoteRouteService.ROUTE_SERVICE)) {
             override fun getExtras() = Bundle().apply {
-                putBinder(RouteService.ROUTE_SERVICE, routeService as IBinder)
+                putBinder(RemoteRouteService.ROUTE_SERVICE, routeService as IBinder)
             }
         }
     }

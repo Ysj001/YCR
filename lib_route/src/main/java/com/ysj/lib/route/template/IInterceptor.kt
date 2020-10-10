@@ -1,7 +1,7 @@
 package com.ysj.lib.route.template
 
 import android.content.Context
-import com.ysj.lib.route.Postman
+import com.ysj.lib.route.entity.Postman
 import com.ysj.lib.route.callback.InterceptorCallback
 
 /**

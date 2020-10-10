@@ -1,6 +1,7 @@
 package com.ysj.lib.route.callback
 
-import com.ysj.lib.route.Postman
+import com.ysj.lib.route.entity.InterruptReason
+import com.ysj.lib.route.entity.Postman
 
 /**
  * 拦截器的回调
@@ -15,7 +16,7 @@ interface InterceptorCallback {
     }
 
     interface InterruptCallback {
-        fun onInterrupt(postman: Postman, code: Int, msg: String = "")
+        fun onInterrupt(postman: Postman, reason: InterruptReason<*>)
     }
 
     /**
@@ -28,8 +29,7 @@ interface InterceptorCallback {
      * 中断后续路由
      * - 注意：不要重复调用或同时调用 [onContinue]
      *
-     * @param code 用于描述中断原因的 code
-     * @param msg  用于描述中断原因的 msg
+     * @param reason 用于描述中断原因的实体
      */
-    fun onInterrupt(postman: Postman, code: Int, msg: String = "")
+    fun onInterrupt(postman: Postman, reason: InterruptReason<*>)
 }

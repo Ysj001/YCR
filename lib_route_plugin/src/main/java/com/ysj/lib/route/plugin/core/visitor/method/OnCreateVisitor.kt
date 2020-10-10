@@ -20,7 +20,7 @@ class OnCreateVisitor : BaseMethodVisitor(
 ) {
 
     override fun match(classInfo: ClassInfo, methodInfo: MethodInfo) =
-        classInfo.name == "com/ysj/lib/route/RouteProvider" && this.methodInfo == methodInfo
+        classInfo.name == "com/ysj/lib/route/remote/RemoteRouteProvider" && this.methodInfo == methodInfo
 
     override fun visitInsn(opcode: Int) {
         if (opcode == Opcodes.IRETURN) with(mv) {

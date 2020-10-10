@@ -1,17 +1,18 @@
-package com.ysj.lib.route
+package com.ysj.lib.route.entity
 
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.os.IBinder
 import android.os.Parcelable
+import com.ysj.lib.route.Router
 import com.ysj.lib.route.annotation.RouteBean
 import com.ysj.lib.route.callback.InterceptorCallback
 import com.ysj.lib.route.callback.RouteResultCallback
 import java.io.Serializable
 
 /**
- * 用于构建路由的参数
+ * 用于构建路由过程的实体
  *
  * @author Ysj
  * Create time: 2020/8/4
@@ -77,10 +78,10 @@ class Postman(group: String, path: String) : RouteBean(group, path) {
     }
 
     @JvmSynthetic
-    inline fun doOnInterrupt(crossinline callback: (Postman, Int, String) -> Unit) = apply {
-        doOnInterrupt(object : InterceptorCallback.InterruptCallback, Function<Unit> {
-            override fun onInterrupt(postman: Postman, code: Int, msg: String) =
-                callback(postman, code, msg)
+    inline fun doOnInterrupt(crossinline callback: (Postman, InterruptReason<*>) -> Unit) = apply {
+        doOnInterrupt(object : InterceptorCallback.InterruptCallback {
+            override fun onInterrupt(postman: Postman, reason: InterruptReason<*>) =
+                callback(postman, reason)
         })
     }
 
@@ -89,7 +90,10 @@ class Postman(group: String, path: String) : RouteBean(group, path) {
      *
      * @param actionName 要执行的行为的名称
      */
-    fun withRouteAction(actionName: String) = apply { this.actionName = actionName }
+    fun withRouteAction(actionName: String?) = apply {
+        if (actionName.isNullOrEmpty()) return@apply
+        this.actionName = actionName
+    }
 
     /**
      * 设置 [Activity] 的 requestCode
@@ -176,7 +180,10 @@ class Postman(group: String, path: String) : RouteBean(group, path) {
      *
      * @param bundle a Bundle
      */
-    fun withAll(bundle: Bundle) = apply { this.bundle.putAll(bundle) }
+    fun withAll(bundle: Bundle?) = apply {
+        if (bundle == null) return@apply
+        this.bundle.putAll(bundle)
+    }
 
     /**
      * 将 [RouteBean] 的信息赋值到 [Postman] 中

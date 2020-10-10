@@ -11,7 +11,10 @@ import com.ysj.lib.route.annotation.PREFIX_ROUTE
 import com.ysj.lib.route.annotation.RouteTypes
 import com.ysj.lib.route.annotation.subGroupFromPath
 import com.ysj.lib.route.callback.InterceptorCallback
+import com.ysj.lib.route.entity.InterruptReason
+import com.ysj.lib.route.entity.Postman
 import com.ysj.lib.route.remote.REMOTE_ACTION_RESULT
+import com.ysj.lib.route.remote.RemoteRouteProvider
 import com.ysj.lib.route.template.IActionProcessor
 import com.ysj.lib.route.template.IProviderRoute
 import com.ysj.lib.route.template.RouteTemplate
@@ -75,23 +78,25 @@ class Router private constructor() {
             var isFinished = false
 
             override fun onContinue(postman: Postman) {
-                checkFinished()
-                postman.continueCallback?.onContinue(postman)
-                countDownLatch.countDown()
-                isFinished = true
+                safeHandle {
+                    postman.continueCallback?.onContinue(postman)
+                    countDownLatch.countDown()
+                }
             }
 
-            override fun onInterrupt( postman: Postman, code: Int, msg: String) {
-                checkFinished()
-                postman.interruptCallback?.onInterrupt(postman, code, msg)
-                interrupt = true
-                countDownLatch.countDown()
-                isFinished = true
+            override fun onInterrupt(postman: Postman, reason: InterruptReason<*>) {
+                safeHandle {
+                    postman.interruptCallback?.onInterrupt(postman, reason)
+                    interrupt = true
+                    countDownLatch.countDown()
+                }
             }
 
-            fun checkFinished() =
+            inline fun safeHandle(block: () -> Unit) {
                 if (isFinished) throw RuntimeException("拦截器重复处理！")
-                else Unit
+                block()
+                isFinished = true
+            }
         }
         matchInterceptor.forEach {
             it.onIntercept(context, postman, callback)
@@ -131,12 +136,13 @@ class Router private constructor() {
         }
 
     private fun doRemoteAction(applicationId: String, className: String, actionName: String) =
-        RouteProvider.instance?.getRouteService(applicationId)?.doAction(className, actionName)
+        RemoteRouteProvider.instance?.getRouteService(applicationId)?.doAction(className, actionName)
             ?.params?.get(REMOTE_ACTION_RESULT)
 
-    private fun findRouteBean(group: String, path: String) = RouteProvider.instance
+    private fun findRouteBean(group: String, path: String) = RemoteRouteProvider.instance
         ?.routeService?.findRouteBean(group, path)?.routeBean
 
+    @Suppress("UNCHECKED_CAST")
     private fun <T : RouteTemplate> getTemplateInstance(className: String): T? {
         try {
             return Class.forName(className).getConstructor().newInstance() as T

@@ -2,7 +2,7 @@
 package com.ysj.lib.route.remote;
 
 import com.ysj.lib.route.remote.RemoteParam;
-import com.ysj.lib.route.remote.RouteWrapper;
+import com.ysj.lib.route.remote.RemoteRouteBean;
 
 interface IRouteService {
 
@@ -14,7 +14,7 @@ interface IRouteService {
     /**
      * 查找路由
      */
-    RouteWrapper findRouteBean(String group, String path);
+    RemoteRouteBean findRouteBean(String group, String path);
 
     /**
      * 执行行为

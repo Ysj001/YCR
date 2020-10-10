@@ -13,7 +13,7 @@ import java.io.Serializable
  * @author Ysj
  * Create time: 2020/8/18
  */
-internal class RouteService : IRouteService.Stub() {
+internal class RemoteRouteService : IRouteService.Stub() {
 
     companion object {
         private const val TAG = "RouteService"
@@ -24,15 +24,15 @@ internal class RouteService : IRouteService.Stub() {
 
     override fun registerRouteGroup(group: String, param: RemoteParam) {
         val routeMap = HashMap<String, RouteBean>()
-        param.params.forEach { routeMap[it.key] = (it.value as RouteWrapper).routeBean }
+        param.params.forEach { routeMap[it.key] = (it.value as RemoteRouteBean).routeBean }
         Caches.routeCache[group] = routeMap
         Log.i(TAG, "registerRouteGroup: ${Caches.routeCache.size} , $group , $param")
     }
 
-    override fun findRouteBean(group: String?, path: String?): RouteWrapper? {
+    override fun findRouteBean(group: String?, path: String?): RemoteRouteBean? {
         if (group.isNullOrEmpty() || path.isNullOrEmpty()) return null
         val routeBean = Caches.routeCache[group]?.get(path)
-        return if (routeBean == null) null else RouteWrapper(routeBean)
+        return if (routeBean == null) null else RemoteRouteBean(routeBean)
     }
 
     override fun doAction(className: String?, actionName: String?): RemoteParam? {
