@@ -6,7 +6,7 @@ package com.ysj.lib.route.callback
  * @author Ysj
  * Create time: 2020/10/4
  */
-interface RouteResultCallback<T> {
+interface RouteResultCallback<in T> {
 
     fun onResult(result: T?)
 }

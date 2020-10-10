@@ -5,9 +5,10 @@ ext {
 
     // ------------------ 模块的 applicationId ------------------
     applicationIds = [
-            "app"      : "com.ysj.lib.router",
-            "module_m1": "com.ysj.lib.module.m1",
-            "module_m2": "com.ysj.lib.module.m2",
+            "app"        : "com.ysj.lib.router",
+            "module_m1"  : "com.ysj.lib.module.m1",
+            "module_m2"  : "com.ysj.lib.module.m2",
+            "module_java": "com.ysj.lib.module.java",
     ]
 
     // ------------------ Server url ------------------

@@ -8,7 +8,7 @@ import com.ysj.lib.route.annotation.RouteBean
  * @author Ysj
  * Create time: 2020/8/6
  */
-interface IProviderRoute : Template {
+interface IProviderRoute : RouteTemplate {
 
     /**
      * 加载路由 key: path，value: 路由信息

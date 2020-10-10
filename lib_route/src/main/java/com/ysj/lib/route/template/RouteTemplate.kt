@@ -6,4 +6,4 @@ package com.ysj.lib.route.template
  * @author Ysj
  * Create time: 2020/10/1
  */
-interface Template
+interface RouteTemplate

@@ -4,13 +4,20 @@ import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.os.Looper
 import android.util.Log
-import com.ysj.lib.route.annotation.*
+import com.ysj.lib.route.annotation.PACKAGE_NAME_ROUTE
+import com.ysj.lib.route.annotation.PREFIX_ROUTE
+import com.ysj.lib.route.annotation.RouteTypes
+import com.ysj.lib.route.annotation.subGroupFromPath
+import com.ysj.lib.route.callback.InterceptorCallback
 import com.ysj.lib.route.remote.REMOTE_ACTION_RESULT
 import com.ysj.lib.route.template.IActionProcessor
 import com.ysj.lib.route.template.IProviderRoute
-import com.ysj.lib.route.template.Template
+import com.ysj.lib.route.template.RouteTemplate
 import java.security.InvalidParameterException
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 /**
  * 路由的管理器
@@ -44,41 +51,83 @@ class Router private constructor() {
                     Caches.routeCache[postman.group] = routes
                 }
             }
-            val routeBean = (routes[postman.path]
-                ?: findRouteBean(postman.group, postman.path)
-                ?: throw InvalidParameterException("找不到路由: ${postman.path}"))
-            // TODO: 拦截器
-            val routeResult = handleRoute(context, routeBean, postman)
+            postman.from(
+                routes[postman.path]
+                    ?: findRouteBean(postman.group, postman.path)
+                    ?: throw InvalidParameterException("找不到路由: ${postman.path}")
+            )
+            val interrupt = handleInterceptor(context, postman)
+            if (interrupt) return
+            val routeResult = handleRoute(context, postman)
             postman.routeResultCallback?.onResult(routeResult)
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
-    private fun handleRoute(context: Context, routeBean: RouteBean, postman: Postman) =
-        when (routeBean.types) {
+    private fun handleInterceptor(context: Context, postman: Postman): Boolean {
+        var interrupt = false
+        // 取得匹配的拦截器
+        val matchInterceptor = Caches.interceptors.filter { it.match(postman) }
+        val countDownLatch = CountDownLatch(matchInterceptor.size)
+        val callback = object : InterceptorCallback {
+
+            var isFinished = false
+
+            override fun onContinue(postman: Postman) {
+                checkFinished()
+                postman.continueCallback?.onContinue(postman)
+                countDownLatch.countDown()
+                isFinished = true
+            }
+
+            override fun onInterrupt( postman: Postman, code: Int, msg: String) {
+                checkFinished()
+                postman.interruptCallback?.onInterrupt(postman, code, msg)
+                interrupt = true
+                countDownLatch.countDown()
+                isFinished = true
+            }
+
+            fun checkFinished() =
+                if (isFinished) throw RuntimeException("拦截器重复处理！")
+                else Unit
+        }
+        matchInterceptor.forEach {
+            it.onIntercept(context, postman, callback)
+            callback.isFinished = false
+        }
+        countDownLatch.await(
+            if (Thread.currentThread() == Looper.getMainLooper().thread) 2L else 10L,
+            TimeUnit.SECONDS
+        )
+        return interrupt
+    }
+
+    private fun handleRoute(context: Context, postman: Postman) =
+        when (postman.types) {
             RouteTypes.ACTIVITY -> {
                 val intent = Intent()
-                intent.component = ComponentName(routeBean.moduleId, routeBean.className)
+                intent.component = ComponentName(postman.moduleId, postman.className)
                 if (context is Activity) context.startActivityForResult(intent, postman.requestCode)
                 else context.startActivity(intent.apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 })
             }
             RouteTypes.ACTION -> {
-                val actionProcessor: IActionProcessor? = Caches.actionCache[routeBean.className]
-                    ?: getTemplateInstance(routeBean.className)
+                val actionProcessor: IActionProcessor? = Caches.actionCache[postman.className]
+                    ?: getTemplateInstance(postman.className)
                 if (actionProcessor == null) doRemoteAction(
-                    routeBean.moduleId,
-                    routeBean.className,
+                    postman.moduleId,
+                    postman.className,
                     postman.actionName
                 )
                 else {
-                    Caches.actionCache[routeBean.className] = actionProcessor
+                    Caches.actionCache[postman.className] = actionProcessor
                     actionProcessor.doAction(postman.actionName)
                 }
             }
-            else -> throw InvalidParameterException("该路由类型不正确: ${routeBean.types}")
+            else -> throw InvalidParameterException("该路由类型不正确: ${postman.types}")
         }
 
     private fun doRemoteAction(applicationId: String, className: String, actionName: String) =
@@ -88,7 +137,7 @@ class Router private constructor() {
     private fun findRouteBean(group: String, path: String) = RouteProvider.instance
         ?.routeService?.findRouteBean(group, path)?.routeBean
 
-    private fun <T : Template> getTemplateInstance(className: String): T? {
+    private fun <T : RouteTemplate> getTemplateInstance(className: String): T? {
         try {
             return Class.forName(className).getConstructor().newInstance() as T
         } catch (e: Exception) {

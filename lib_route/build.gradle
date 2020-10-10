@@ -29,10 +29,8 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'androidx.core:core-ktx:1.3.1'
-    implementation androidSupport[0].value
-    api base[1].value
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compileOnly 'androidx.core:core-ktx:1.3.1'
+    compileOnly "androidx.appcompat:appcompat:1.2.0"
     api project(path: ':lib_route_annotation')
 }

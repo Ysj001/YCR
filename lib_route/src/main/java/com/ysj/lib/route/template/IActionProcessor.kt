@@ -11,7 +11,7 @@ import java.io.Serializable
  * @author Ysj
  * Create time: 2020/9/23
  */
-interface IActionProcessor : Template {
+interface IActionProcessor : RouteTemplate {
 
     /**
      * 执行行为

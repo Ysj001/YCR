@@ -6,29 +6,36 @@ import com.ysj.lib.route.plugin.core.visitor.entity.MethodInfo
 import org.objectweb.asm.Opcodes
 
 /**
- * 处理 RouteProvider 中的 onCreate 方法
+ * 处理 Caches 的静态初始化块
  *
  * @author Ysj
- * Create time: 2020/8/16
+ * Create time: 2020/10/7
  */
-class OnCreateVisitor : BaseMethodVisitor(
+class RouteCacheClInitVisitor : BaseMethodVisitor(
     MethodInfo(
-        Opcodes.ACC_PUBLIC,
-        "onCreate",
-        "()Z"
+        Opcodes.ACC_STATIC,
+        "<clinit>",
+        "()V"
     )
 ) {
 
     override fun match(classInfo: ClassInfo, methodInfo: MethodInfo) =
-        classInfo.name == "com/ysj/lib/route/RouteProvider" && this.methodInfo == methodInfo
+        classInfo.name == "com/ysj/lib/route/Caches" && methodInfo == this.methodInfo
 
     override fun visitInsn(opcode: Int) {
-        if (opcode == Opcodes.IRETURN) with(mv) {
-            // registerRouteGroup("xxx class name")
+        if (opcode == Opcodes.RETURN) with(mv) {
+            // init {
+            //    interceptors.add(xxx)
+            // }
             PreVisitor.cacheClassInfo
-                .filter { it.interfaces.contains("com/ysj/lib/route/template/IProviderRoute") }
+                .filter { it.interfaces.contains("com/ysj/lib/route/template/IInterceptor") }
                 .forEach {
-                    visitVarInsn(Opcodes.ALOAD, 0)
+                    visitFieldInsn(
+                        Opcodes.GETSTATIC,
+                        classInfo.name,
+                        "interceptors",
+                        "Ljava/util/ArrayList;"
+                    )
                     visitTypeInsn(Opcodes.NEW, it.name)
                     visitInsn(Opcodes.DUP)
                     visitMethodInsn(
@@ -39,16 +46,16 @@ class OnCreateVisitor : BaseMethodVisitor(
                         false
                     )
                     visitMethodInsn(
-                        Opcodes.INVOKESPECIAL,
-                        classInfo.name,
-                        "registerRouteGroup",
-                        "(Lcom/ysj/lib/route/template/IProviderRoute;)V",
+                        Opcodes.INVOKEVIRTUAL,
+                        "java/util/ArrayList",
+                        "add",
+                        "(Ljava/lang/Object;)Z",
                         false
                     )
+                    visitInsn(Opcodes.POP)
                     logger.quiet("注册了 ${it.name}")
                 }
         }
         super.visitInsn(opcode)
     }
-
 }

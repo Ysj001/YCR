@@ -28,7 +28,10 @@ class PreVisitor(visitor: ClassVisitor) : ClassVisitor(Opcodes.ASM7, visitor) {
         interfaces: Array<out String>?
     ) {
         super.visit(version, access, name, signature, superName, interfaces)
-        if (interfaces != null && interfaces.contains("com/ysj/lib/route/template/IProviderRoute")) {
+        if (interfaces != null &&
+            (interfaces.contains("com/ysj/lib/route/template/IProviderRoute")
+                    || interfaces.contains("com/ysj/lib/route/template/IInterceptor"))
+        ) {
             val classInfo = ClassInfo(
                 version,
                 access,

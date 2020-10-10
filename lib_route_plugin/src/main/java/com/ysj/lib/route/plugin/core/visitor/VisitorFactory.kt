@@ -5,6 +5,7 @@ import com.ysj.lib.route.plugin.core.visitor.entity.MethodInfo
 import com.ysj.lib.route.plugin.core.visitor.field.BaseFieldVisitor
 import com.ysj.lib.route.plugin.core.visitor.method.BaseMethodVisitor
 import com.ysj.lib.route.plugin.core.visitor.method.OnCreateVisitor
+import com.ysj.lib.route.plugin.core.visitor.method.RouteCacheClInitVisitor
 import org.objectweb.asm.MethodVisitor
 
 /**
@@ -20,7 +21,8 @@ object VisitorFactory {
     )
 
     private val methodVisitors: ArrayList<BaseMethodVisitor> = arrayListOf(
-        OnCreateVisitor()
+        OnCreateVisitor(),
+        RouteCacheClInitVisitor()
     )
 
     /**

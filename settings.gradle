@@ -5,4 +5,4 @@ include ':lib_route_apt'
 include ':lib_route_annotation'
 include ':lib_route'
 include ':app'
-rootProject.name = "FastComponentization"
+rootProject.name = "YCR"

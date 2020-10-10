@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.os.IBinder
 import android.os.Parcelable
 import com.ysj.lib.route.annotation.RouteBean
+import com.ysj.lib.route.callback.InterceptorCallback
 import com.ysj.lib.route.callback.RouteResultCallback
 import java.io.Serializable
 
@@ -15,7 +16,7 @@ import java.io.Serializable
  * @author Ysj
  * Create time: 2020/8/4
  */
-class Postman(group: String, path: String) : RouteBean(group, path), Serializable {
+class Postman(group: String, path: String) : RouteBean(group, path) {
 
     /** 路由所携带的数据 */
     val bundle = Bundle()
@@ -28,7 +29,11 @@ class Postman(group: String, path: String) : RouteBean(group, path), Serializabl
     var actionName: String = ""
         private set
 
-    internal var routeResultCallback: RouteResultCallback<Any>? = null
+    internal var routeResultCallback: RouteResultCallback<Any?>? = null
+
+    internal var continueCallback: InterceptorCallback.ContinueCallback? = null
+
+    internal var interruptCallback: InterceptorCallback.InterruptCallback? = null
 
     /**
      * 路由调用链的最后一步，开始路由导航
@@ -39,16 +44,44 @@ class Postman(group: String, path: String) : RouteBean(group, path), Serializabl
      * 用于获取路由的结果，只会在路由成功时回调，如果导航过程中被拦截或者异常则不会执行
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T> doOnResult(callback: RouteResultCallback<T>) = apply {
-        this.routeResultCallback = callback as? RouteResultCallback<Any>
+    fun <T> doOnResult(callback: RouteResultCallback<T?>) = apply {
+        this.routeResultCallback = callback as? RouteResultCallback<Any?>
     }
 
     @JvmSynthetic
-    @Suppress("UNCHECKED_CAST")
-    fun <T> doOnResult(callback: (T?) -> Unit) = apply {
-        this.routeResultCallback = object : RouteResultCallback<Any> {
-            override fun onResult(result: Any?) = callback(result as? T?)
-        }
+    inline fun <T> doOnResult(crossinline callback: (T?) -> Unit) = apply {
+        doOnResult(object : RouteResultCallback<T?> {
+            override fun onResult(result: T?) = callback(result)
+        })
+    }
+
+    /**
+     * 当被拦截器拦截，拦截器执行 [InterceptorCallback.onContinue] 后回调
+     */
+    fun doOnContinue(callback: InterceptorCallback.ContinueCallback) = apply {
+        this.continueCallback = callback
+    }
+
+    @JvmSynthetic
+    inline fun doOnContinue(crossinline callback: (Postman) -> Unit) = apply {
+        doOnContinue(object : InterceptorCallback.ContinueCallback {
+            override fun onContinue(postman: Postman) = callback(postman)
+        })
+    }
+
+    /**
+     * 当被拦截器拦截，拦截器执行 [InterceptorCallback.onInterrupt] 后回调
+     */
+    fun doOnInterrupt(callback: InterceptorCallback.InterruptCallback) = apply {
+        this.interruptCallback = callback
+    }
+
+    @JvmSynthetic
+    inline fun doOnInterrupt(crossinline callback: (Postman, Int, String) -> Unit) = apply {
+        doOnInterrupt(object : InterceptorCallback.InterruptCallback, Function<Unit> {
+            override fun onInterrupt(postman: Postman, code: Int, msg: String) =
+                callback(postman, code, msg)
+        })
     }
 
     /**
@@ -145,4 +178,15 @@ class Postman(group: String, path: String) : RouteBean(group, path), Serializabl
      */
     fun withAll(bundle: Bundle) = apply { this.bundle.putAll(bundle) }
 
+    /**
+     * 将 [RouteBean] 的信息赋值到 [Postman] 中
+     */
+    internal fun from(routeBean: RouteBean) {
+        this.group = routeBean.group
+        this.path = routeBean.path
+        this.types = routeBean.types
+        this.typeElement = routeBean.typeElement
+        this.moduleId = routeBean.moduleId
+        this.className = routeBean.className
+    }
 }
