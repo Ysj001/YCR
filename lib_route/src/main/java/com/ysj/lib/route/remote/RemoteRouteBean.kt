@@ -14,20 +14,17 @@ import com.ysj.lib.route.entity.Postman
  */
 class RemoteRouteBean(val routeBean: RouteBean) : Parcelable {
 
-    constructor(parcel: Parcel) : this(RouteBean().apply {
-        parcel.also {
-            group = "${it.readString()}"
-            path = "${it.readString()}"
-            types = RouteTypes("${it.readString()}")
-            moduleId = "${it.readString()}"
-            className = "${it.readString()}"
-            if (this is Postman) {
-                withAll(it.readBundle())
-                withRequestCode(it.readInt())
-                withRouteAction(it.readString())
+    constructor(parcel: Parcel) : this(
+        Postman(parcel.readString() ?: "", parcel.readString() ?: "")
+            .apply {
+                types = RouteTypes("${parcel.readString()}")
+                moduleId = "${parcel.readString()}"
+                className = "${parcel.readString()}"
             }
-        }
-    })
+            .withAll(parcel.readBundle())
+            .withRequestCode(parcel.readInt())
+            .withRouteAction(parcel.readString())
+    )
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
         with(routeBean) {
@@ -41,6 +38,10 @@ class RemoteRouteBean(val routeBean: RouteBean) : Parcelable {
                     it.writeBundle(bundle)
                     it.writeInt(requestCode)
                     it.writeString(actionName)
+                } else {
+                    it.writeBundle(null)
+                    it.writeInt(-1)
+                    it.writeString(null)
                 }
             }
         }

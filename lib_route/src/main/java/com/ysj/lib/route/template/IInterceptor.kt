@@ -1,8 +1,10 @@
 package com.ysj.lib.route.template
 
 import android.content.Context
-import com.ysj.lib.route.entity.Postman
+import com.ysj.lib.route.INTERCEPTOR_TIME_OUT_MAIN_TH
+import com.ysj.lib.route.INTERCEPTOR_TIME_OUT_SUB_TH
 import com.ysj.lib.route.callback.InterceptorCallback
+import com.ysj.lib.route.entity.Postman
 
 /**
  * 拦截器
@@ -22,7 +24,8 @@ interface IInterceptor : RouteTemplate {
 
     /**
      * 对拦截到的数据进行处理
-     * - 注意：不要在其中做过于耗时的操作，框架中只允许（主线程 2s，其它线程 10s）
+     * - 注意：不要在其中做过于耗时的操作，
+     * 框架中只允许（主线程 [INTERCEPTOR_TIME_OUT_MAIN_TH]，其它线程 [INTERCEPTOR_TIME_OUT_SUB_TH]）
      *
      * @param callback  拦截器回调
      * @return 若返回 true 则会拦截，路由框架不会执行导航

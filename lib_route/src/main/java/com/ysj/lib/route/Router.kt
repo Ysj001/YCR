@@ -13,8 +13,7 @@ import com.ysj.lib.route.annotation.subGroupFromPath
 import com.ysj.lib.route.callback.InterceptorCallback
 import com.ysj.lib.route.entity.InterruptReason
 import com.ysj.lib.route.entity.Postman
-import com.ysj.lib.route.remote.REMOTE_ACTION_RESULT
-import com.ysj.lib.route.remote.RemoteRouteProvider
+import com.ysj.lib.route.remote.*
 import com.ysj.lib.route.template.IActionProcessor
 import com.ysj.lib.route.template.IProviderRoute
 import com.ysj.lib.route.template.RouteTemplate
@@ -56,7 +55,7 @@ class Router private constructor() {
             }
             postman.from(
                 routes[postman.path]
-                    ?: findRouteBean(postman.group, postman.path)
+                    ?: findRemoteRouteBean(postman.group, postman.path)
                     ?: throw InvalidParameterException("找不到路由: ${postman.path}")
             )
             val interrupt = handleInterceptor(context, postman)
@@ -69,43 +68,41 @@ class Router private constructor() {
     }
 
     private fun handleInterceptor(context: Context, postman: Postman): Boolean {
-        var interrupt = false
+        val isMainTH = Thread.currentThread() == Looper.getMainLooper().thread
+        // 拦截器超时时间
+        var timeout = if (isMainTH) INTERCEPTOR_TIME_OUT_MAIN_TH else INTERCEPTOR_TIME_OUT_SUB_TH
+        val oldTime = System.currentTimeMillis()
+        var interrupt = handleRemoteInterceptor(postman, timeout)
+        timeout -= System.currentTimeMillis() - oldTime
         // 取得匹配的拦截器
-        val matchInterceptor = Caches.interceptors.filter { it.match(postman) }
-        val countDownLatch = CountDownLatch(matchInterceptor.size)
-        val callback = object : InterceptorCallback {
+        val matchedInterceptor = Caches.interceptors.filter { it.match(postman) }
+        val countDownLatch = CountDownLatch(matchedInterceptor.size)
+        matchedInterceptor.forEach {
+            it.onIntercept(context, postman, object : InterceptorCallback {
 
-            var isFinished = false
+                var isFinished = false
 
-            override fun onContinue(postman: Postman) {
-                safeHandle {
+                override fun onContinue(postman: Postman) = safeHandle {
                     postman.continueCallback?.onContinue(postman)
                     countDownLatch.countDown()
                 }
-            }
 
-            override fun onInterrupt(postman: Postman, reason: InterruptReason<*>) {
-                safeHandle {
-                    postman.interruptCallback?.onInterrupt(postman, reason)
-                    interrupt = true
-                    countDownLatch.countDown()
+                override fun onInterrupt(postman: Postman, reason: InterruptReason<*>) =
+                    safeHandle {
+                        postman.interruptCallback?.onInterrupt(postman, reason)
+                        interrupt = true
+                        countDownLatch.countDown()
+                    }
+
+                inline fun safeHandle(block: () -> Unit) {
+                    if (isFinished) throw RuntimeException("拦截器重复处理！")
+                    block()
+                    isFinished = true
                 }
-            }
-
-            inline fun safeHandle(block: () -> Unit) {
-                if (isFinished) throw RuntimeException("拦截器重复处理！")
-                block()
-                isFinished = true
-            }
+            })
         }
-        matchInterceptor.forEach {
-            it.onIntercept(context, postman, callback)
-            callback.isFinished = false
-        }
-        countDownLatch.await(
-            if (Thread.currentThread() == Looper.getMainLooper().thread) 2L else 10L,
-            TimeUnit.SECONDS
-        )
+        // 等待所有拦截器处理完再返回结果
+        countDownLatch.await(timeout, TimeUnit.MILLISECONDS)
         return interrupt
     }
 
@@ -135,12 +132,56 @@ class Router private constructor() {
             else -> throw InvalidParameterException("该路由类型不正确: ${postman.types}")
         }
 
+    private fun handleRemoteInterceptor(postman: Postman, timeout: Long): Boolean {
+        val routeProvider = RemoteRouteProvider.instance
+        val routeService = routeProvider?.getRouteService() ?: return false
+        var interrupt = false
+        var remainingTimeout = timeout
+        (routeService.allApplicationId.params[REMOTE_ALL_APPLICATION_ID] as? ArrayList<*>)
+            ?.filter { it != routeProvider.application.packageName }
+            ?.map { routeProvider.getRouteService(it as String) }
+            ?.forEach {
+                if (it == null) return@forEach
+                val oldTime = System.currentTimeMillis()
+                it.handleInterceptor(
+                    remainingTimeout,
+                    RemoteRouteBean(postman),
+                    object : RemoteInterceptorCallback.Stub() {
+
+                        var isFinished = false
+
+                        override fun onContinue() = safeHandle {
+                            postman.continueCallback?.onContinue(postman)
+                        }
+
+                        override fun onInterrupt(param: RemoteParam) = safeHandle {
+                            postman.interruptCallback?.onInterrupt(
+                                postman,
+                                param.params[REMOTE_INTERRUPT_REASON] as InterruptReason<*>
+                            )
+                            interrupt = true
+                        }
+
+                        inline fun safeHandle(block: () -> Unit) {
+                            if (isFinished) throw RuntimeException("拦截器重复处理！")
+                            block()
+                            isFinished = true
+                        }
+                    }
+                )
+                remainingTimeout -= System.currentTimeMillis() - oldTime
+            }
+        return interrupt
+    }
+
     private fun doRemoteAction(applicationId: String, className: String, actionName: String) =
-        RemoteRouteProvider.instance?.getRouteService(applicationId)?.doAction(className, actionName)
+        RemoteRouteProvider.instance
+            ?.getRouteService(applicationId)
+            ?.doAction(className, actionName)
             ?.params?.get(REMOTE_ACTION_RESULT)
 
-    private fun findRouteBean(group: String, path: String) = RemoteRouteProvider.instance
-        ?.routeService?.findRouteBean(group, path)?.routeBean
+    private fun findRemoteRouteBean(group: String, path: String) =
+        RemoteRouteProvider.instance?.getRouteService()?.findRouteBean(group, path)?.routeBean
 
     @Suppress("UNCHECKED_CAST")
     private fun <T : RouteTemplate> getTemplateInstance(className: String): T? {

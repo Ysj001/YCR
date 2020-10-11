@@ -4,8 +4,13 @@ import android.os.Parcelable
 import android.util.Log
 import com.ysj.lib.route.Caches
 import com.ysj.lib.route.annotation.RouteBean
+import com.ysj.lib.route.callback.InterceptorCallback
+import com.ysj.lib.route.entity.InterruptReason
+import com.ysj.lib.route.entity.Postman
 import com.ysj.lib.route.template.IActionProcessor
 import java.io.Serializable
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 /**
  * 夸进程的路由服务
@@ -20,6 +25,14 @@ internal class RemoteRouteService : IRouteService.Stub() {
 
         /** 用于获取路由服务的 KEY */
         const val ROUTE_SERVICE = "ROUTE_SERVICE"
+    }
+
+    override fun registerApplicationId(applicationId: String) {
+        RemoteRouteProvider.instance!!.allApplicationId.add(applicationId)
+    }
+
+    override fun getAllApplicationId() = RemoteParam().also {
+        it.params[REMOTE_ALL_APPLICATION_ID] = RemoteRouteProvider.instance?.allApplicationId!!
     }
 
     override fun registerRouteGroup(group: String, param: RemoteParam) {
@@ -50,8 +63,32 @@ internal class RemoteRouteService : IRouteService.Stub() {
         return null
     }
 
-    fun findInterceptor() {
+    override fun handleInterceptor(
+        timeout: Long,
+        remote: RemoteRouteBean,
+        callback: RemoteInterceptorCallback
+    ) {
+        val postman = remote.routeBean as Postman
+        // 取得匹配的拦截器
+        val matchInterceptor = Caches.interceptors.filter { it.match(postman) }
+        val countDownLatch = CountDownLatch(matchInterceptor.size)
+        val localCallback = object : InterceptorCallback {
+            override fun onContinue(postman: Postman) {
+                callback.onContinue()
+                countDownLatch.countDown()
+            }
 
+            override fun onInterrupt(postman: Postman, reason: InterruptReason<*>) {
+                callback.onInterrupt(RemoteParam().also { param ->
+                    param.params[REMOTE_INTERRUPT_REASON] = reason
+                })
+                countDownLatch.countDown()
+            }
+        }
+        matchInterceptor.forEach {
+            it.onIntercept(RemoteRouteProvider.instance!!.context!!, postman, localCallback)
+        }
+        countDownLatch.await(timeout, TimeUnit.MILLISECONDS)
     }
 
 }

@@ -34,9 +34,11 @@ internal class RemoteRouteProvider : ContentProvider() {
     lateinit var application: Application
         private set
 
-    /** 提供给全局获取主模块中的 [IRouteService] */
-    lateinit var routeService: IRouteService
-        private set
+    /** [IRouteService] 缓存 */
+    private val routeServiceCache by lazy(LazyThreadSafetyMode.NONE) { HashMap<String, IRouteService>() }
+
+    /** 所有组件的 application id */
+    val allApplicationId by lazy(LazyThreadSafetyMode.NONE) { ArrayList<String>() }
 
     /** 提供给其他进程获取本进程的 [IRouteService] */
     private lateinit var cursor: Cursor
@@ -45,6 +47,8 @@ internal class RemoteRouteProvider : ContentProvider() {
         instance = this
         application = context as Application
         initRouteService()
+        // 注册本组件的 application id 到主组件
+        getRouteService(mainApplicationId)?.registerApplicationId(application.packageName)
         return false
     }
 
@@ -66,8 +70,11 @@ internal class RemoteRouteProvider : ContentProvider() {
         selectionArgs: Array<out String>?
     ) = 0
 
-    fun getRouteService(applicationId: String): IRouteService? {
-        return application.contentResolver
+    /**
+     * 获取 [IRouteService] 默认获取主模块中的
+     */
+    fun getRouteService(applicationId: String = mainApplicationId): IRouteService? {
+        return routeServiceCache[applicationId] ?: application.contentResolver
             .query(
                 Uri.parse("content://${applicationId}.RouteProvider"),
                 null, null, null, null
@@ -97,7 +104,7 @@ internal class RemoteRouteProvider : ContentProvider() {
                 if (group.isEmpty()) group = entry.value.group
             }
             if (group.isEmpty()) return
-            routeService.registerRouteGroup(group, remoteParam)
+            getRouteService()!!.registerRouteGroup(group, remoteParam)
         } catch (e: Exception) {
             e.printStackTrace()
             Log.e(TAG, "register route group failure")
@@ -107,8 +114,8 @@ internal class RemoteRouteProvider : ContentProvider() {
     /** 初始化主模块的 [IRouteService] */
     private fun initRouteService() {
         val routeService = RemoteRouteService()
-        this.routeService = if (application.packageName == mainApplicationId) routeService
-        else getRouteService(mainApplicationId)!!
+        this.routeServiceCache[mainApplicationId] =
+            if (application.packageName == mainApplicationId) routeService else getRouteService()!!
         cursor = object : MatrixCursor(arrayOf(RemoteRouteService.ROUTE_SERVICE)) {
             override fun getExtras() = Bundle().apply {
                 putBinder(RemoteRouteService.ROUTE_SERVICE, routeService as IBinder)
