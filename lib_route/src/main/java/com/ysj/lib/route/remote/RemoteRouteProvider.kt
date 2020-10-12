@@ -22,13 +22,13 @@ import com.ysj.lib.route.template.IProviderRoute
 internal class RemoteRouteProvider : ContentProvider() {
 
     companion object {
-        private const val TAG = "RouteProvider"
-
-        /** 主组件的 application id */
-        const val mainApplicationId = "com.ysj.lib.router"
+        private const val TAG = "RemoteRouteProvider"
 
         var instance: RemoteRouteProvider? = null
     }
+
+    /** 主组件的 application id 该值会由框架自动注入（这句话不要改是个标识） */
+    val mainApplicationId = "auto inject your main application id"
 
     /** 提供给全局获取 [Application] */
     lateinit var application: Application
@@ -46,6 +46,7 @@ internal class RemoteRouteProvider : ContentProvider() {
     override fun onCreate(): Boolean {
         instance = this
         application = context as Application
+        Log.i(TAG, "onCreate: $mainApplicationId")
         initRouteService()
         // 注册本组件的 application id 到主组件
         getRouteService(mainApplicationId)?.registerApplicationId(application.packageName)

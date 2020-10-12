@@ -2,6 +2,7 @@ package com.ysj.lib.route.plugin.core.visitor
 
 import com.android.build.gradle.internal.LoggerWrapper
 import com.ysj.lib.route.plugin.core.visitor.entity.ClassInfo
+import com.ysj.lib.route.plugin.core.visitor.entity.FieldInfo
 import com.ysj.lib.route.plugin.core.visitor.entity.MethodInfo
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.FieldVisitor
@@ -47,9 +48,8 @@ class AllClassVisitor(visitor: ClassVisitor) : ClassVisitor(Opcodes.ASM7, visito
         signature: String?,
         value: Any?
     ): FieldVisitor {
-        val fv = super.visitField(access, name, descriptor, signature, value)
-
-        return fv
+        val fieldInfo = FieldInfo(access, name, descriptor, signature, value)
+        return VisitorFactory.get(classInfo, fieldInfo, cv)
     }
 
     override fun visitMethod(
@@ -58,15 +58,9 @@ class AllClassVisitor(visitor: ClassVisitor) : ClassVisitor(Opcodes.ASM7, visito
         descriptor: String?,
         signature: String?,
         exceptions: Array<out String>?
-    ): MethodVisitor? {
-        val mv = super.visitMethod(access, name, descriptor, signature, exceptions)
+    ): MethodVisitor {
         val methodInfo = MethodInfo(access, name, descriptor, signature, exceptions)
-        val mmv = VisitorFactory.get(classInfo, methodInfo, mv)
-//        if (mmv != mv) logger.quiet("method visitor: $methodInfo")
-        return mmv
+        return VisitorFactory.get(classInfo, methodInfo, cv)
     }
 
-    private fun checkAccess(access: Int, flag: Int): Boolean {
-        return (access and flag) == flag
-    }
 }

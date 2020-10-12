@@ -11,12 +11,11 @@ class FieldInfo(
     name: String? = "",
     descriptor: String? = "",
     signature: String? = "",
-    value: Any? = Any()
+    val value: Any? = null
 ) {
     val name: String = name ?: ""
     val descriptor: String = descriptor ?: ""
     val signature: String = signature ?: ""
-    val value: Any = value ?: Any()
 
     override fun toString(): String {
         return """
@@ -37,7 +36,6 @@ class FieldInfo(
         if (name != other.name) return false
         if (descriptor != other.descriptor) return false
         if (signature != other.signature) return false
-        if (value != other.value) return false
 
         return true
     }

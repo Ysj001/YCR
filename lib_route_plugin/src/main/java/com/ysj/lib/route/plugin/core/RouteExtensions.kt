@@ -8,6 +8,10 @@ package com.ysj.lib.route.plugin.core
  */
 open class RouteExtensions {
 
+    companion object{
+        const val NAME = "route"
+    }
+
     /** 是否是主组件 */
     var main: Boolean = false
 

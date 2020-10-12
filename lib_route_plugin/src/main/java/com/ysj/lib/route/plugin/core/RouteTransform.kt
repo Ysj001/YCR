@@ -2,6 +2,7 @@ package com.ysj.lib.route.plugin.core
 
 import com.android.Version
 import com.android.build.api.transform.*
+import com.android.build.gradle.AppExtension
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.utils.FileUtils
@@ -26,11 +27,17 @@ class RouteTransform(private val project: Project) : Transform() {
 
     companion object {
         const val PLUGIN_NAME = "RoutePlugin"
+
+        /** 本 module 的 [AppExtension] */
+        lateinit var moduleAppExt: AppExtension
+
+        /** 主 module 的 [AppExtension] */
+        lateinit var mainModuleAppExt: AppExtension
+
+        lateinit var moduleRouteExt: RouteExtensions
     }
 
     private val logger = LoggerWrapper.getLogger(javaClass)
-
-    lateinit var extensions: RouteExtensions
 
     override fun getName() = PLUGIN_NAME
 

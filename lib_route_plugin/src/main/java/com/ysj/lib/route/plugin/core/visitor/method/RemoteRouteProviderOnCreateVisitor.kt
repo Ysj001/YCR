@@ -6,12 +6,12 @@ import com.ysj.lib.route.plugin.core.visitor.entity.MethodInfo
 import org.objectweb.asm.Opcodes
 
 /**
- * 处理 RouteProvider 中的 onCreate 方法
+ * 处理 RemoteRouteProvider 中的 onCreate 方法
  *
  * @author Ysj
  * Create time: 2020/8/16
  */
-class OnCreateVisitor : BaseMethodVisitor(
+class RemoteRouteProviderOnCreateVisitor : BaseMethodVisitor(
     MethodInfo(
         Opcodes.ACC_PUBLIC,
         "onCreate",

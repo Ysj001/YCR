@@ -4,6 +4,7 @@ import com.android.build.gradle.internal.LoggerWrapper
 import com.ysj.lib.route.plugin.core.visitor.VisitorFactory
 import com.ysj.lib.route.plugin.core.visitor.entity.ClassInfo
 import com.ysj.lib.route.plugin.core.visitor.entity.FieldInfo
+import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.FieldVisitor
 import org.objectweb.asm.Opcodes
 
@@ -19,13 +20,31 @@ abstract class BaseFieldVisitor(val fieldInfo: FieldInfo) : FieldVisitor(Opcodes
 
     protected val logger = LoggerWrapper.getLogger(javaClass)
 
+    lateinit var cv: ClassVisitor
+
     /** 从 [VisitorFactory.get] 自动注入 */
     lateinit var classInfo: ClassInfo
 
     /** 该 [FieldVisitor] 的匹配规则 */
-    abstract fun match(classInfo: ClassInfo, methodInfo: FieldInfo): Boolean
+    abstract fun match(classInfo: ClassInfo, fieldInfo: FieldInfo): Boolean
 
-    fun attach(fv: FieldVisitor) {
-        this.fv = fv
+    fun attach(cv: ClassVisitor) {
+        this.cv = cv
+        this.fv = visitField(
+            fieldInfo.access,
+            fieldInfo.name,
+            fieldInfo.descriptor,
+            fieldInfo.signature,
+            fieldInfo.value
+        )
     }
+
+    open fun visitField(
+        access: Int,
+        name: String?,
+        descriptor: String?,
+        signature: String?,
+        value: Any?
+    ): FieldVisitor = cv.visitField(access, name, descriptor, signature, value)
+
 }
