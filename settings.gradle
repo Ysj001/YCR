@@ -1,8 +1,8 @@
-include ':lib_route_plugin'
+include ':lib_ycr_plugin'
 include ':lib_base'
-include ':lib_route_apt'
-include ':lib_route_annotation'
-include ':lib_route'
+include ':lib_ycr_apt'
+include ':lib_ycr_annotation'
+include ':lib_ycr_api'
 include ':module_m1'
 include ':app'
 rootProject.name = "YCR"

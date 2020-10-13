@@ -56,5 +56,5 @@ dependencies {
         }
     }
 
-    api project(path: ':lib_route')
+    api project(path: ':lib_ycr_api')
 }

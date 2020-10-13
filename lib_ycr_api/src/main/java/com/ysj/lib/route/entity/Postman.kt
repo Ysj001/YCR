@@ -5,7 +5,7 @@ import android.content.Context
 import android.os.Bundle
 import android.os.IBinder
 import android.os.Parcelable
-import com.ysj.lib.route.Router
+import com.ysj.lib.route.YCR
 import com.ysj.lib.route.annotation.RouteBean
 import com.ysj.lib.route.callback.InterceptorCallback
 import com.ysj.lib.route.callback.RouteResultCallback
@@ -39,7 +39,7 @@ class Postman(group: String, path: String) : RouteBean(group, path) {
     /**
      * 路由调用链的最后一步，开始路由导航
      */
-    fun navigation(context: Context) = Router.getInstance().navigation(context, this)
+    fun navigation(context: Context) = YCR.getInstance().navigation(context, this)
 
     /**
      * 用于获取路由的结果，只会在路由成功时回调，如果导航过程中被拦截或者异常则不会执行

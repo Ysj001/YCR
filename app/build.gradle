@@ -48,7 +48,7 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation project(':lib_base')
 
-    kapt project(path: ':lib_route_apt')
+    kapt project(path: ':lib_ycr_apt')
 //    kapt "com.ysj.lib.route:route-compiler:1.0.0"
 //    implementation project(':module_m1')
 }

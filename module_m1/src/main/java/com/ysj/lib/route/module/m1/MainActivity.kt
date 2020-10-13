@@ -3,7 +3,7 @@ package com.ysj.lib.route.module.m1
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import com.ysj.lib.route.Router
+import com.ysj.lib.route.YCR
 import com.ysj.lib.route.annotation.Route
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -18,12 +18,12 @@ class MainActivity : AppCompatActivity() {
     fun onClick(view: View) {
         when (view) {
             btnToMainApp -> {
-                Router.getInstance()
+                YCR.getInstance()
                     .build("/app/MainActivity")
                     .navigation(this)
             }
             btnDoAppAction -> {
-                Router.getInstance()
+                YCR.getInstance()
                     .build("/app/actions")
                     .withRouteAction("app_test_action")
                     .navigation(this)

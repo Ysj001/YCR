@@ -27,10 +27,10 @@ import java.util.concurrent.TimeUnit
  * @author Ysj
  * Create time: 2020/8/4
  */
-class Router private constructor() {
+class YCR private constructor() {
 
     private object Holder {
-        val instance = Router()
+        val instance = YCR()
     }
 
     companion object {

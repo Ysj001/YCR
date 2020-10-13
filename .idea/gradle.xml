@@ -13,10 +13,10 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/lib_base" />
-            <option value="$PROJECT_DIR$/lib_route" />
-            <option value="$PROJECT_DIR$/lib_route_annotation" />
-            <option value="$PROJECT_DIR$/lib_route_apt" />
-            <option value="$PROJECT_DIR$/lib_route_plugin" />
+            <option value="$PROJECT_DIR$/lib_ycr_annotation" />
+            <option value="$PROJECT_DIR$/lib_ycr_api" />
+            <option value="$PROJECT_DIR$/lib_ycr_apt" />
+            <option value="$PROJECT_DIR$/lib_ycr_plugin" />
             <option value="$PROJECT_DIR$/module_m1" />
           </set>
         </option>
