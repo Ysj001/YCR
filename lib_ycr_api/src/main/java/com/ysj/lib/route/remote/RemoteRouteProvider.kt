@@ -83,6 +83,7 @@ internal class RemoteRouteProvider : ContentProvider() {
             ?.let {
                 val routerService = IRouteService.Stub
                     .asInterface(it.extras.getBinder(RemoteRouteService.ROUTE_SERVICE))
+                routeServiceCache[applicationId] = routerService
                 it.close()
                 routerService
             }

@@ -13,5 +13,8 @@ const val REMOTE_ALL_APPLICATION_ID = "REMOTE_ALL_APPLICATION_ID"
 /** 用于存取远程行为执行结果 */
 const val REMOTE_ACTION_RESULT = "REMOTE_ACTION_RESULT"
 
+/** 用于存取远程路由实体 */
+const val REMOTE_ROUTE_BEAN = "REMOTE_ROUTE_BEAN"
+
 /** 用于存取远程拦截器拦截原因 */
 const val REMOTE_INTERRUPT_REASON = "REMOTE_INTERRUPT_REASON"

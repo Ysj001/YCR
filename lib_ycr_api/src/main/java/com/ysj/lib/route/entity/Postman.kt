@@ -186,6 +186,16 @@ class Postman(group: String, path: String) : RouteBean(group, path) {
     }
 
     /**
+     * 将另一个 [Postman] 中的数据复制过来
+     */
+    internal fun from(postman: Postman) {
+        withAll(postman.bundle)
+        withRouteAction(postman.actionName)
+        withRequestCode(postman.requestCode)
+        from(postman as RouteBean)
+    }
+
+    /**
      * 将 [RouteBean] 的信息赋值到 [Postman] 中
      */
     internal fun from(routeBean: RouteBean) {

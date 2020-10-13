@@ -74,7 +74,7 @@ internal class RemoteRouteService : IRouteService.Stub() {
         val countDownLatch = CountDownLatch(matchInterceptor.size)
         val localCallback = object : InterceptorCallback {
             override fun onContinue(postman: Postman) {
-                callback.onContinue()
+                callback.onContinue(RemoteRouteBean(postman))
                 countDownLatch.countDown()
             }
 

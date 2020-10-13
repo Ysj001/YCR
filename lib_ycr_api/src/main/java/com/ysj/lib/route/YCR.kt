@@ -34,7 +34,7 @@ class YCR private constructor() {
     }
 
     companion object {
-        private const val TAG = "Router"
+        private const val TAG = "YCR"
 
         @JvmStatic
         fun getInstance() = Holder.instance
@@ -150,11 +150,13 @@ class YCR private constructor() {
 
                         var isFinished = false
 
-                        override fun onContinue() = safeHandle {
+                        override fun onContinue(routeBean: RemoteRouteBean) = safeHandle {
+                            postman.from(routeBean.routeBean as Postman)
                             postman.continueCallback?.onContinue(postman)
                         }
 
                         override fun onInterrupt(param: RemoteParam) = safeHandle {
+                            postman.from(param.params[REMOTE_ROUTE_BEAN] as Postman)
                             postman.interruptCallback?.onInterrupt(
                                 postman,
                                 param.params[REMOTE_INTERRUPT_REASON] as InterruptReason<*>

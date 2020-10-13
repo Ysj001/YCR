@@ -1,6 +1,7 @@
 package com.ysj.lib.route.module.m1
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.ysj.lib.route.YCR
@@ -9,6 +10,8 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 @Route("/m1/MainActivity")
 class MainActivity : AppCompatActivity() {
+
+    private val TAG = "MainActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,6 +29,7 @@ class MainActivity : AppCompatActivity() {
                 YCR.getInstance()
                     .build("/app/actions")
                     .withRouteAction("app_test_action")
+                    .doOnContinue { Log.i(TAG, "doOnContinue: ${it.actionName}") }
                     .navigation(this)
             }
         }

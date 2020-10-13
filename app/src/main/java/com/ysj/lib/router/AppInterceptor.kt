@@ -22,6 +22,7 @@ class AppInterceptor : IInterceptor {
 
     override fun onIntercept(context: Context, postman: Postman, callback: InterceptorCallback) {
         Log.i(TAG, "onIntercept: $postman")
+        postman.withRouteAction("m1_test_action1")
         callback.onContinue(postman)
     }
 }
