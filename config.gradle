@@ -49,8 +49,8 @@ ext {
 
     // ------------------ base ------------------
     base = [
-            [method: 'api', value: "com.orhanobut:logger:2.2.0"],
-            [method: 'api', value: "com.google.code.gson:gson:2.8.6"],
+//            [method: 'api', value: "com.orhanobut:logger:2.2.0"],
+//            [method: 'api', value: "com.google.code.gson:gson:2.8.6"],
     ]
 
 }

@@ -5,10 +5,14 @@ import android.content.Context
 import android.os.Bundle
 import android.os.IBinder
 import android.os.Parcelable
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import com.ysj.lib.route.YCR
 import com.ysj.lib.route.annotation.RouteBean
 import com.ysj.lib.route.callback.InterceptorCallback
 import com.ysj.lib.route.callback.RouteResultCallback
+import com.ysj.lib.route.lifecycle.RouteLifecycleObserver
+import com.ysj.lib.route.type.checkMethodParameterType
 import java.io.Serializable
 
 /**
@@ -17,7 +21,7 @@ import java.io.Serializable
  * @author Ysj
  * Create time: 2020/8/4
  */
-class Postman(group: String, path: String) : RouteBean(group, path) {
+class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecycleObserver {
 
     /** 路由所携带的数据 */
     val bundle = Bundle()
@@ -30,11 +34,34 @@ class Postman(group: String, path: String) : RouteBean(group, path) {
     var actionName: String = ""
         private set
 
-    internal var routeResultCallback: RouteResultCallback<Any?>? = null
+    private var lifecycle: Lifecycle? = null
+
+    internal var routeResultCallbacks: MutableCollection<RouteResultCallback<Any?>?>? = null
 
     internal var continueCallback: InterceptorCallback.ContinueCallback? = null
 
     internal var interruptCallback: InterceptorCallback.InterruptCallback? = null
+
+    override fun onDestroy(owner: LifecycleOwner) {
+        routeResultCallbacks = null
+        continueCallback = null
+        interruptCallback = null
+        lifecycle = null
+        owner.lifecycle.removeObserver(this)
+    }
+
+    /**
+     * 绑定生命周期，当生命周期状态变更为 [Lifecycle.State.DESTROYED] 时会中断路由过程
+     */
+    fun bindLifecycle(lifecycle: Lifecycle) = apply {
+        this.lifecycle = lifecycle
+        lifecycle.addObserver(this)
+    }
+
+    /**
+     * 解绑生命周期，会在路由结束后自动解绑
+     */
+    fun unBindLifecycle() = this.lifecycle?.removeObserver(this) ?: Unit
 
     /**
      * 路由调用链的最后一步，开始路由导航
@@ -42,17 +69,38 @@ class Postman(group: String, path: String) : RouteBean(group, path) {
     fun navigation(context: Context) = YCR.getInstance().navigation(context, this)
 
     /**
-     * 用于获取路由的结果，只会在路由成功时回调，如果导航过程中被拦截或者异常则不会执行
+     * 用于获取路由成功的结果，你可以添加多个类型用于适应路由过程中行为的改变
+     * - 如果导航过程中被拦截则不会执行
+     * - 当添加了多个监听时只会回调类型匹配的那个
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T> doOnResult(callback: RouteResultCallback<T?>) = apply {
-        this.routeResultCallback = callback as? RouteResultCallback<Any?>
+    fun <T> addOnResultCallback(callback: RouteResultCallback<T?>) = apply {
+        if (this.routeResultCallbacks == null) this.routeResultCallbacks = ArrayList()
+        this.routeResultCallbacks?.add(object : RouteResultCallback<Any?>() {
+            override fun onResult(result: Any?) {
+                if (checkMethodParameterType(
+                        callback.javaClass,
+                        "onResult",
+                        result?.javaClass
+                    )
+                ) callback.onResult(result as T?)
+            }
+        })
     }
 
     @JvmSynthetic
-    inline fun <T> doOnResult(crossinline callback: (T?) -> Unit) = apply {
-        doOnResult(object : RouteResultCallback<T?> {
-            override fun onResult(result: T?) = callback(result)
+    @Suppress("UNCHECKED_CAST")
+    fun <T> addOnResultCallback(callback: (T?) -> Unit) = apply {
+        if (this.routeResultCallbacks == null) this.routeResultCallbacks = ArrayList()
+        this.routeResultCallbacks?.add(object : RouteResultCallback<Any?>() {
+            override fun onResult(result: Any?) {
+                if (checkMethodParameterType(
+                        callback.javaClass,
+                        "invoke",
+                        result?.javaClass
+                    )
+                ) callback(result as T?)
+            }
         })
     }
 
@@ -64,7 +112,7 @@ class Postman(group: String, path: String) : RouteBean(group, path) {
     }
 
     @JvmSynthetic
-    inline fun doOnContinue(crossinline callback: (Postman) -> Unit) = apply {
+    fun doOnContinue(callback: (Postman) -> Unit) = apply {
         doOnContinue(object : InterceptorCallback.ContinueCallback {
             override fun onContinue(postman: Postman) = callback(postman)
         })
@@ -78,7 +126,7 @@ class Postman(group: String, path: String) : RouteBean(group, path) {
     }
 
     @JvmSynthetic
-    inline fun doOnInterrupt(crossinline callback: (Postman, InterruptReason<*>) -> Unit) = apply {
+    fun doOnInterrupt(callback: (Postman, InterruptReason<*>) -> Unit) = apply {
         doOnInterrupt(object : InterceptorCallback.InterruptCallback {
             override fun onInterrupt(postman: Postman, reason: InterruptReason<*>) =
                 callback(postman, reason)

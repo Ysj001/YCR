@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
                 YCR.getInstance()
                     .build("/app/actions")
                     .withRouteAction("app_test_action")
-                    .doOnContinue { Log.i(TAG, "doOnContinue: ${it.actionName}") }
+                    .doOnContinue { Log.i(TAG, "doOnContinue: ${it.bundle["app_interceptor"]}") }
                     .navigation(this)
             }
         }

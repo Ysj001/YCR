@@ -6,6 +6,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.ysj.lib.route.YCR
 import com.ysj.lib.route.annotation.Route
+import com.ysj.lib.route.callback.RouteResultCallback
 import kotlinx.android.synthetic.main.activity_main.*
 
 @Route("/app/MainActivity")
@@ -28,8 +29,16 @@ class MainActivity : AppCompatActivity() {
             btnDoM1Action -> {
                 YCR.getInstance()
                     .build("/m1/actions")
+                    .bindLifecycle(lifecycle)
                     .withRouteAction("m1_test_action1")
-                    .doOnResult { result: String? -> Log.i(TAG, "onClick: $result") }
+                    .addOnResultCallback(object : RouteResultCallback<Int?>() {
+                        override fun onResult(result: Int?) {
+                            Log.i(TAG, "doOnResult 1: $result")
+                        }
+                    })
+                    .addOnResultCallback { result: Any? -> Log.i(TAG, "doOnResult 2: $result") }
+                    .addOnResultCallback { result: Int? -> Log.i(TAG, "doOnResult 3: $result") }
+                    .addOnResultCallback { result: String? -> Log.i(TAG, "doOnResult 4: $result") }
                     .navigation(this)
             }
         }

@@ -61,10 +61,13 @@ class YCR private constructor() {
             val interrupt = handleInterceptor(context, postman)
             if (interrupt) return
             val routeResult = handleRoute(context, postman)
-            postman.routeResultCallback?.onResult(routeResult)
+            postman.routeResultCallbacks?.forEach { callback ->
+                callback?.also { cb -> cb.onResult(routeResult) }
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
+        postman.unBindLifecycle()
     }
 
     private fun handleInterceptor(context: Context, postman: Postman): Boolean {
@@ -84,25 +87,26 @@ class YCR private constructor() {
 
                 override fun onContinue(postman: Postman) = safeHandle {
                     postman.continueCallback?.onContinue(postman)
-                    countDownLatch.countDown()
                 }
 
                 override fun onInterrupt(postman: Postman, reason: InterruptReason<*>) =
                     safeHandle {
                         postman.interruptCallback?.onInterrupt(postman, reason)
                         interrupt = true
-                        countDownLatch.countDown()
                     }
 
-                inline fun safeHandle(block: () -> Unit) {
-                    if (isFinished) throw RuntimeException("拦截器重复处理！")
+                fun safeHandle(block: () -> Unit) {
+                    if (isFinished) throw RuntimeException("拦截器重复处理：$it")
                     block()
                     isFinished = true
+                    countDownLatch.countDown()
                 }
             })
         }
         // 等待所有拦截器处理完再返回结果
         countDownLatch.await(timeout, TimeUnit.MILLISECONDS)
+        val remaining = countDownLatch.count
+        if (remaining != 0L) throw RuntimeException("拦截器处理超时 remaining: $remaining")
         return interrupt
     }
 

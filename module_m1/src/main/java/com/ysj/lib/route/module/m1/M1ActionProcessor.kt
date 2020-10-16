@@ -18,6 +18,7 @@ class M1ActionProcessor() : IActionProcessor {
     override fun doAction(actionName: String): Any? {
         return when (actionName) {
             "m1_test_action1" -> "do m1_test_action1 success！"
+            "m1_test_action2" -> 100
             else -> Log.i(TAG, "doAction: $actionName")
         }
     }
