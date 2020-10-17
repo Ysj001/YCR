@@ -1,3 +1,7 @@
+def isRelease = rootProject.ext.isRelease
+def appId = rootProject.ext.applicationIds[project.name]
+def androidConfig = rootProject.ext.androidConfig
+
 apply plugin: 'com.android.application'
 //apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
@@ -6,16 +10,16 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'maven'
 apply plugin: 'route-plugin'
 
-def isRelease = rootProject.ext.isRelease
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion "29.0.3"
+    compileSdkVersion androidConfig.compileSdkVersion
+
+    resourcePrefix "module_m1_"
 
     defaultConfig {
-        if (!isRelease) applicationId rootProject.ext.applicationIds[project.name]
-        minSdkVersion 19
-        targetSdkVersion 29
+        if (!isRelease) applicationId appId
+        minSdkVersion androidConfig.minSdkVersion
+        targetSdkVersion androidConfig.targetSdkVersion
         versionCode 1
         versionName "1.0"
 

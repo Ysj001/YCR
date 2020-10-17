@@ -9,6 +9,7 @@ project(':lib_ycr_api').projectDir = new File(rootDir, 'libs/lib_ycr_api/')
 include ':lib_ycr_plugin'
 project(':lib_ycr_plugin').projectDir = new File(rootDir, 'libs/lib_ycr_plugin/')
 // demo
+include ':app'
 include ':lib_base'
 include ':module_m1'
-include ':app'
+include ':module_java'

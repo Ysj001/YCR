@@ -81,20 +81,16 @@ class RouteProcessor : BaseProcess() {
                 typeElement = it as TypeElement
             }
             // 检查注解作用的 element 类型
-            when {
-                typeUtils.isSubtype(it.asType(), elementUtils.getTypeElement(AFFECT_ACTIVITY).asType()) -> {
-                    routeBean.types = RouteTypes.ACTIVITY
-                }
-                typeUtils.isSubtype(it.asType(), elementUtils.getTypeElement(AFFECT_ACTION).asType()) -> {
-                    routeBean.types = RouteTypes.ACTION
-                }
-                else -> {
-                    printlnError("""
+            routeBean.types = when {
+                isSubType(it, AFFECT_ACTIVITY) -> RouteTypes.ACTIVITY
+                isSubType(it, AFFECT_ACTION) -> RouteTypes.ACTION
+                else -> throw IllegalArgumentException(
+                    """
                         @Router 注解目前只能用于:
                         -  $AFFECT_ACTIVITY
                         -  $AFFECT_ACTION
-                    """.trimMargin())
-                }
+                    """.trimMargin()
+                )
             }
             routeBeans.add(routeBean)
             printlnMessage("@Route --- 已处理：group:$group , path:$path")
@@ -117,12 +113,12 @@ class RouteProcessor : BaseProcess() {
             //        }
             // }
             val loadInto =
-                    FunSpec.builder("loadInto").addModifiers(KModifier.PUBLIC, KModifier.OVERRIDE)
-                        .addParameter(
-                            "atlas", MUTABLE_MAP.parameterizedBy(
-                                STRING, ClassName.bestGuess(RouteBean::class.java.name)
-                            )
+                FunSpec.builder("loadInto").addModifiers(KModifier.PUBLIC, KModifier.OVERRIDE)
+                    .addParameter(
+                        "atlas", MUTABLE_MAP.parameterizedBy(
+                            STRING, ClassName.bestGuess(RouteBean::class.java.name)
                         )
+                    )
             entry.value.forEach { routeBean ->
                 loadInto.addStatement(
                     """
@@ -147,6 +143,14 @@ class RouteProcessor : BaseProcess() {
         }
     }
 
+    /**
+     * 检查 [element] 是否是 [type] 的子类型
+     *
+     * @param type 类的全限定名
+     */
+    private fun isSubType(element: Element, type: String) =
+        typeUtils.isSubtype(element.asType(), elementUtils.getTypeElement(type).asType())
+
     private fun printInitFailure() {
         printlnError(
             """
@@ -154,8 +158,8 @@ class RouteProcessor : BaseProcess() {
                 javaCompileOptions {
                     kapt {
                         arguments {
-                        // 告诉注解处理器该 module 的 applicationId
-                        arg("moduleName", applicationId)
+                            // 告诉注解处理器该 module 的 applicationId
+                            arg("moduleName", applicationId)
                         }
                     }
                 }
