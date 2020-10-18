@@ -1,5 +1,6 @@
 package com.ysj.lib.router
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -17,6 +18,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        Log.i(TAG, "onActivityResult: $requestCode , $resultCode")
     }
 
     fun onClick(view: View) {
@@ -39,6 +45,13 @@ class MainActivity : AppCompatActivity() {
                     .addOnResultCallback { result: Any? -> Log.i(TAG, "doOnResult 2: $result") }
                     .addOnResultCallback { result: Int? -> Log.i(TAG, "doOnResult 3: $result") }
                     .addOnResultCallback { result: String? -> Log.i(TAG, "doOnResult 4: $result") }
+                    .navigation(this)
+            }
+            btnToJavaApp -> {
+                YCR.getInstance()
+                    .build("/java/MainActivity")
+                    .bindLifecycle(lifecycle)
+                    .withRequestCode(99)
                     .navigation(this)
             }
         }

@@ -26,4 +26,13 @@
         android:text="action: m1_test"
         android:textSize="24sp" />
 
+    <Button
+        android:id="@+id/btnToJavaApp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:onClick="onClick"
+        android:text="to java app"
+        android:textSize="24sp" />
+
 </LinearLayout>
