@@ -10,9 +10,11 @@ import com.ysj.lib.route.annotation.PACKAGE_NAME_ROUTE
 import com.ysj.lib.route.annotation.PREFIX_ROUTE
 import com.ysj.lib.route.annotation.RouteTypes
 import com.ysj.lib.route.annotation.subGroupFromPath
+import com.ysj.lib.route.callback.ActivityResult
 import com.ysj.lib.route.callback.InterceptorCallback
 import com.ysj.lib.route.entity.InterruptReason
 import com.ysj.lib.route.entity.Postman
+import com.ysj.lib.route.lifecycle.ActivityResultFragment
 import com.ysj.lib.route.remote.*
 import com.ysj.lib.route.template.IActionProcessor
 import com.ysj.lib.route.template.IProviderRoute
@@ -60,14 +62,14 @@ class YCR private constructor() {
             )
             val interrupt = handleInterceptor(context, postman)
             if (interrupt) return
-            val routeResult = handleRoute(context, postman)
-            postman.routeResultCallbacks?.forEach { callback ->
-                callback?.also { cb -> cb.onResult(routeResult) }
+            handleRoute(context, postman) {
+                postman.routeResultCallbacks?.forEach { callback ->
+                    callback?.also { cb -> cb.onResult(it) }
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        postman.unBindLifecycle()
     }
 
     private fun handleInterceptor(context: Context, postman: Postman): Boolean {
@@ -110,31 +112,48 @@ class YCR private constructor() {
         return interrupt
     }
 
-    private fun handleRoute(context: Context, postman: Postman) =
+    @Suppress("DEPRECATION")
+    private fun handleRoute(context: Context, postman: Postman, resultCallback: (Any?) -> Unit) {
         when (postman.types) {
             RouteTypes.ACTIVITY -> {
                 val intent = Intent()
                 intent.component = ComponentName(postman.moduleId, postman.className)
-                if (context is Activity) context.startActivityForResult(intent, postman.requestCode)
-                else context.startActivity(intent.apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                })
+                if (context !is Activity) {
+                    context.startActivity(intent.apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK })
+                } else {
+                    if (postman.routeResultCallbacks == null) {
+                        context.startActivityForResult(intent, postman.requestCode)
+                    } else {
+                        val sfm = context.fragmentManager
+                        var fragment = sfm.findFragmentByTag(ActivityResultFragment.TAG)
+                        if (fragment === null) {
+                            fragment = ActivityResultFragment()
+                            fragment.listener = { rqc: Int, rsc: Int, data: Intent? ->
+                                resultCallback(ActivityResult(rqc, rsc, data))
+                            }
+                            sfm.beginTransaction().add(fragment, ActivityResultFragment.TAG)
+                                .commitAllowingStateLoss()
+                            sfm.executePendingTransactions()
+                        }
+                        fragment.startActivityForResult(intent, postman.requestCode)
+                    }
+                }
             }
             RouteTypes.ACTION -> {
                 val actionProcessor: IActionProcessor? = Caches.actionCache[postman.className]
                     ?: getTemplateInstance(postman.className)
-                if (actionProcessor == null) doRemoteAction(
-                    postman.moduleId,
-                    postman.className,
-                    postman.actionName
+                resultCallback(
+                    if (actionProcessor == null) {
+                        doRemoteAction(postman.moduleId, postman.className, postman.actionName)
+                    } else {
+                        Caches.actionCache[postman.className] = actionProcessor
+                        actionProcessor.doAction(postman.actionName)
+                    }
                 )
-                else {
-                    Caches.actionCache[postman.className] = actionProcessor
-                    actionProcessor.doAction(postman.actionName)
-                }
             }
             else -> throw InvalidParameterException("该路由类型不正确: ${postman.types}")
         }
+    }
 
     private fun handleRemoteInterceptor(postman: Postman, timeout: Long): Boolean {
         val routeProvider = RemoteRouteProvider.instance

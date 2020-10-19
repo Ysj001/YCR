@@ -7,6 +7,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.ysj.lib.route.YCR
 import com.ysj.lib.route.annotation.Route
+import com.ysj.lib.route.callback.ActivityResult
 import com.ysj.lib.route.callback.RouteResultCallback
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -52,6 +53,9 @@ class MainActivity : AppCompatActivity() {
                     .build("/java/MainActivity")
                     .bindLifecycle(lifecycle)
                     .withRequestCode(99)
+                    .addOnResultCallback { result: ActivityResult? ->
+                        Log.i(TAG, "ActivityResult: ${result?.requestCode} , ${result?.resultCode}")
+                    }
                     .navigation(this)
             }
         }
