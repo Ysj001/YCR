@@ -7,7 +7,6 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'maven'
 apply plugin: 'route-plugin'
 
 
@@ -51,20 +50,5 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation project(path: ':lib_base')
 
-    kapt project(path: ':lib_ycr_apt')
-//    kapt "com.ysj.lib.route:route-compiler:1.0.0"
-}
-
-uploadArchives {
-    repositories.mavenDeployer {
-        // 在项目根目录下
-        repository(url: mavenLocaleRepos)
-        pom.project {
-            version '1.0.0'
-            groupId 'com.ysj.lib.route.module'
-            artifactId 'm1'
-            description '模块 m1'
-            packaging 'aar'
-        }
-    }
+    kapt "com.ysj.lib.route:ycr-compiler:$LIB_VERSION"
 }

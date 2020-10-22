@@ -3,8 +3,20 @@
 apply from: "config.gradle"
 
 buildscript {
-    ext.kotlin_version = '1.3.72'
-    ext.mavenLocaleRepos = uri('./repos')
+    ext {
+        kotlin_version = '1.3.72'
+        mavenLocaleRepos = uri('./repos')
+
+        LIB_VERSION = '1.0.0'
+        LIB_GROUP_ID = 'com.ysj.lib.route'
+
+        POM_URL = 'https://github.com/Ysj001/YCR'
+        POM_LICENCE_NAME = 'Apache-2.0 License'
+        POM_LICENCE_URL = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+        POM_LICENCE_DIST = 'repo'
+        POM_DEVELOPER_ID = ' github_Ysj001'
+        POM_DEVELOPER_NAME = 'Ysj'
+    }
 
     repositories {
         maven { url mavenLocaleRepos }
@@ -16,7 +28,7 @@ buildscript {
         classpath 'com.android.tools.build:gradle:4.0.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
-        classpath "com.ysj.lib.route.plugin:route-plugin:1.0.0"
+        classpath "com.ysj.lib.route:ycr-plugin:1.0.0"
     }
 }
 

@@ -56,5 +56,5 @@ dependencies {
         }
     }
 
-    api project(path: ':lib_ycr_api')
+    api "com.ysj.lib.route:ycr-api:$LIB_VERSION"
 }
