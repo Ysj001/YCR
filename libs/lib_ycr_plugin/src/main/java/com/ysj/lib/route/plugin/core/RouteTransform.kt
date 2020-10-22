@@ -86,7 +86,7 @@ class RouteTransform(private val project: Project) : Transform() {
             input.scopes,
             Format.JAR
         )
-        if (!src.name.startsWith("classes")) {
+        if (!src.name.startsWith("classes") && !src.name.contains("ycr-")) {
             FileUtils.copyFile(src, dest)
             return
         }
@@ -166,34 +166,6 @@ class RouteTransform(private val project: Project) : Transform() {
         val cv = PreVisitor(cw)
         cr.accept(cv, ClassReader.EXPAND_FRAMES)
         inputStream.close()
-    }
-
-    private fun defaultProcess(
-        inputs: Collection<TransformInput>,
-        output: TransformOutputProvider
-    ) {
-        inputs.forEach {
-            it.jarInputs.forEach { input ->
-                FileUtils.copyFile(
-                    input.file, output.getContentLocation(
-                        input.name,
-                        input.contentTypes,
-                        input.scopes,
-                        Format.JAR
-                    )
-                )
-            }
-            it.directoryInputs.forEach { input ->
-                FileUtils.copyDirectory(
-                    input.file, output.getContentLocation(
-                        input.name,
-                        input.contentTypes,
-                        input.scopes,
-                        Format.DIRECTORY
-                    )
-                )
-            }
-        }
     }
 
     private inline fun doTransform(

@@ -10,6 +10,7 @@ import android.content.Intent
  * @author Ysj
  * Create time: 2020/10/19
  */
+@Suppress("DEPRECATION")
 internal class ActivityResultFragment : Fragment() {
 
     companion object {
