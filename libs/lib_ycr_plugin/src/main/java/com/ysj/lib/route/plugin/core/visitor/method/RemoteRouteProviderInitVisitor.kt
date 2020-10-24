@@ -1,7 +1,7 @@
 package com.ysj.lib.route.plugin.core.visitor.method
 
 import com.ysj.lib.route.plugin.core.RouteTransform
-import com.ysj.lib.route.plugin.core.visitor.entity.ClassInfo
+import com.ysj.lib.route.plugin.core.visitor.BaseClassVisitor
 import com.ysj.lib.route.plugin.core.visitor.entity.MethodInfo
 import org.objectweb.asm.Opcodes
 
@@ -19,12 +19,14 @@ class RemoteRouteProviderInitVisitor : BaseMethodVisitor(
     )
 ) {
 
-    override fun match(classInfo: ClassInfo, methodInfo: MethodInfo) =
-        classInfo.name == "com/ysj/lib/route/remote/RemoteRouteProvider" && this.methodInfo == methodInfo
+    override fun match(bcv: BaseClassVisitor): Boolean =
+        bcv.classInfo.name == "com/ysj/lib/route/remote/RemoteRouteProvider" && bcv.methodInfo == methodInfo
 
     override fun visitLdcInsn(value: Any?) = super.visitLdcInsn(
-        if (value == "auto inject your main application id") RouteTransform.mainModuleAppExt.defaultConfig.applicationId
-        else value
+        if (value != "auto inject your main application id") value
+        else (bcv.transform as RouteTransform).mainModuleAppExt.defaultConfig.applicationId.also {
+            logger.lifecycle("已注册：application id --> $it")
+        }
     )
 
 }

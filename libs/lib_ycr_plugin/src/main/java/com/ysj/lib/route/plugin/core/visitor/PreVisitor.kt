@@ -1,6 +1,6 @@
 package com.ysj.lib.route.plugin.core.visitor
 
-import com.android.build.gradle.internal.LoggerWrapper
+import com.ysj.lib.route.plugin.core.logger.YLogger
 import com.ysj.lib.route.plugin.core.visitor.entity.ClassInfo
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
@@ -17,7 +17,7 @@ class PreVisitor(visitor: ClassVisitor) : ClassVisitor(Opcodes.ASM7, visitor) {
         val cacheClassInfo = HashSet<ClassInfo>()
     }
 
-    private val logger = LoggerWrapper.getLogger(javaClass)
+    private val logger = YLogger.getLogger(javaClass)
 
     override fun visit(
         version: Int,

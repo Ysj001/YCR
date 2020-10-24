@@ -1,7 +1,7 @@
 package com.ysj.lib.route.plugin.core.visitor.method
 
+import com.ysj.lib.route.plugin.core.visitor.BaseClassVisitor
 import com.ysj.lib.route.plugin.core.visitor.PreVisitor
-import com.ysj.lib.route.plugin.core.visitor.entity.ClassInfo
 import com.ysj.lib.route.plugin.core.visitor.entity.MethodInfo
 import org.objectweb.asm.Opcodes
 
@@ -19,8 +19,8 @@ class RemoteRouteProviderOnCreateVisitor : BaseMethodVisitor(
     )
 ) {
 
-    override fun match(classInfo: ClassInfo, methodInfo: MethodInfo) =
-        classInfo.name == "com/ysj/lib/route/remote/RemoteRouteProvider" && this.methodInfo == methodInfo
+    override fun match(bcv: BaseClassVisitor): Boolean =
+        bcv.classInfo.name == "com/ysj/lib/route/remote/RemoteRouteProvider" && bcv.methodInfo == methodInfo
 
     override fun visitInsn(opcode: Int) {
         if (opcode == Opcodes.IRETURN) with(mv) {
@@ -40,12 +40,12 @@ class RemoteRouteProviderOnCreateVisitor : BaseMethodVisitor(
                     )
                     visitMethodInsn(
                         Opcodes.INVOKESPECIAL,
-                        classInfo.name,
+                        bcv.classInfo.name,
                         "registerRouteGroup",
                         "(Lcom/ysj/lib/route/template/IProviderRoute;)V",
                         false
                     )
-                    logger.quiet("注册了 ${it.name}")
+                    logger.lifecycle("注册了 ${it.name}")
                 }
         }
         super.visitInsn(opcode)

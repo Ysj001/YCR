@@ -6,7 +6,9 @@ apply plugin: 'com.android.application'
 //apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'route-plugin'
+apply plugin: 'ycr-plugin'
+
+ycr.loggerLevel = 2
 
 android {
     compileSdkVersion androidConfig.compileSdkVersion

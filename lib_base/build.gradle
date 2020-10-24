@@ -57,4 +57,6 @@ dependencies {
     }
 
     api "com.ysj.lib.route:ycr-api:$LIB_VERSION"
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
 }

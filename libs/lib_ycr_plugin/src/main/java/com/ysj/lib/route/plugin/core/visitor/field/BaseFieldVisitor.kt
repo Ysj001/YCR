@@ -1,15 +1,14 @@
 package com.ysj.lib.route.plugin.core.visitor.field
 
-import com.android.build.gradle.internal.LoggerWrapper
-import com.ysj.lib.route.plugin.core.visitor.VisitorFactory
-import com.ysj.lib.route.plugin.core.visitor.entity.ClassInfo
+import com.ysj.lib.route.plugin.core.logger.YLogger
+import com.ysj.lib.route.plugin.core.visitor.BaseClassVisitor
 import com.ysj.lib.route.plugin.core.visitor.entity.FieldInfo
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.FieldVisitor
 import org.objectweb.asm.Opcodes
 
 /**
- * 基类 [FieldVisitor]，需配合 [VisitorFactory] 使用
+ * 基类 [FieldVisitor]，需配合 [BaseClassVisitor] 使用
  *
  * 要使此类生效，记得 [attach]
  *
@@ -18,18 +17,20 @@ import org.objectweb.asm.Opcodes
  */
 abstract class BaseFieldVisitor(val fieldInfo: FieldInfo) : FieldVisitor(Opcodes.ASM7) {
 
-    protected val logger = LoggerWrapper.getLogger(javaClass)
+    protected val logger = YLogger.getLogger(javaClass)
+
+    lateinit var bcv: BaseClassVisitor
+        private set
 
     lateinit var cv: ClassVisitor
-
-    /** 从 [VisitorFactory.get] 自动注入 */
-    lateinit var classInfo: ClassInfo
+        private set
 
     /** 该 [FieldVisitor] 的匹配规则 */
-    abstract fun match(classInfo: ClassInfo, fieldInfo: FieldInfo): Boolean
+    abstract fun match(bcv: BaseClassVisitor): Boolean
 
-    fun attach(cv: ClassVisitor) {
-        this.cv = cv
+    fun attach(bcv: BaseClassVisitor) {
+        this.bcv = bcv
+        this.cv = bcv.getClassVisitor()
         this.fv = visitField(
             fieldInfo.access,
             fieldInfo.name,

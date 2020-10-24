@@ -1,7 +1,7 @@
 package com.ysj.lib.route.plugin.core.visitor.method
 
+import com.ysj.lib.route.plugin.core.visitor.BaseClassVisitor
 import com.ysj.lib.route.plugin.core.visitor.PreVisitor
-import com.ysj.lib.route.plugin.core.visitor.entity.ClassInfo
 import com.ysj.lib.route.plugin.core.visitor.entity.MethodInfo
 import org.objectweb.asm.Opcodes
 
@@ -19,8 +19,8 @@ class RouteCacheClInitVisitor : BaseMethodVisitor(
     )
 ) {
 
-    override fun match(classInfo: ClassInfo, methodInfo: MethodInfo) =
-        classInfo.name == "com/ysj/lib/route/Caches" && methodInfo == this.methodInfo
+    override fun match(bcv: BaseClassVisitor): Boolean =
+        bcv.classInfo.name == "com/ysj/lib/route/Caches" && methodInfo == bcv.methodInfo
 
     override fun visitInsn(opcode: Int) {
         if (opcode == Opcodes.RETURN) with(mv) {
@@ -32,7 +32,7 @@ class RouteCacheClInitVisitor : BaseMethodVisitor(
                 .forEach {
                     visitFieldInsn(
                         Opcodes.GETSTATIC,
-                        classInfo.name,
+                        bcv.classInfo.name,
                         "interceptors",
                         "Ljava/util/ArrayList;"
                     )
@@ -53,7 +53,7 @@ class RouteCacheClInitVisitor : BaseMethodVisitor(
                         false
                     )
                     visitInsn(Opcodes.POP)
-                    logger.quiet("注册了 ${it.name}")
+                    logger.lifecycle("注册了 ${it.name}")
                 }
         }
         super.visitInsn(opcode)

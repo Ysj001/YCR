@@ -1,5 +1,7 @@
 package com.ysj.lib.route.plugin.core
 
+import com.ysj.lib.route.plugin.core.logger.YLogger
+
 /**
  * 路由的扩展属性
  *
@@ -8,14 +10,17 @@ package com.ysj.lib.route.plugin.core
  */
 open class RouteExtensions {
 
-    companion object{
-        const val NAME = "route"
+    companion object {
+        const val NAME = "ycr"
     }
 
     /** 是否是主组件 */
     var main: Boolean = false
 
+    /** 设置日志等级 [YLogger]（verbose:0 ~ error:5） */
+    var loggerLevel: Int = 0
+
     override fun toString(): String {
-        return "main=$main"
+        return "main=$main , loggerLevel=$loggerLevel"
     }
 }
