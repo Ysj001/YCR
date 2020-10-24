@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center_horizontal"
+    android:gravity="center"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
@@ -12,18 +12,26 @@
         android:id="@+id/btnToM1App"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
         android:onClick="onClick"
         android:text="to m1 app"
         android:textSize="24sp" />
 
     <Button
-        android:id="@+id/btnDoM1Action"
+        android:id="@+id/btnDoM1ActionAsync"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:onClick="onClick"
-        android:text="action: m1_test"
+        android:text="do action (async): m1_test"
+        android:textSize="24sp" />
+
+    <Button
+        android:id="@+id/btnDoM1ActionSync"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:onClick="onClick"
+        android:text="do action (sync): m1_test"
         android:textSize="24sp" />
 
     <Button

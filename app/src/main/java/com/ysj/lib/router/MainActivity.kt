@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
                     .build("/m1/MainActivity")
                     .navigation(this)
             }
-            btnDoM1Action -> {
+            btnDoM1ActionAsync -> {
                 YCR.getInstance()
                     .build("/m1/actions")
                     .bindLifecycle(lifecycle)
@@ -47,6 +47,13 @@ class MainActivity : AppCompatActivity() {
                     .addOnResultCallback { result: Int? -> Log.i(TAG, "doOnResult 3: $result") }
                     .addOnResultCallback { result: String? -> Log.i(TAG, "doOnResult 4: $result") }
                     .navigation(this)
+            }
+            btnDoM1ActionSync -> {
+                val result = YCR.getInstance()
+                    .build("/m1/actions")
+                    .withRouteAction("m1_test_action1")
+                    .navigationSync(this)
+                Log.i(TAG, "btnDoM1ActionSync: $result")
             }
             btnToJavaApp -> {
                 YCR.getInstance()

@@ -2,7 +2,6 @@ package com.ysj.lib.route
 
 import android.app.Activity
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.os.Looper
 import android.util.Log
@@ -21,6 +20,8 @@ import com.ysj.lib.route.template.IProviderRoute
 import com.ysj.lib.route.template.RouteTemplate
 import java.security.InvalidParameterException
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 /**
@@ -42,9 +43,11 @@ class YCR private constructor() {
         fun getInstance() = Holder.instance
     }
 
+    internal val threadPool: Executor = Executors.newSingleThreadExecutor()
+
     fun build(path: String) = Postman(subGroupFromPath(path), path)
 
-    fun navigation(context: Context, postman: Postman) {
+    fun navigation(postman: Postman) {
         val routeClassName = "${PACKAGE_NAME_ROUTE}.${PREFIX_ROUTE}${postman.group}"
         val routes = Caches.routeCache[postman.group] ?: HashMap()
         try {
@@ -60,9 +63,9 @@ class YCR private constructor() {
                     ?: findRemoteRouteBean(postman.group, postman.path)
                     ?: throw InvalidParameterException("找不到路由: ${postman.path}")
             )
-            val interrupt = handleInterceptor(context, postman)
+            val interrupt = handleInterceptor(postman)
             if (interrupt) return
-            handleRoute(context, postman) {
+            handleRoute(postman) {
                 postman.routeResultCallbacks?.forEach { callback ->
                     callback?.also { cb -> cb.onResult(it) }
                 }
@@ -72,7 +75,8 @@ class YCR private constructor() {
         }
     }
 
-    private fun handleInterceptor(context: Context, postman: Postman): Boolean {
+    private fun handleInterceptor(postman: Postman): Boolean {
+        val context = postman.context?.get()?.applicationContext ?: return true
         val isMainTH = Thread.currentThread() == Looper.getMainLooper().thread
         // 拦截器超时时间
         var timeout = if (isMainTH) INTERCEPTOR_TIME_OUT_MAIN_TH else INTERCEPTOR_TIME_OUT_SUB_TH
@@ -113,7 +117,8 @@ class YCR private constructor() {
     }
 
     @Suppress("DEPRECATION")
-    private fun handleRoute(context: Context, postman: Postman, resultCallback: (Any?) -> Unit) {
+    private fun handleRoute(postman: Postman, resultCallback: (Any?) -> Unit) {
+        val context = postman.context?.get() ?: return
         when (postman.types) {
             RouteTypes.ACTIVITY -> {
                 val intent = Intent()

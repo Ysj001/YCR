@@ -14,6 +14,7 @@ import com.ysj.lib.route.callback.RouteResultCallback
 import com.ysj.lib.route.lifecycle.RouteLifecycleObserver
 import com.ysj.lib.route.type.checkMethodParameterType
 import java.io.Serializable
+import java.lang.ref.WeakReference
 
 /**
  * 用于构建路由过程的实体
@@ -34,7 +35,7 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
     var actionName: String = ""
         private set
 
-    private var lifecycle: Lifecycle? = null
+    internal var context: WeakReference<Context>? = null
 
     internal var routeResultCallbacks: MutableCollection<RouteResultCallback<Any?>?>? = null
 
@@ -43,30 +44,37 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
     internal var interruptCallback: InterceptorCallback.InterruptCallback? = null
 
     override fun onDestroy(owner: LifecycleOwner) {
+        context?.clear()
+        context = null
         routeResultCallbacks = null
         continueCallback = null
         interruptCallback = null
-        lifecycle = null
         owner.lifecycle.removeObserver(this)
     }
 
     /**
      * 绑定生命周期，当生命周期状态变更为 [Lifecycle.State.DESTROYED] 时会中断路由过程
      */
-    fun bindLifecycle(lifecycle: Lifecycle) = apply {
-        this.lifecycle = lifecycle
-        lifecycle.addObserver(this)
+    fun bindLifecycle(lifecycle: Lifecycle) = apply { lifecycle.addObserver(this) }
+
+    /**
+     * 路由调用链的最后一步，开始路由导航（异步的）
+     */
+    fun navigation(context: Context) {
+        this.context = WeakReference(context)
+        YCR.getInstance().threadPool.execute { YCR.getInstance().navigation(this) }
     }
 
     /**
-     * 解绑生命周期，会在路由结束后自动解绑
+     * 路由调用链的最后一步，开始路由导航（同步的）
      */
-    fun unBindLifecycle() = this.lifecycle?.removeObserver(this) ?: Unit
-
-    /**
-     * 路由调用链的最后一步，开始路由导航
-     */
-    fun navigation(context: Context) = YCR.getInstance().navigation(context, this)
+    fun navigationSync(context: Context): Any? {
+        this.context = WeakReference(context)
+        var result: Any? = null
+        addOnResultCallback<Any> { result = it }
+        YCR.getInstance().navigation(this)
+        return result
+    }
 
     /**
      * 用于获取路由成功的结果，你可以添加多个类型用于适应路由过程中行为的改变
