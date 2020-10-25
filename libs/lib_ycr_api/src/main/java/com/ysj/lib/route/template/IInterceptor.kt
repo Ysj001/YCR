@@ -1,6 +1,5 @@
 package com.ysj.lib.route.template
 
-import android.content.Context
 import com.ysj.lib.route.INTERCEPTOR_TIME_OUT_MAIN_TH
 import com.ysj.lib.route.INTERCEPTOR_TIME_OUT_SUB_TH
 import com.ysj.lib.route.callback.InterceptorCallback
@@ -30,6 +29,6 @@ interface IInterceptor : RouteTemplate {
      * @param callback  拦截器回调
      * @return 若返回 true 则会拦截，路由框架不会执行导航
      */
-    fun onIntercept(context: Context, postman: Postman, callback: InterceptorCallback)
+    fun onIntercept(postman: Postman, callback: InterceptorCallback)
 
 }

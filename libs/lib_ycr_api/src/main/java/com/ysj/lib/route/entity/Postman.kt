@@ -2,6 +2,7 @@ package com.ysj.lib.route.entity
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.os.IBinder
 import android.os.Parcelable
@@ -26,6 +27,10 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
 
     /** 路由所携带的数据 */
     val bundle = Bundle()
+
+    /** [Intent.addFlags] */
+    var flags: Int = Intent.FLAG_ACTIVITY_NEW_TASK
+        private set
 
     /** [Activity] 的 requestCode */
     var requestCode: Int = -1
@@ -142,6 +147,13 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
     }
 
     /**
+     * Add additional flags to the intent (or with existing flags value).
+     *
+     * @param flags The new flags to set.
+     */
+    fun withFlags(flags: Int) = apply { this.flags = this.flags or flags }
+
+    /**
      * 设置要执行的行为
      *
      * @param actionName 要执行的行为的名称
@@ -240,6 +252,14 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
         if (bundle == null) return@apply
         this.bundle.putAll(bundle)
     }
+
+    /**
+     * 获取 [Context] 在以下情况会为 null
+     * - 当路由未开始（未调用 [navigation] 或 [navigationSync]）时
+     * - 当生命周期状态变更为 [Lifecycle.State.DESTROYED] 时
+     * - 当弱引用被回收时
+     */
+    fun getContext(): Context? = context?.get()
 
     /**
      * 将另一个 [Postman] 中的数据复制过来

@@ -5,10 +5,7 @@ import android.content.ComponentName
 import android.content.Intent
 import android.os.Looper
 import android.util.Log
-import com.ysj.lib.route.annotation.PACKAGE_NAME_ROUTE
-import com.ysj.lib.route.annotation.PREFIX_ROUTE
-import com.ysj.lib.route.annotation.RouteTypes
-import com.ysj.lib.route.annotation.subGroupFromPath
+import com.ysj.lib.route.annotation.*
 import com.ysj.lib.route.callback.ActivityResult
 import com.ysj.lib.route.callback.InterceptorCallback
 import com.ysj.lib.route.entity.InterruptReason
@@ -45,6 +42,11 @@ class YCR private constructor() {
 
     internal val threadPool: Executor = Executors.newSingleThreadExecutor()
 
+    /**
+     * 开始构建路由过程
+     *
+     * @param path 路由的地址，对应 [Route.path]
+     */
     fun build(path: String) = Postman(subGroupFromPath(path), path)
 
     fun navigation(postman: Postman) {
@@ -76,7 +78,7 @@ class YCR private constructor() {
     }
 
     private fun handleInterceptor(postman: Postman): Boolean {
-        val context = postman.context?.get()?.applicationContext ?: return true
+        postman.getContext() ?: return true
         val isMainTH = Thread.currentThread() == Looper.getMainLooper().thread
         // 拦截器超时时间
         var timeout = if (isMainTH) INTERCEPTOR_TIME_OUT_MAIN_TH else INTERCEPTOR_TIME_OUT_SUB_TH
@@ -87,7 +89,7 @@ class YCR private constructor() {
         val matchedInterceptor = Caches.interceptors.filter { it.match(postman) }
         val countDownLatch = CountDownLatch(matchedInterceptor.size)
         matchedInterceptor.forEach {
-            it.onIntercept(context, postman, object : InterceptorCallback {
+            it.onIntercept(postman, object : InterceptorCallback {
 
                 var isFinished = false
 
@@ -118,13 +120,14 @@ class YCR private constructor() {
 
     @Suppress("DEPRECATION")
     private fun handleRoute(postman: Postman, resultCallback: (Any?) -> Unit) {
-        val context = postman.context?.get() ?: return
+        val context = postman.getContext() ?: return
         when (postman.types) {
             RouteTypes.ACTIVITY -> {
                 val intent = Intent()
-                intent.component = ComponentName(postman.moduleId, postman.className)
+                    .addFlags(postman.flags)
+                    .setComponent(ComponentName(postman.moduleId, postman.className))
                 if (context !is Activity) {
-                    context.startActivity(intent.apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK })
+                    context.startActivity(intent)
                 } else {
                     if (postman.routeResultCallbacks == null) {
                         context.startActivityForResult(intent, postman.requestCode)
@@ -149,10 +152,10 @@ class YCR private constructor() {
                     ?: getTemplateInstance(postman.className)
                 resultCallback(
                     if (actionProcessor == null) {
-                        doRemoteAction(postman.moduleId, postman.className, postman.actionName)
+                        doRemoteAction(postman)
                     } else {
                         Caches.actionCache[postman.className] = actionProcessor
-                        actionProcessor.doAction(postman.actionName)
+                        actionProcessor.doAction(postman)
                     }
                 )
             }
@@ -204,10 +207,10 @@ class YCR private constructor() {
         return interrupt
     }
 
-    private fun doRemoteAction(applicationId: String, className: String, actionName: String) =
+    private fun doRemoteAction(postman: Postman) =
         RemoteRouteProvider.instance
-            ?.getRouteService(applicationId)
-            ?.doAction(className, actionName)
+            ?.getRouteService(postman.moduleId)
+            ?.doAction(RemoteRouteBean(postman))
             ?.params?.get(REMOTE_ACTION_RESULT)
 
     private fun findRemoteRouteBean(group: String, path: String) =

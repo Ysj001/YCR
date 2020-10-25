@@ -1,6 +1,7 @@
 package com.ysj.lib.route.template
 
 import android.os.Parcelable
+import com.ysj.lib.route.entity.Postman
 import java.io.Serializable
 
 /**
@@ -16,8 +17,8 @@ interface IActionProcessor : RouteTemplate {
     /**
      * 执行行为
      *
-     * @param actionName 行为的名字
-     * @return 类型必须是 [Serializable] 或 [Parcelable] 的子类
+     * @param postman 通过调用 [Postman.actionName] 来获取行为 [Postman.bundle] 来获取参数
+     * @return 当类型是 [Serializable] 或 [Parcelable] 的子类时可以在跨进程调试中传输
      */
-    fun doAction(actionName: String): Any?
+    fun doAction(postman: Postman): Any?
 }

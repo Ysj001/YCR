@@ -2,6 +2,7 @@ package com.ysj.lib.router
 
 import android.util.Log
 import com.ysj.lib.route.annotation.Route
+import com.ysj.lib.route.entity.Postman
 import com.ysj.lib.route.template.IActionProcessor
 
 /**
@@ -15,9 +16,9 @@ class AppActionProcessor : IActionProcessor {
 
     private val TAG = "AppActionProcessor"
 
-    override fun doAction(actionName: String): Any? {
-        Log.i(TAG, "doAction: $actionName")
-        return when (actionName) {
+    override fun doAction(postman: Postman): Any? {
+        Log.i(TAG, "doAction: ${postman.actionName}")
+        return when (postman.actionName) {
             "app_test_action" -> {
 
             }

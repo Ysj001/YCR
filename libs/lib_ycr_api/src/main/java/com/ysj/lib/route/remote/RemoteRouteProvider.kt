@@ -35,10 +35,10 @@ internal class RemoteRouteProvider : ContentProvider() {
         private set
 
     /** [IRouteService] 缓存 */
-    private val routeServiceCache by lazy(LazyThreadSafetyMode.NONE) { HashMap<String, IRouteService>() }
+    val routeServiceCache by lazy(LazyThreadSafetyMode.NONE) { HashMap<String, IRouteService>() }
 
     /** 所有组件的 application id */
-    val allApplicationId by lazy(LazyThreadSafetyMode.NONE) { ArrayList<String>() }
+    val allApplicationId by lazy(LazyThreadSafetyMode.NONE) { HashSet<String>() }
 
     /** 提供给其他进程获取本进程的 [IRouteService] */
     private lateinit var cursor: Cursor
@@ -49,7 +49,7 @@ internal class RemoteRouteProvider : ContentProvider() {
         Log.i(TAG, "onCreate: $mainApplicationId")
         initRouteService()
         // 注册本组件的 application id 到主组件
-        getRouteService(mainApplicationId)?.registerApplicationId(application.packageName)
+        getRouteService(mainApplicationId)?.registerToMainApp(application.packageName)
         return false
     }
 

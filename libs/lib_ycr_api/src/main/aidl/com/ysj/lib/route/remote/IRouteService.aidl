@@ -8,9 +8,9 @@ import com.ysj.lib.route.remote.RemoteInterceptorCallback;
 interface IRouteService {
 
     /**
-     * 注册 application id
+     * 注册到主组件 App
      */
-    void registerApplicationId(String applicationId);
+    void registerToMainApp(String applicationId);
 
     /**
      * 获取所有组件的 application id
@@ -30,7 +30,7 @@ interface IRouteService {
     /**
      * 执行行为
      */
-    RemoteParam doAction(String className, String actionName);
+    RemoteParam doAction(in RemoteRouteBean routeBean);
 
     /**
      * 处理拦截器
