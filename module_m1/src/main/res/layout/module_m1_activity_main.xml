@@ -14,8 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="100dp"
         android:onClick="onClick"
-        android:text="to main app"
-        android:textSize="24sp" />
+        android:text="to main app" />
 
     <Button
         android:id="@+id/btnDoAppAction"
@@ -23,7 +22,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:onClick="onClick"
-        android:text="action: app_test"
-        android:textSize="24sp" />
+        android:text="action: app_test" />
 
 </LinearLayout>

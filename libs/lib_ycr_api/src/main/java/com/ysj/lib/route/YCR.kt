@@ -65,8 +65,7 @@ class YCR private constructor() {
                     ?: findRemoteRouteBean(postman.group, postman.path)
                     ?: throw InvalidParameterException("找不到路由: ${postman.path}")
             )
-            val interrupt = handleInterceptor(postman)
-            if (interrupt) return
+            if (!postman.greenChannel && handleInterceptor(postman)) return
             handleRoute(postman) {
                 postman.routeResultCallbacks?.forEach { callback ->
                     callback?.also { cb -> cb.onResult(it) }
@@ -127,6 +126,7 @@ class YCR private constructor() {
                     .addFlags(postman.flags)
                     .setComponent(ComponentName(postman.moduleId, postman.className))
                 if (context !is Activity) {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     context.startActivity(intent)
                 } else {
                     if (postman.routeResultCallbacks == null) {

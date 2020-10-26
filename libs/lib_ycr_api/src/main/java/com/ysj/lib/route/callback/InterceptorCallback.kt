@@ -20,13 +20,13 @@ interface InterceptorCallback {
     }
 
     /**
-     * 继续后续的路由
+     * 表示该拦截器允许继续后续的路由
      * - 注意：不要重复调用或同时调用 [onInterrupt]
      */
     fun onContinue(postman: Postman)
 
     /**
-     * 中断后续路由
+     * 表示该拦截器不允许后续路由，但不会中断已匹配的拦截器处理过程
      * - 注意：不要重复调用或同时调用 [onContinue]
      *
      * @param reason 用于描述中断原因的实体

@@ -29,11 +29,15 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
     val bundle = Bundle()
 
     /** [Intent.addFlags] */
-    var flags: Int = Intent.FLAG_ACTIVITY_NEW_TASK
+    var flags: Int = 0
         private set
 
     /** [Activity] 的 requestCode */
     var requestCode: Int = -1
+        private set
+
+    /** 表示是否使用绿色通道，为 true 会跳过拦截器 */
+    var greenChannel: Boolean = false
         private set
 
     /** 要执行的行为名称 */
@@ -61,6 +65,11 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
      * 绑定生命周期，当生命周期状态变更为 [Lifecycle.State.DESTROYED] 时会中断路由过程
      */
     fun bindLifecycle(lifecycle: Lifecycle) = apply { lifecycle.addObserver(this) }
+
+    /**
+     * 调用该方法启用绿色通道，跳过所有拦截器
+     */
+    fun useGreenChannel() = apply { this.greenChannel = true }
 
     /**
      * 路由调用链的最后一步，开始路由导航（异步的）
