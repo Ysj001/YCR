@@ -10,12 +10,12 @@ import com.ysj.lib.route.callback.ActivityResult
 import com.ysj.lib.route.callback.InterceptorCallback
 import com.ysj.lib.route.entity.InterruptReason
 import com.ysj.lib.route.entity.Postman
+import com.ysj.lib.route.exception.YCRExceptionFactory
 import com.ysj.lib.route.lifecycle.ActivityResultFragment
 import com.ysj.lib.route.remote.*
 import com.ysj.lib.route.template.IActionProcessor
 import com.ysj.lib.route.template.IProviderRoute
 import com.ysj.lib.route.template.RouteTemplate
-import java.security.InvalidParameterException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
@@ -63,7 +63,7 @@ class YCR private constructor() {
             postman.from(
                 routes[postman.path]
                     ?: findRemoteRouteBean(postman.group, postman.path)
-                    ?: throw InvalidParameterException("找不到路由: ${postman.path}")
+                    ?: throw YCRExceptionFactory.getRoutePathException(postman.path)
             )
             if (!postman.greenChannel && handleInterceptor(postman)) return
             handleRoute(postman) {
@@ -103,7 +103,9 @@ class YCR private constructor() {
                     }
 
                 fun safeHandle(block: () -> Unit) {
-                    if (isFinished) throw RuntimeException("拦截器重复处理：$it")
+                    if (isFinished) throw YCRExceptionFactory.getInterceptorRepeatProcessException(
+                        it.toString()
+                    )
                     block()
                     isFinished = true
                     countDownLatch.countDown()
@@ -113,7 +115,7 @@ class YCR private constructor() {
         // 等待所有拦截器处理完再返回结果
         countDownLatch.await(timeout, TimeUnit.MILLISECONDS)
         val remaining = countDownLatch.count
-        if (remaining != 0L) throw RuntimeException("拦截器处理超时 remaining: $remaining")
+        if (remaining != 0L) throw YCRExceptionFactory.getInterceptorTimeOutException("剩余: $remaining 个未处理")
         return interrupt
     }
 
@@ -129,7 +131,7 @@ class YCR private constructor() {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     context.startActivity(intent)
                 } else {
-                    if (postman.routeResultCallbacks == null) {
+                    if (postman.routeResultCallbacks == null || postman.requestCode < 0) {
                         context.startActivityForResult(intent, postman.requestCode)
                     } else {
                         val sfm = context.fragmentManager
@@ -159,7 +161,7 @@ class YCR private constructor() {
                     }
                 )
             }
-            else -> throw InvalidParameterException("该路由类型不正确: ${postman.types}")
+            else -> throw YCRExceptionFactory.getRouteTypeException(postman.types.toString())
         }
     }
 
@@ -196,7 +198,7 @@ class YCR private constructor() {
                         }
 
                         inline fun safeHandle(block: () -> Unit) {
-                            if (isFinished) throw RuntimeException("拦截器重复处理！")
+                            if (isFinished) throw YCRExceptionFactory.getInterceptorRepeatProcessException()
                             block()
                             isFinished = true
                         }

@@ -156,11 +156,12 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
     }
 
     /**
-     * Add additional flags to the intent (or with existing flags value).
+     * Set special flags controlling how this intent is handled.
      *
-     * @param flags The new flags to set.
+     * @see Intent.setFlags
+     * @param flags The desired flags.
      */
-    fun withFlags(flags: Int) = apply { this.flags = this.flags or flags }
+    fun withFlags(flags: Int) = apply { this.flags = flags }
 
     /**
      * 设置要执行的行为
@@ -257,7 +258,7 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
      *
      * @param bundle a Bundle
      */
-    fun withAll(bundle: Bundle?) = apply {
+    fun withBundle(bundle: Bundle?) = apply {
         if (bundle == null) return@apply
         this.bundle.putAll(bundle)
     }
@@ -274,9 +275,11 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
      * 将另一个 [Postman] 中的数据复制过来
      */
     internal fun from(postman: Postman) {
-        withAll(postman.bundle)
-        withRouteAction(postman.actionName)
-        withRequestCode(postman.requestCode)
+        withBundle(postman.bundle)
+        this.actionName = postman.actionName
+        this.requestCode = postman.requestCode
+        this.flags = postman.flags
+        this.greenChannel = postman.greenChannel
         from(postman as RouteBean)
     }
 

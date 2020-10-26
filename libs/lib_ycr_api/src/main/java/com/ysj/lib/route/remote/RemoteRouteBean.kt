@@ -21,9 +21,11 @@ class RemoteRouteBean(val routeBean: RouteBean) : Parcelable {
                 moduleId = "${parcel.readString()}"
                 className = "${parcel.readString()}"
             }
-            .withAll(parcel.readBundle())
+            .withBundle(parcel.readBundle())
             .withRequestCode(parcel.readInt())
             .withRouteAction(parcel.readString())
+            .withFlags(parcel.readInt())
+            .apply { if (parcel.readInt() == 1) useGreenChannel() }
     )
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
@@ -38,10 +40,14 @@ class RemoteRouteBean(val routeBean: RouteBean) : Parcelable {
                     it.writeBundle(bundle)
                     it.writeInt(requestCode)
                     it.writeString(actionName)
+                    it.writeInt(this.flags)
+                    it.writeInt(if (greenChannel) 1 else 0)
                 } else {
                     it.writeBundle(null)
                     it.writeInt(-1)
                     it.writeString(null)
+                    it.writeInt(0)
+                    it.writeInt(0)
                 }
             }
         }
