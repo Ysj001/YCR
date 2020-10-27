@@ -7,8 +7,8 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.ysj.lib.route.YCR
 import com.ysj.lib.route.annotation.Route
-import com.ysj.lib.route.callback.ActivityResult
 import com.ysj.lib.route.callback.RouteResultCallback
+import com.ysj.lib.route.entity.ActivityResult
 import kotlinx.android.synthetic.main.activity_main.*
 
 @Route("/app/MainActivity")
@@ -41,11 +41,16 @@ class MainActivity : AppCompatActivity() {
                     .addOnResultCallback(object : RouteResultCallback<Int?>() {
                         override fun onResult(result: Int?) {
                             Log.i(TAG, "doOnResult 1: $result")
+                            throw Exception("test exception")
                         }
                     })
                     .addOnResultCallback { result: Any? -> Log.i(TAG, "doOnResult 2: $result") }
                     .addOnResultCallback { result: Int? -> Log.i(TAG, "doOnResult 3: $result") }
                     .addOnResultCallback { result: String? -> Log.i(TAG, "doOnResult 4: $result") }
+                    .doOnException { p, e ->
+                        Log.i(TAG, "doOnException: $e")
+                        false
+                    }
                     .navigation(this)
             }
             btnDoM1ActionSync -> {

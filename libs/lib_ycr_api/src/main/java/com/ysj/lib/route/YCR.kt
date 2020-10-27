@@ -6,8 +6,8 @@ import android.content.Intent
 import android.os.Looper
 import android.util.Log
 import com.ysj.lib.route.annotation.*
-import com.ysj.lib.route.callback.ActivityResult
 import com.ysj.lib.route.callback.InterceptorCallback
+import com.ysj.lib.route.entity.ActivityResult
 import com.ysj.lib.route.entity.InterruptReason
 import com.ysj.lib.route.entity.Postman
 import com.ysj.lib.route.exception.YCRExceptionFactory
@@ -40,7 +40,7 @@ class YCR private constructor() {
         fun getInstance() = Holder.instance
     }
 
-    internal val threadPool: Executor = Executors.newSingleThreadExecutor()
+    internal val executor: Executor = Executors.newSingleThreadExecutor()
 
     /**
      * 开始构建路由过程
@@ -66,13 +66,11 @@ class YCR private constructor() {
                     ?: throw YCRExceptionFactory.getRoutePathException(postman.path)
             )
             if (!postman.greenChannel && handleInterceptor(postman)) return
-            handleRoute(postman) {
-                postman.routeResultCallbacks?.forEach { callback ->
-                    callback?.also { cb -> cb.onResult(it) }
-                }
+            handleRoute(postman) { result ->
+                postman.routeResultCallbacks?.forEach { callback -> callback.onResult(result) }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            postman.exceptionCallback?.handleException(postman, YCRExceptionFactory.getException(e))
         }
     }
 

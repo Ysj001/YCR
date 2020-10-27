@@ -12,6 +12,8 @@ import com.ysj.lib.route.YCR
 import com.ysj.lib.route.annotation.RouteBean
 import com.ysj.lib.route.callback.InterceptorCallback
 import com.ysj.lib.route.callback.RouteResultCallback
+import com.ysj.lib.route.callback.YCRExceptionCallback
+import com.ysj.lib.route.exception.IYCRExceptions
 import com.ysj.lib.route.lifecycle.RouteLifecycleObserver
 import com.ysj.lib.route.type.checkMethodParameterType
 import java.io.Serializable
@@ -46,7 +48,9 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
 
     internal var context: WeakReference<Context>? = null
 
-    internal var routeResultCallbacks: MutableCollection<RouteResultCallback<Any?>?>? = null
+    internal var exceptionCallback: YCRExceptionCallback? = null
+
+    internal var routeResultCallbacks: MutableCollection<RouteResultCallback<Any?>>? = null
 
     internal var continueCallback: InterceptorCallback.ContinueCallback? = null
 
@@ -76,7 +80,7 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
      */
     fun navigation(context: Context) {
         this.context = WeakReference(context)
-        YCR.getInstance().threadPool.execute { YCR.getInstance().navigation(this) }
+        YCR.getInstance().executor.execute { YCR.getInstance().navigation(this) }
     }
 
     /**
@@ -123,6 +127,20 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
                     )
                 ) callback(result as T?)
             }
+        })
+    }
+
+    /**
+     * 当路由过程中出现异常时回调
+     */
+    fun doOnException(callback: YCRExceptionCallback) = apply {
+        this.exceptionCallback = callback
+    }
+
+    @JvmSynthetic
+    fun doOnException(callback: (Postman, IYCRExceptions) -> Boolean) = apply {
+        doOnException(object : YCRExceptionCallback {
+            override fun handleException(postman: Postman, e: IYCRExceptions) = callback(postman, e)
         })
     }
 

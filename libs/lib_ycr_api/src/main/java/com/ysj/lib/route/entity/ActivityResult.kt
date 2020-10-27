@@ -1,4 +1,4 @@
-package com.ysj.lib.route.callback
+package com.ysj.lib.route.entity
 
 import android.app.Activity
 import android.content.Intent

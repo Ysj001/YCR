@@ -20,11 +20,11 @@ const val ROUTE_PATH_NOT_FOUND = PARAM_EXCEPTION_CODE + 100
 const val ROUTE_TYPE_ERROR = PARAM_EXCEPTION_CODE + 101
 
 /** YCR 参数异常 */
-class YCRParameterException(
+internal class YCRParameterException(
     /** 错误码 = [PARAM_EXCEPTION_CODE] + reason code */
     override val code: Int,
     val msg: String
-) : InvalidParameterException(msg), YCRExceptions
+) : InvalidParameterException(msg), IYCRExceptions
 
 // ==========================================================================
 
@@ -38,14 +38,28 @@ const val INTERCEPTOR_REPEAT_PROCESS = RUNTIME_EXCEPTION_CODE + 100
 const val INTERCEPTOR_TIME_OUT = RUNTIME_EXCEPTION_CODE + 101
 
 /** YCR 运行时异常 */
-class YCRRuntimeException(
+internal class YCRRuntimeException(
     /** 错误码 = [RUNTIME_EXCEPTION_CODE] + reason code */
     override val code: Int,
     val msg: String
-) : RuntimeException(msg), YCRExceptions
+) : RuntimeException(msg), IYCRExceptions
+
+// ==========================================================================
+
+/** 外部异常的 code */
+const val EXTERNAL_EXCEPTION_CODE = 9000
+
+/** 外部原因导致的异常 */
+open class YCRExternalException(
+    cause: Throwable?,
+    override val code: Int = EXTERNAL_EXCEPTION_CODE
+) : Exception(cause), IYCRExceptions
+
+// ==========================================================================
 
 /** 用于标记是 YCR 的异常类型 */
-interface YCRExceptions {
+interface IYCRExceptions {
     /** 错误码 */
     val code: Int
 }
+

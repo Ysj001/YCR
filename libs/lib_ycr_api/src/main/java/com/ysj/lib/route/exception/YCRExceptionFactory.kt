@@ -6,7 +6,7 @@ package com.ysj.lib.route.exception
  * @author Ysj
  * Create time: 2020/10/26
  */
-object YCRExceptionFactory {
+internal object YCRExceptionFactory {
 
     fun getRoutePathException(msg: String = "") =
         YCRParameterException(ROUTE_PATH_NOT_FOUND, "找不到路由：$msg")
@@ -19,4 +19,10 @@ object YCRExceptionFactory {
 
     fun getInterceptorTimeOutException(msg: String = "") =
         YCRRuntimeException(INTERCEPTOR_TIME_OUT, "拦截器处理超时了：$msg")
+
+    fun getException(case: Throwable): IYCRExceptions = when (case) {
+        is YCRRuntimeException -> case
+        is YCRParameterException -> case
+        else -> YCRExternalException(case)
+    }
 }
