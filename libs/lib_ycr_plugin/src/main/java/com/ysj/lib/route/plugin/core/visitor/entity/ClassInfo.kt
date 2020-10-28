@@ -19,6 +19,7 @@ class ClassInfo(
     val superName: String = superName ?: ""
     val interfaces: Array<out String> = interfaces ?: arrayOf()
 
+    fun simpleName() = name.split("/").last()
 
     override fun toString(): String {
         return """

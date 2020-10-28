@@ -309,7 +309,7 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
         this.path = routeBean.path
         this.types = routeBean.types
         this.typeElement = routeBean.typeElement
-        this.moduleId = routeBean.moduleId
+        this.applicationId = routeBean.applicationId
         this.className = routeBean.className
     }
 }

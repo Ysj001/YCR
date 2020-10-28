@@ -27,20 +27,14 @@ class RouteProcessor : BaseProcess() {
         const val TEMPLATE_PATH = "com.ysj.lib.route.template.IProviderRoute"
     }
 
-    private lateinit var moduleName: String
-
     override fun init(processingEnv: ProcessingEnvironment) {
         super.init(processingEnv)
-        val options: Map<String, String> = processingEnv.options
-        moduleName = options["moduleName"].toString()
-        if (moduleName == "null") printInitFailure()
-        printlnMessage("开始处理 --> $moduleName module")
+        printlnMessage("YCR APT 开始处理...")
     }
 
     override fun process(
         annotations: MutableSet<out TypeElement>, roundEnv: RoundEnvironment
     ): Boolean {
-        if (moduleName == "null") return false
         if (annotations.isEmpty()) return false
         // 获取所有被 @Route 注解的 element
         val elements = roundEnv.getElementsAnnotatedWith(Route::class.java)
@@ -109,7 +103,7 @@ class RouteProcessor : BaseProcess() {
             //            path = "/MainActivity"
             //            types = RouteTypes.ACTIVITY
             //            className = "com.ysj.lib.route.module.app.MainActivity"
-            //            moduleId = "com.ysj.lib.router"
+            //            applicationId = "com.ysj.lib.router"
             //        }
             // }
             val loadInto =
@@ -127,7 +121,7 @@ class RouteProcessor : BaseProcess() {
                         path = "${routeBean.path}"
                         types = %T.%L
                         className = "${(routeBean.typeElement as TypeElement).qualifiedName}"
-                        moduleId = "$moduleName"
+                        applicationId = "It is automatically modified to 'application id' at compile time"
                     }
                 """.trimIndent(),
                     ClassName.bestGuess(RouteTypes::class.java.name),
@@ -151,19 +145,4 @@ class RouteProcessor : BaseProcess() {
     private fun isSubType(element: Element, type: String) =
         typeUtils.isSubtype(element.asType(), elementUtils.getTypeElement(type).asType())
 
-    private fun printInitFailure() {
-        printlnError(
-            """
-                请在模块的 build.gradle 的 defaultConfig 中添加：
-                javaCompileOptions {
-                    kapt {
-                        arguments {
-                            // 告诉注解处理器该 module 的 applicationId
-                            arg("moduleName", applicationId)
-                        }
-                    }
-                }
-            """.trimIndent()
-        )
-    }
 }

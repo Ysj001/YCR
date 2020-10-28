@@ -18,7 +18,7 @@ class RemoteRouteBean(val routeBean: RouteBean) : Parcelable {
         Postman(parcel.readString() ?: "", parcel.readString() ?: "")
             .apply {
                 types = RouteTypes("${parcel.readString()}")
-                moduleId = "${parcel.readString()}"
+                applicationId = "${parcel.readString()}"
                 className = "${parcel.readString()}"
             }
             .withBundle(parcel.readBundle())
@@ -34,7 +34,7 @@ class RemoteRouteBean(val routeBean: RouteBean) : Parcelable {
                 it.writeString(group)
                 it.writeString(path)
                 it.writeString(types?.name)
-                it.writeString(moduleId)
+                it.writeString(applicationId)
                 it.writeString(className)
                 if (this is Postman) {
                     it.writeBundle(bundle)

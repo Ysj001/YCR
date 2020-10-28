@@ -212,7 +212,6 @@ class RouteTransform(private val project: Project) : Transform() {
             isIncremental: Boolean
         ) -> Unit
     ) {
-        logger.quiet("start --> ${hashCode()}")
         YLogger.LOGGER_LEVEL = moduleRouteExt.loggerLevel
         logger.quiet("=================== $PLUGIN_NAME transform start ===================")
         logger.quiet(">>> gradle version: ${project.gradle.gradleVersion}")

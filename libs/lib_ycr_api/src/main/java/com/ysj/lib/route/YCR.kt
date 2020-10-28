@@ -124,7 +124,7 @@ class YCR private constructor() {
             RouteTypes.ACTIVITY -> {
                 val intent = Intent()
                     .addFlags(postman.flags)
-                    .setComponent(ComponentName(postman.moduleId, postman.className))
+                    .setComponent(ComponentName(postman.applicationId, postman.className))
                 if (context !is Activity) {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     context.startActivity(intent)
@@ -209,7 +209,7 @@ class YCR private constructor() {
 
     private fun doRemoteAction(postman: Postman) =
         RemoteRouteProvider.instance
-            ?.getRouteService(postman.moduleId)
+            ?.getRouteService(postman.applicationId)
             ?.doAction(RemoteRouteBean(postman))
             ?.params?.get(REMOTE_ACTION_RESULT)
 

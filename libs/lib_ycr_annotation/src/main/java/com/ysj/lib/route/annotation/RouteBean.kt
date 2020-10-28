@@ -22,8 +22,8 @@ open class RouteBean {
     /** 作用的类元素，实际类型为 [TypeElement] 为方便跨进程传输定义为 [Any] */
     var typeElement: Any? = null
 
-    /** 作用的组件 id */
-    var moduleId: String = ""
+    /** 作用的组件的 applicationId */
+    var applicationId: String = ""
 
     /** 作用的 Class 的全限定名 */
     var className: String = ""
@@ -42,7 +42,7 @@ open class RouteBean {
                 path=$path 
                 types=$types
                 typeElement=$typeElement
-                moduleId=$moduleId
+                applicationId=$applicationId
                 className=$className
             )
         """.trimIndent()

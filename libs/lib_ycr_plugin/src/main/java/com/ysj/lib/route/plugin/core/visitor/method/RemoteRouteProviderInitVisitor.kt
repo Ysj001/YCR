@@ -23,9 +23,9 @@ class RemoteRouteProviderInitVisitor : BaseMethodVisitor(
         bcv.classInfo.name == "com/ysj/lib/route/remote/RemoteRouteProvider" && bcv.methodInfo == methodInfo
 
     override fun visitLdcInsn(value: Any?) = super.visitLdcInsn(
-        if (value != "auto inject your main application id") value
+        if (value != "It is automatically modified to 'main application id' at compile time") value
         else (bcv.transform as RouteTransform).mainModuleAppExt.defaultConfig.applicationId.also {
-            logger.lifecycle("已注册：application id --> $it")
+            logger.lifecycle("RemoteRouteProvider init application id --> $it")
         }
     )
 

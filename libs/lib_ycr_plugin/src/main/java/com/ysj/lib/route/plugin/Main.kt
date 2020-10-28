@@ -17,8 +17,8 @@ class Main : Plugin<Project> {
         project.extensions.create(RouteExtensions.NAME, RouteExtensions::class.java)
         project.extensions.getByType(AppExtension::class.java).also { appExt ->
             appExt.registerTransform(RouteTransform(project).apply {
-                moduleAppExt = appExt
                 project.afterEvaluate {
+                    moduleAppExt = appExt
                     moduleRouteExt = project.extensions.getByType(RouteExtensions::class.java)
                 }
                 getMainAppExt(project) { mainAppExt -> mainModuleAppExt = mainAppExt }

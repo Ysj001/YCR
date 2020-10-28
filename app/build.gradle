@@ -26,15 +26,6 @@ android {
         versionName "1.0"
 
 //        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
-        javaCompileOptions {
-            kapt {
-                arguments {
-                    // 告诉注解处理器该 module 的 applicationId
-                    arg("moduleName", applicationId)
-                }
-            }
-        }
     }
 
     buildTypes {

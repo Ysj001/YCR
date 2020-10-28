@@ -27,8 +27,8 @@ internal class RemoteRouteProvider : ContentProvider() {
         var instance: RemoteRouteProvider? = null
     }
 
-    /** 主组件的 application id 该值会由框架自动注入（这句话不要改是个标识） */
-    val mainApplicationId = "auto inject your main application id"
+    /** 主组件的 application id */
+    val mainApplicationId = "It is automatically modified to 'main application id' at compile time"
 
     /** 提供给全局获取 [Application] */
     lateinit var application: Application
