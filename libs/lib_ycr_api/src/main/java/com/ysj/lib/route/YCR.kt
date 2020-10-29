@@ -3,6 +3,7 @@ package com.ysj.lib.route
 import android.app.Activity
 import android.content.ComponentName
 import android.content.Intent
+import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import com.ysj.lib.route.annotation.*
@@ -10,6 +11,7 @@ import com.ysj.lib.route.callback.InterceptorCallback
 import com.ysj.lib.route.entity.ActivityResult
 import com.ysj.lib.route.entity.InterruptReason
 import com.ysj.lib.route.entity.Postman
+import com.ysj.lib.route.exception.IYCRExceptions
 import com.ysj.lib.route.exception.YCRExceptionFactory
 import com.ysj.lib.route.lifecycle.ActivityResultFragment
 import com.ysj.lib.route.remote.*
@@ -40,7 +42,11 @@ class YCR private constructor() {
         fun getInstance() = Holder.instance
     }
 
-    internal val executor: Executor = Executors.newSingleThreadExecutor()
+    // 主线程 handler
+    internal val mainHandler by lazy { Handler(Looper.getMainLooper()) }
+
+    // 子线程执行器
+    internal val executor: Executor by lazy { Executors.newSingleThreadExecutor() }
 
     /**
      * 开始构建路由过程
@@ -63,14 +69,22 @@ class YCR private constructor() {
             postman.from(
                 routes[postman.path]
                     ?: findRemoteRouteBean(postman.group, postman.path)
-                    ?: throw YCRExceptionFactory.getRoutePathException(postman.path)
+                    ?: throw YCRExceptionFactory.routePathException(postman.path)
             )
             if (!postman.greenChannel && handleInterceptor(postman)) return
             handleRoute(postman) { result ->
-                postman.routeResultCallbacks?.forEach { callback -> callback.onResult(result) }
+                postman.routeResultCallbacks?.run {
+                    runOnMainThread {
+                        try {
+                            forEach { callback -> callback.onResult(result) }
+                        } catch (e: Exception) {
+                            callException(postman, YCRExceptionFactory.doOnResultException(e))
+                        }
+                    }
+                }
             }
         } catch (e: Exception) {
-            postman.exceptionCallback?.handleException(postman, YCRExceptionFactory.getException(e))
+            runOnMainThread { callException(postman, YCRExceptionFactory.exception(e)) }
         }
     }
 
@@ -91,17 +105,39 @@ class YCR private constructor() {
                 var isFinished = false
 
                 override fun onContinue(postman: Postman) = safeHandle {
-                    postman.continueCallback?.onContinue(postman)
+                    postman.continueCallback?.run {
+                        runOnMainThread {
+                            try {
+                                onContinue(postman)
+                            } catch (e: Exception) {
+                                callException(
+                                    postman,
+                                    YCRExceptionFactory.doOnContinueException(e)
+                                )
+                            }
+                        }
+                    }
                 }
 
                 override fun onInterrupt(postman: Postman, reason: InterruptReason<*>) =
                     safeHandle {
-                        postman.interruptCallback?.onInterrupt(postman, reason)
+                        postman.interruptCallback?.run {
+                            runOnMainThread {
+                                try {
+                                    onInterrupt(postman, reason)
+                                } catch (e: Exception) {
+                                    callException(
+                                        postman,
+                                        YCRExceptionFactory.doOnInterruptException(e)
+                                    )
+                                }
+                            }
+                        }
                         interrupt = true
                     }
 
                 fun safeHandle(block: () -> Unit) {
-                    if (isFinished) throw YCRExceptionFactory.getInterceptorRepeatProcessException(
+                    if (isFinished) throw YCRExceptionFactory.interceptorRepeatProcessException(
                         it.toString()
                     )
                     block()
@@ -113,7 +149,7 @@ class YCR private constructor() {
         // 等待所有拦截器处理完再返回结果
         countDownLatch.await(timeout, TimeUnit.MILLISECONDS)
         val remaining = countDownLatch.count
-        if (remaining != 0L) throw YCRExceptionFactory.getInterceptorTimeOutException("剩余: $remaining 个未处理")
+        if (remaining != 0L) throw YCRExceptionFactory.interceptorTimeOutException("剩余: $remaining 个未处理")
         return interrupt
     }
 
@@ -159,7 +195,7 @@ class YCR private constructor() {
                     }
                 )
             }
-            else -> throw YCRExceptionFactory.getRouteTypeException(postman.types.toString())
+            else -> throw YCRExceptionFactory.routeTypeException(postman.types.toString())
         }
     }
 
@@ -183,20 +219,42 @@ class YCR private constructor() {
 
                         override fun onContinue(routeBean: RemoteRouteBean) = safeHandle {
                             postman.from(routeBean.routeBean as Postman)
-                            postman.continueCallback?.onContinue(postman)
+                            postman.continueCallback?.run {
+                                runOnMainThread {
+                                    try {
+                                        onContinue(postman)
+                                    } catch (e: Exception) {
+                                        callException(
+                                            postman,
+                                            YCRExceptionFactory.doOnContinueException(e)
+                                        )
+                                    }
+                                }
+                            }
                         }
 
                         override fun onInterrupt(param: RemoteParam) = safeHandle {
                             postman.from(param.params[REMOTE_ROUTE_BEAN] as Postman)
-                            postman.interruptCallback?.onInterrupt(
-                                postman,
-                                param.params[REMOTE_INTERRUPT_REASON] as InterruptReason<*>
-                            )
+                            postman.interruptCallback?.run {
+                                runOnMainThread {
+                                    try {
+                                        onInterrupt(
+                                            postman,
+                                            param.params[REMOTE_INTERRUPT_REASON] as InterruptReason<*>
+                                        )
+                                    } catch (e: Exception) {
+                                        callException(
+                                            postman,
+                                            YCRExceptionFactory.doOnInterruptException(e)
+                                        )
+                                    }
+                                }
+                            }
                             interrupt = true
                         }
 
                         inline fun safeHandle(block: () -> Unit) {
-                            if (isFinished) throw YCRExceptionFactory.getInterceptorRepeatProcessException()
+                            if (isFinished) throw YCRExceptionFactory.interceptorRepeatProcessException()
                             block()
                             isFinished = true
                         }
@@ -205,6 +263,16 @@ class YCR private constructor() {
                 remainingTimeout -= System.currentTimeMillis() - oldTime
             }
         return interrupt
+    }
+
+    internal inline fun runOnMainThread(crossinline block: () -> Unit) {
+        val isMainTH = Thread.currentThread() == Looper.getMainLooper().thread
+        if (isMainTH) block()
+        else mainHandler.post { block() }
+    }
+
+    private fun callException(postman: Postman, exception: IYCRExceptions) {
+        postman.exceptionCallback?.handleException(postman, exception)
     }
 
     private fun doRemoteAction(postman: Postman) =

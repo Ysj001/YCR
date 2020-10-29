@@ -59,6 +59,7 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
     override fun onDestroy(owner: LifecycleOwner) {
         context?.clear()
         context = null
+        exceptionCallback = null
         routeResultCallbacks = null
         continueCallback = null
         interruptCallback = null
