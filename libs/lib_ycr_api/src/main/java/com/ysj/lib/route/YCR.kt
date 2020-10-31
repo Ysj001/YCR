@@ -15,7 +15,6 @@ import com.ysj.lib.route.exception.IYCRExceptions
 import com.ysj.lib.route.exception.YCRExceptionFactory
 import com.ysj.lib.route.lifecycle.ActivityResultFragment
 import com.ysj.lib.route.remote.*
-import com.ysj.lib.route.template.IActionProcessor
 import com.ysj.lib.route.template.IProviderRoute
 import com.ysj.lib.route.template.RouteTemplate
 import java.util.concurrent.CountDownLatch
@@ -56,19 +55,20 @@ class YCR private constructor() {
     fun build(path: String) = Postman(subGroupFromPath(path), path)
 
     fun navigation(postman: Postman) {
-        val routeClassName = "${PACKAGE_NAME_ROUTE}.${PREFIX_ROUTE}${postman.group}"
-        val routes = Caches.routeCache[postman.group] ?: HashMap()
+        var routes = Caches.routeCache[postman.group]
+        if (routes == null) {
+            routes = HashMap()
+            Caches.routeCache[postman.group] = routes
+        }
         try {
-            if (routes.isEmpty()) {
-                val providerRoute: IProviderRoute? = getTemplateInstance(routeClassName)
-                if (providerRoute != null) {
-                    providerRoute.loadInto(routes)
-                    Caches.routeCache[postman.group] = routes
-                }
-            }
+            // 优先从主组件中获取
+            val routeBean = findRemoteRouteBean(postman.group, postman.path)
+            if (routeBean != null) routes[postman.path] = routeBean
+            else getTemplateInstance<IProviderRoute>(
+                "${PACKAGE_NAME_ROUTE}.${PREFIX_ROUTE}${postman.group}"
+            )?.loadInto(routes)
             postman.from(
                 routes[postman.path]
-                    ?: findRemoteRouteBean(postman.group, postman.path)
                     ?: throw YCRExceptionFactory.routePathException(postman.path)
             )
             if (!postman.greenChannel && handleInterceptor(postman)) return
@@ -184,12 +184,12 @@ class YCR private constructor() {
                 }
             }
             RouteTypes.ACTION -> {
-                val actionProcessor: IActionProcessor? = Caches.actionCache[postman.className]
-                    ?: getTemplateInstance(postman.className)
                 resultCallback(
-                    if (actionProcessor == null) {
-                        doRemoteAction(postman)
-                    } else {
+                    if (postman.applicationId != context.packageName) doRemoteAction(postman)
+                    else {
+                        val actionProcessor = Caches.actionCache[postman.className]
+                            ?: getTemplateInstance(postman.className)
+                            ?: throw YCRExceptionFactory.routePathException(postman.path)
                         Caches.actionCache[postman.className] = actionProcessor
                         actionProcessor.doAction(postman)
                     }

@@ -3,7 +3,6 @@ package com.ysj.lib.route.remote
 import android.os.Parcelable
 import android.util.Log
 import com.ysj.lib.route.Caches
-import com.ysj.lib.route.annotation.RouteBean
 import com.ysj.lib.route.callback.InterceptorCallback
 import com.ysj.lib.route.entity.InterruptReason
 import com.ysj.lib.route.entity.Postman
@@ -42,10 +41,16 @@ internal class RemoteRouteService : IRouteService.Stub() {
     }
 
     override fun registerRouteGroup(group: String, param: RemoteParam) {
-        val routeMap = HashMap<String, RouteBean>()
-        param.params.forEach { routeMap[it.key] = (it.value as RemoteRouteBean).routeBean }
-        Caches.routeCache[group] = routeMap
-        Log.i(TAG, "registerRouteGroup: ${Caches.routeCache.size} , $group , $param")
+        var routeMap = Caches.routeCache[group]
+        if (routeMap == null) {
+            routeMap = HashMap()
+            Caches.routeCache[group] = routeMap
+        }
+        param.params.forEach {
+            val routeBean = routeMap[it.key]
+            if (routeBean == null) routeMap[it.key] = (it.value as RemoteRouteBean).routeBean
+        }
+        Log.i(TAG, "registerRouteGroup: ${Caches.routeCache.size} , $group , $routeMap")
     }
 
     override fun findRouteBean(group: String?, path: String?): RemoteRouteBean? {
