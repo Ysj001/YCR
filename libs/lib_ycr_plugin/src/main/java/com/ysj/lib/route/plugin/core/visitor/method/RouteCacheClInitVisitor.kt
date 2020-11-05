@@ -34,7 +34,7 @@ class RouteCacheClInitVisitor : BaseMethodVisitor(
                         Opcodes.GETSTATIC,
                         bcv.classInfo.name,
                         "interceptors",
-                        "Ljava/util/ArrayList;"
+                        "Ljava/util/TreeSet;"
                     )
                     visitTypeInsn(Opcodes.NEW, it.name)
                     visitInsn(Opcodes.DUP)
@@ -47,7 +47,7 @@ class RouteCacheClInitVisitor : BaseMethodVisitor(
                     )
                     visitMethodInsn(
                         Opcodes.INVOKEVIRTUAL,
-                        "java/util/ArrayList",
+                        "java/util/TreeSet",
                         "add",
                         "(Ljava/lang/Object;)Z",
                         false

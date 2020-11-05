@@ -11,12 +11,6 @@ ext {
             "module_java": "com.ysj.lib.route.module.java",
     ]
 
-    // ------------------ Server url ------------------
-    url = [
-            "debug"  : "",
-            "release": ""
-    ]
-
     // ------------------ module ------------------
     androidConfig = [
             compileSdkVersion        : 29,

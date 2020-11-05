@@ -15,6 +15,7 @@
             <option value="$PROJECT_DIR$/lib_base" />
             <option value="$PROJECT_DIR$/libs/lib_ycr_annotation" />
             <option value="$PROJECT_DIR$/libs/lib_ycr_api" />
+            <option value="$PROJECT_DIR$/libs/lib_ycr_api_dev" />
             <option value="$PROJECT_DIR$/libs/lib_ycr_apt" />
             <option value="$PROJECT_DIR$/libs/lib_ycr_plugin" />
             <option value="$PROJECT_DIR$/module_java" />

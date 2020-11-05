@@ -7,7 +7,7 @@
   <version>1.0.0</version>
   <packaging>aar</packaging>
   <name>ycr-api</name>
-  <description>YCR æ ¸å¿ API</description>
+  <description>YCR API</description>
   <url>https://github.com/Ysj001/YCR</url>
   <licenses>
     <license>

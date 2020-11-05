@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 29
@@ -56,7 +57,7 @@ dependencies {
         }
     }
 
+//    api "com.ysj.lib.route:ycr-api-dev:$LIB_VERSION"
     api "com.ysj.lib.route:ycr-api:$LIB_VERSION"
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
+    kapt "com.ysj.lib.route:ycr-compiler:$LIB_VERSION"
 }

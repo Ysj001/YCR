@@ -14,13 +14,15 @@ import com.ysj.lib.route.entity.Postman
 import com.ysj.lib.route.exception.IYCRExceptions
 import com.ysj.lib.route.exception.YCRExceptionFactory
 import com.ysj.lib.route.lifecycle.ActivityResultFragment
-import com.ysj.lib.route.remote.*
+import com.ysj.lib.route.template.IInterceptor
 import com.ysj.lib.route.template.IProviderRoute
 import com.ysj.lib.route.template.RouteTemplate
+import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import kotlin.collections.HashMap
 
 /**
  * 路由的管理器
@@ -61,16 +63,15 @@ class YCR private constructor() {
             Caches.routeCache[postman.group] = routes
         }
         try {
-            // 优先从主组件中获取
-            val routeBean = findRemoteRouteBean(postman.group, postman.path)
-            if (routeBean != null) routes[postman.path] = routeBean
-            else getTemplateInstance<IProviderRoute>(
-                "${PACKAGE_NAME_ROUTE}.${PREFIX_ROUTE}${postman.group}"
-            )?.loadInto(routes)
-            postman.from(
-                routes[postman.path]
+            var routeBean = routes[postman.path]
+            if (routeBean == null) {
+                getTemplateInstance<IProviderRoute>(
+                    "${PACKAGE_NAME_ROUTE}.${PREFIX_ROUTE}${postman.group}"
+                )?.loadInto(routes)
+                routeBean = routes[postman.path]
                     ?: throw YCRExceptionFactory.routePathException(postman.path)
-            )
+            }
+            postman.from(routeBean)
             if (!postman.greenChannel && handleInterceptor(postman)) return
             handleRoute(postman) { result ->
                 postman.routeResultCallbacks?.run {
@@ -88,71 +89,6 @@ class YCR private constructor() {
         }
     }
 
-    private fun handleInterceptor(postman: Postman): Boolean {
-        postman.getContext() ?: return true
-        val isMainTH = Thread.currentThread() == Looper.getMainLooper().thread
-        // 拦截器超时时间
-        var timeout = if (isMainTH) INTERCEPTOR_TIME_OUT_MAIN_TH else INTERCEPTOR_TIME_OUT_SUB_TH
-        val oldTime = System.currentTimeMillis()
-        var interrupt = handleRemoteInterceptor(postman, timeout)
-        timeout -= System.currentTimeMillis() - oldTime
-        // 取得匹配的拦截器
-        val matchedInterceptor = Caches.interceptors.filter { it.match(postman) }
-        val countDownLatch = CountDownLatch(matchedInterceptor.size)
-        matchedInterceptor.forEach {
-            it.onIntercept(postman, object : InterceptorCallback {
-
-                var isFinished = false
-
-                override fun onContinue(postman: Postman) = safeHandle {
-                    postman.continueCallback?.run {
-                        runOnMainThread {
-                            try {
-                                onContinue(postman)
-                            } catch (e: Exception) {
-                                callException(
-                                    postman,
-                                    YCRExceptionFactory.doOnContinueException(e)
-                                )
-                            }
-                        }
-                    }
-                }
-
-                override fun onInterrupt(postman: Postman, reason: InterruptReason<*>) =
-                    safeHandle {
-                        postman.interruptCallback?.run {
-                            runOnMainThread {
-                                try {
-                                    onInterrupt(postman, reason)
-                                } catch (e: Exception) {
-                                    callException(
-                                        postman,
-                                        YCRExceptionFactory.doOnInterruptException(e)
-                                    )
-                                }
-                            }
-                        }
-                        interrupt = true
-                    }
-
-                fun safeHandle(block: () -> Unit) {
-                    if (isFinished) throw YCRExceptionFactory.interceptorRepeatProcessException(
-                        it.toString()
-                    )
-                    block()
-                    isFinished = true
-                    countDownLatch.countDown()
-                }
-            })
-        }
-        // 等待所有拦截器处理完再返回结果
-        countDownLatch.await(timeout, TimeUnit.MILLISECONDS)
-        val remaining = countDownLatch.count
-        if (remaining != 0L) throw YCRExceptionFactory.interceptorTimeOutException("剩余: $remaining 个未处理")
-        return interrupt
-    }
-
     @Suppress("DEPRECATION")
     private fun handleRoute(postman: Postman, resultCallback: (Any?) -> Unit) {
         val context = postman.getContext() ?: return
@@ -165,103 +101,102 @@ class YCR private constructor() {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     context.startActivity(intent)
                 } else {
-                    if (postman.routeResultCallbacks == null || postman.requestCode < 0) {
-                        context.startActivityForResult(intent, postman.requestCode)
-                    } else {
-                        val sfm = context.fragmentManager
-                        var fragment = sfm.findFragmentByTag(ActivityResultFragment.TAG)
-                        if (fragment === null) {
-                            fragment = ActivityResultFragment()
-                            fragment.listener = { rqc: Int, rsc: Int, data: Intent? ->
-                                resultCallback(ActivityResult(rqc, rsc, data))
+                    runOnMainThread {
+                        try {
+                            if (postman.routeResultCallbacks == null || postman.requestCode < 0) {
+                                context.startActivityForResult(intent, postman.requestCode)
+                            } else {
+                                val sfm = context.fragmentManager
+                                var fragment = sfm.findFragmentByTag(ActivityResultFragment.TAG)
+                                if (fragment === null) {
+                                    fragment = ActivityResultFragment()
+                                    fragment.listener = { rqc: Int, rsc: Int, data: Intent? ->
+                                        resultCallback(ActivityResult(rqc, rsc, data))
+                                    }
+                                    sfm.beginTransaction().add(fragment, ActivityResultFragment.TAG)
+                                        .commitAllowingStateLoss()
+                                    sfm.executePendingTransactions()
+                                }
+                                fragment.startActivityForResult(intent, postman.requestCode)
                             }
-                            sfm.beginTransaction().add(fragment, ActivityResultFragment.TAG)
-                                .commitAllowingStateLoss()
-                            sfm.executePendingTransactions()
+                        } catch (e: Exception) {
+                            callException(
+                                postman,
+                                YCRExceptionFactory.navigationException(e)
+                            )
                         }
-                        fragment.startActivityForResult(intent, postman.requestCode)
                     }
                 }
             }
             RouteTypes.ACTION -> {
-                resultCallback(
-                    if (postman.applicationId != context.packageName) doRemoteAction(postman)
-                    else {
-                        val actionProcessor = Caches.actionCache[postman.className]
-                            ?: getTemplateInstance(postman.className)
-                            ?: throw YCRExceptionFactory.routePathException(postman.path)
-                        Caches.actionCache[postman.className] = actionProcessor
-                        actionProcessor.doAction(postman)
-                    }
-                )
+                val actionProcessor = Caches.actionCache[postman.className]
+                    ?: getTemplateInstance(postman.className)
+                    ?: throw YCRExceptionFactory.routePathException(postman.path)
+                Caches.actionCache[postman.className] = actionProcessor
+                resultCallback(actionProcessor.doAction(postman))
             }
             else -> throw YCRExceptionFactory.routeTypeException(postman.types.toString())
         }
     }
 
-    private fun handleRemoteInterceptor(postman: Postman, timeout: Long): Boolean {
-        val routeProvider = RemoteRouteProvider.instance
-        val routeService = routeProvider?.getRouteService() ?: return false
+    private fun handleInterceptor(postman: Postman): Boolean {
+        postman.getContext() ?: return true
+        val isMainTH = Thread.currentThread() == Looper.getMainLooper().thread
+        // 拦截器超时时间
+        val timeout = if (isMainTH) INTERCEPTOR_TIME_OUT_MAIN_TH else INTERCEPTOR_TIME_OUT_SUB_TH
+        // 取得匹配的拦截器
+        val interceptors = Caches.interceptors
+        val countDownLatch = CountDownLatch(interceptors.size)
+        val interrupt = executeInterceptor(postman, countDownLatch, interceptors)
+        // 等待所有拦截器处理完再返回结果
+        countDownLatch.await(timeout, TimeUnit.MILLISECONDS)
+        val remaining = countDownLatch.count
+        if (remaining != 0L) throw YCRExceptionFactory.interceptorTimeOutException(remaining)
+        return interrupt
+    }
+
+    private fun executeInterceptor(
+        postman: Postman,
+        countDownLatch: CountDownLatch,
+        interceptors: TreeSet<IInterceptor>
+    ): Boolean {
         var interrupt = false
-        var remainingTimeout = timeout
-        (routeService.allApplicationId.params[REMOTE_ALL_APPLICATION_ID] as? ArrayList<*>)
-            ?.filter { it != routeProvider.application.packageName }
-            ?.map { routeProvider.getRouteService(it as String) }
-            ?.forEach {
-                if (it == null) return@forEach
-                val oldTime = System.currentTimeMillis()
-                it.handleInterceptor(
-                    remainingTimeout,
-                    RemoteRouteBean(postman),
-                    object : RemoteInterceptorCallback.Stub() {
+        if (interceptors.isEmpty()) return interrupt
+        interceptors.pollFirst().onIntercept(postman, object : InterceptorCallback {
 
-                        var isFinished = false
+            var isFinished = false
 
-                        override fun onContinue(routeBean: RemoteRouteBean) = safeHandle {
-                            postman.from(routeBean.routeBean as Postman)
-                            postman.continueCallback?.run {
-                                runOnMainThread {
-                                    try {
-                                        onContinue(postman)
-                                    } catch (e: Exception) {
-                                        callException(
-                                            postman,
-                                            YCRExceptionFactory.doOnContinueException(e)
-                                        )
-                                    }
-                                }
+            override fun onContinue(postman: Postman) = safeHandle {
+                executeInterceptor(postman, countDownLatch, interceptors)
+                countDownLatch.countDown()
+            }
+
+            override fun onInterrupt(postman: Postman, reason: InterruptReason<*>) =
+                safeHandle {
+                    postman.interruptCallback?.run {
+                        runOnMainThread {
+                            try {
+                                onInterrupt(postman, reason)
+                            } catch (e: Exception) {
+                                callException(
+                                    postman,
+                                    YCRExceptionFactory.doOnInterruptException(e)
+                                )
                             }
-                        }
-
-                        override fun onInterrupt(param: RemoteParam) = safeHandle {
-                            postman.from(param.params[REMOTE_ROUTE_BEAN] as Postman)
-                            postman.interruptCallback?.run {
-                                runOnMainThread {
-                                    try {
-                                        onInterrupt(
-                                            postman,
-                                            param.params[REMOTE_INTERRUPT_REASON] as InterruptReason<*>
-                                        )
-                                    } catch (e: Exception) {
-                                        callException(
-                                            postman,
-                                            YCRExceptionFactory.doOnInterruptException(e)
-                                        )
-                                    }
-                                }
-                            }
-                            interrupt = true
-                        }
-
-                        inline fun safeHandle(block: () -> Unit) {
-                            if (isFinished) throw YCRExceptionFactory.interceptorRepeatProcessException()
-                            block()
-                            isFinished = true
                         }
                     }
+                    interrupt = true
+                    while (countDownLatch.count > 0) countDownLatch.countDown()
+                }
+
+            fun safeHandle(block: () -> Unit) {
+                if (isFinished) throw YCRExceptionFactory.interceptorRepeatProcessException(
+                    interceptors.toString()
                 )
-                remainingTimeout -= System.currentTimeMillis() - oldTime
+                block()
+                isFinished = true
             }
+        })
         return interrupt
     }
 
@@ -274,15 +209,6 @@ class YCR private constructor() {
     private fun callException(postman: Postman, exception: IYCRExceptions) {
         postman.exceptionCallback?.handleException(postman, exception)
     }
-
-    private fun doRemoteAction(postman: Postman) =
-        RemoteRouteProvider.instance
-            ?.getRouteService(postman.applicationId)
-            ?.doAction(RemoteRouteBean(postman))
-            ?.params?.get(REMOTE_ACTION_RESULT)
-
-    private fun findRemoteRouteBean(group: String, path: String) =
-        RemoteRouteProvider.instance?.getRouteService()?.findRouteBean(group, path)?.routeBean
 
     @Suppress("UNCHECKED_CAST")
     private fun <T : RouteTemplate> getTemplateInstance(className: String): T? {

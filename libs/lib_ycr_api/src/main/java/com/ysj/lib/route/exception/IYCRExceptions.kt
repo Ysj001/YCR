@@ -22,7 +22,7 @@ const val ROUTE_PATH_NOT_FOUND = PARAM_EXCEPTION_CODE + 100
 const val ROUTE_TYPE_ERROR = PARAM_EXCEPTION_CODE + 101
 
 /** YCR 参数异常 */
-internal class YCRParameterException(
+class YCRParameterException(
     /** 错误码 = [PARAM_EXCEPTION_CODE] + reason code */
     override val code: Int,
     val msg: String
@@ -39,17 +39,17 @@ const val INTERCEPTOR_REPEAT_PROCESS = RUNTIME_EXCEPTION_CODE + 100
 /** 拦截器处理超时 */
 const val INTERCEPTOR_TIME_OUT = RUNTIME_EXCEPTION_CODE + 101
 
-/** 在执行 [InterceptorCallback.onContinue] 时异常  */
-const val HANDLE_EXCEPTION_ON_CONTINUE = RUNTIME_EXCEPTION_CODE + 200
-
 /** 在执行 [InterceptorCallback.onInterrupt] 时异常  */
-const val HANDLE_EXCEPTION_ON_INTERRUPT = RUNTIME_EXCEPTION_CODE + 201
+const val HANDLE_EXCEPTION_ON_INTERRUPT = RUNTIME_EXCEPTION_CODE + 200
 
 /** 在执行 [RouteResultCallback.onResult] 时异常  */
-const val HANDLE_EXCEPTION_ON_RESULT = RUNTIME_EXCEPTION_CODE + 202
+const val HANDLE_EXCEPTION_ON_RESULT = RUNTIME_EXCEPTION_CODE + 201
+
+/** 在执行导航时异常  */
+const val NAVIGATION_EXCEPTION = RUNTIME_EXCEPTION_CODE + 300
 
 /** YCR 运行时异常 */
-internal class YCRRuntimeException(
+class YCRRuntimeException(
     /** 错误码 = [RUNTIME_EXCEPTION_CODE] + reason code */
     override val code: Int,
     val msg: String,
@@ -71,7 +71,21 @@ open class YCRExternalException(
 
 /** 用于标记是 YCR 的异常类型 */
 interface IYCRExceptions {
+
     /** 错误码 */
     val code: Int
+
+    /** [Throwable.cause] */
+    val cause: Throwable?
+
+    /** [Throwable.message] */
+    val message: String?
+
+    /** [Throwable.printStackTrace] */
+    fun printStackTrace()
+
+    /** [Throwable.getStackTrace] */
+    fun getStackTrace(): Array<StackTraceElement>
+
 }
 

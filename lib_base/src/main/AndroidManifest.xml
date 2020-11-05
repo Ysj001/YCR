@@ -2,5 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ysj.lib.base">
 
+    <application>
+        <activity
+            android:name=".MainBaseActivity"
+            android:exported="true" />
+    </application>
 
 </manifest>

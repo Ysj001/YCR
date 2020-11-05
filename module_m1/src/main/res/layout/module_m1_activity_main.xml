@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center_horizontal"
+    android:gravity="center"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
@@ -12,7 +12,6 @@
         android:id="@+id/btnToMainApp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
         android:onClick="onClick"
         android:text="to main app" />
 
@@ -23,5 +22,13 @@
         android:layout_marginTop="24dp"
         android:onClick="onClick"
         android:text="action: app_test" />
+
+    <Button
+        android:id="@+id/btnDoBaseAction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:onClick="onClick"
+        android:text="action: base_test" />
 
 </LinearLayout>

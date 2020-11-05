@@ -18,7 +18,7 @@ interface IRouteService {
     RemoteParam getAllApplicationId();
 
     /**
-     * 注册路由组
+     * 注册路由组到主组件
      */
     void registerRouteGroup(String group, in RemoteParam param);
 
@@ -33,7 +33,12 @@ interface IRouteService {
     RemoteParam doAction(in RemoteRouteBean routeBean);
 
     /**
+     * 查找匹配的拦截器
+     */
+    RemoteParam findInterceptor(in RemoteRouteBean routeBean);
+
+    /**
      * 处理拦截器
      */
-    void handleInterceptor(long timeoout, in RemoteRouteBean routeBean, in RemoteInterceptorCallback callback);
+    void handleInterceptor(in RemoteParam param, in RemoteInterceptorCallback callback);
 }

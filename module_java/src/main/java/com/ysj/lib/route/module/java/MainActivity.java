@@ -30,12 +30,6 @@ public class MainActivity extends AppCompatActivity {
                 YCR.getInstance()
                         .build("/m1/actions")
                         .withRouteAction("m1_test_action1")
-                        .doOnContinue(new InterceptorCallback.ContinueCallback() {
-                            @Override
-                            public void onContinue(@NotNull Postman postman) {
-
-                            }
-                        })
                         .addOnResultCallback(new RouteResultCallback<String>() {
                             @Override
                             public void onResult(@Nullable String result) {

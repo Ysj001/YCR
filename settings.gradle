@@ -4,6 +4,8 @@ include ':lib_ycr_annotation'
 project(':lib_ycr_annotation').projectDir = new File(rootDir, 'libs/lib_ycr_annotation/')
 include ':lib_ycr_apt'
 project(':lib_ycr_apt').projectDir = new File(rootDir, 'libs/lib_ycr_apt/')
+include ':lib_ycr_api_dev'
+project(':lib_ycr_api_dev').projectDir = new File(rootDir, 'libs/lib_ycr_api_dev/')
 include ':lib_ycr_api'
 project(':lib_ycr_api').projectDir = new File(rootDir, 'libs/lib_ycr_api/')
 include ':lib_ycr_plugin'

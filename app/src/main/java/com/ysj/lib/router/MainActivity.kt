@@ -30,12 +30,14 @@ class MainActivity : AppCompatActivity() {
         when (view) {
             btnToM1App -> {
                 YCR.getInstance()
-                    .build("/m1/MainActivity")
+//                    .build("/m1/MainActivity")
+                    .build("/base/MainBaseActivity")
                     .navigation(this)
             }
             btnDoM1ActionAsync -> {
                 YCR.getInstance()
-                    .build("/m1/actions")
+//                    .build("/m1/actions")
+                    .build("/base/actions")
                     .bindLifecycle(lifecycle)
                     .withRouteAction("m1_test_action1")
                     .addOnResultCallback(object : RouteResultCallback<Int?>() {
@@ -47,8 +49,11 @@ class MainActivity : AppCompatActivity() {
                     .addOnResultCallback { result: Any? -> Log.i(TAG, "doOnResult 2: $result") }
                     .addOnResultCallback { result: Int? -> Log.i(TAG, "doOnResult 3: $result") }
                     .addOnResultCallback { result: String? -> Log.i(TAG, "doOnResult 4: $result") }
+                    .doOnInterrupt { postman, reason ->
+                        Log.i(TAG, "doOnInterrupt ${reason.code}")
+                    }
                     .doOnException { p, e ->
-                        Log.i(TAG, "doOnException: $e")
+                        e.printStackTrace()
                         false
                     }
                     .navigation(this)
@@ -62,11 +67,15 @@ class MainActivity : AppCompatActivity() {
             }
             btnToJavaApp -> {
                 YCR.getInstance()
-                    .build("/java/MainActivity")
+                    .build("/app/MainTestActivity")
                     .bindLifecycle(lifecycle)
                     .withRequestCode(99)
                     .addOnResultCallback { result: ActivityResult? ->
                         Log.i(TAG, "ActivityResult: ${result?.requestCode} , ${result?.resultCode}")
+                    }
+                    .doOnException { postman, e ->
+                        e.printStackTrace()
+                        false
                     }
                     .navigation(this)
             }

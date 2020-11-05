@@ -1,7 +1,6 @@
 package com.ysj.lib.route.module.m1
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.ysj.lib.route.YCR
@@ -29,7 +28,12 @@ class MainActivity : AppCompatActivity() {
                 YCR.getInstance()
                     .build("/app/actions")
                     .withRouteAction("app_test_action")
-                    .doOnContinue { Log.i(TAG, "doOnContinue: ${it.bundle["app_interceptor"]}") }
+                    .navigation(this)
+            }
+            btnDoBaseAction -> {
+                YCR.getInstance()
+                    .build("/base/actions")
+                    .withRouteAction("any_action")
                     .navigation(this)
             }
         }

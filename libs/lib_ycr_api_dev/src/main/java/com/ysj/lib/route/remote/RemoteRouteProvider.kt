@@ -9,7 +9,9 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
+import com.ysj.lib.route.Caches
 import com.ysj.lib.route.annotation.RouteBean
+import com.ysj.lib.route.entity.InterceptorInfo
 import com.ysj.lib.route.template.IProviderRoute
 
 
@@ -37,9 +39,6 @@ internal class RemoteRouteProvider : ContentProvider() {
     /** [IRouteService] 缓存 */
     val routeServiceCache by lazy(LazyThreadSafetyMode.NONE) { HashMap<String, IRouteService>() }
 
-    /** 所有组件的 application id */
-    val allApplicationId by lazy(LazyThreadSafetyMode.NONE) { HashSet<String>() }
-
     /** 提供给其他进程获取本进程的 [IRouteService] */
     private lateinit var cursor: Cursor
 
@@ -49,7 +48,8 @@ internal class RemoteRouteProvider : ContentProvider() {
         Log.i(TAG, "onCreate: $mainApplicationId")
         initRouteService()
         // 注册本组件的 application id 到主组件
-        getRouteService(mainApplicationId)?.registerToMainApp(application.packageName)
+        getRouteService()?.registerToMainApp(application.packageName)
+        registerInterceptors()
         return false
     }
 
@@ -87,6 +87,17 @@ internal class RemoteRouteProvider : ContentProvider() {
                 it.close()
                 routerService
             }
+    }
+
+    private fun registerInterceptors() {
+//        getRouteService()
+        Caches.interceptors.map {
+            InterceptorInfo(
+                application.packageName,
+                it.javaClass.name,
+                it.priority()
+            )
+        }
     }
 
     /** 用于插装调用的方法 */
