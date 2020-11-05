@@ -1,6 +1,6 @@
 ## YCR —— YComponentRouter
 
-[![Kotlin Version](https://img.shields.io/badge/Kotlin-1.3.72-blue.svg)](https://kotlinlang.org)![GitHub](https://img.shields.io/github/license/Ysj001/YCR)
+[![Kotlin Version](https://img.shields.io/badge/Kotlin-1.3.72-blue.svg)](https://kotlinlang.org)  ![GitHub](https://img.shields.io/github/license/Ysj001/YCR)
 
 YCR 是一个帮助 Android 项目组件化改造的库。设计灵感来源于另外两个组件化框架（[*ARouter*](https://github.com/alibaba/ARouter)，[*CC*](https://github.com/luckybilly/CC)）
 
@@ -24,7 +24,9 @@ YCR 集合了 ARouter 和 CC 的特色，并解决了如 CC 略难理解的 grad
 
 
 
-### 项目结构
+### 如何构建
+
+#### 1.了解项目结构
 
 - YCR
   - app —— 主组件 demo
@@ -36,7 +38,12 @@ YCR 集合了 ARouter 和 CC 的特色，并解决了如 CC 略难理解的 grad
     - lib_ycr_annoation —— YCR 库所用的注解和路由基础实体
     - lib_ycr_apt —— YCR 库的注解处理器
     - lib_ycr_plugin —— YCR 库的插件
-    - lib_ycr_api —— YCR 库的所有 Api
+    - lib_ycr_api —— YCR 库的集成时 Api
+    - lib_ycr_api_dev —— YCR 库的开发时 Api（用于远程调用调试）（还在完善）
+
+#### 2.在构建前先在项目根目录下执行该命令保持本地仓库应用最新的源码
+
+- ./gradlew uploadArchives
 
 
 
@@ -76,11 +83,11 @@ public class YourActionProcessor implements IActionProcessor {
 ```java
 // 通过实现 IInterceptor 接口来定义一个拦截器
 public class YourInterceptor implements IInterceptor {
+    
     @Override
-    public boolean match(@NotNull Postman postman) {
-        // YCR 拦截器采取策略匹配的方式触发，匹配的拦截器会都会执行
-        // 若此处返回 true 则表示该拦截器符合触发条件
-        return false;
+    public void priority() { 
+        // 定义拦截器的优先级，拦截器会按照该优先级顺序执行
+        return 1;
     }
 
     @Override
@@ -88,7 +95,7 @@ public class YourInterceptor implements IInterceptor {
                             @NotNull InterceptorCallback interceptorCallback) {
 		// 表示该拦截器允许继续后续的路由
         interceptorCallback.onContinue(postman);
-        // 表示该拦截器不允许后续路由，但不会中断已匹配的拦截器处理过程
+        // 表示该拦截器不允许后续路由，并中断后续拦截器
         // 你可以通过 InterruptReason 来告诉路由调用方中断路由的原因
         interceptorCallback.onInterrupt(postman, new InterruptReason<>(1, "", null));
     	// 注意此处 onContinue 和 onInterrupt 必须调用其中一个，但不能都调用
@@ -165,15 +172,7 @@ YCR.getInstance()
         public void onInterrupt(@NotNull Postman postman, @NotNull InterruptReason<?> reason) {}
     })
     .navigation(context)
-    
-// 添加被拦截器拦截到，但是继续执行的监听
-YCR.getInstance()
-    .build("/app/MainActivity")
-    .doOnContinue(new InterceptorCallback.ContinueCallback() {
-        @Override
-        public void onContinue(@NotNull Postman postman) {}
-    })
-    .navigation(context)
+
 ```
 
 
