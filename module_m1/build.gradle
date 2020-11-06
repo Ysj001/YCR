@@ -1,6 +1,4 @@
-def isRelease = rootProject.ext.isRelease
 def appId = rootProject.ext.applicationIds[project.name]
-def androidConfig = rootProject.ext.androidConfig
 
 apply plugin: 'com.android.application'
 //apply plugin: 'com.android.library'

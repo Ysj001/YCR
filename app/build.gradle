@@ -1,5 +1,4 @@
-def appId = rootProject.ext.applicationIds[project.name]
-def androidConfig = rootProject.ext.androidConfig
+def appId = applicationIds[project.name]
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
