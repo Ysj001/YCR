@@ -3,6 +3,8 @@ package com.ysj.lib.route
 import com.ysj.lib.route.annotation.RouteBean
 import com.ysj.lib.route.template.IActionProcessor
 import com.ysj.lib.route.template.IInterceptor
+import java.util.*
+import kotlin.collections.HashMap
 
 /**
  * 组件化框架中所有的缓存
@@ -19,6 +21,6 @@ internal object Caches {
     val actionCache = HashMap<String, IActionProcessor>()
 
     /** 所有拦截器 */
-    val interceptors = ArrayList<IInterceptor>()
+    val interceptors = TreeSet<IInterceptor>()
 
 }

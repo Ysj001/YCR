@@ -101,14 +101,15 @@ internal class RemoteRouteService : IRouteService.Stub() {
         val postman = (param.params[REMOTE_ROUTE_BEAN] as RemoteRouteBean).routeBean as Postman
         postman.context = WeakReference(RemoteRouteProvider.instance!!.context!!)
         // 取得匹配的拦截器
-        Caches.interceptors.find { it.javaClass.name == interceptorInfo.className }
-            ?.onIntercept(postman, object : InterceptorCallback {
+        Caches.interceptors.find { it.javaClass.name == interceptorInfo.className }!!
+            .onIntercept(postman, object : InterceptorCallback {
                 override fun onContinue(postman: Postman) {
                     callback.onContinue(RemoteRouteBean(postman))
                 }
 
                 override fun onInterrupt(postman: Postman, reason: InterruptReason<*>) {
                     callback.onInterrupt(RemoteParam().also { param ->
+                        param.params[REMOTE_ROUTE_BEAN] = RemoteRouteBean(postman)
                         param.params[REMOTE_INTERRUPT_REASON] = reason
                     })
                 }

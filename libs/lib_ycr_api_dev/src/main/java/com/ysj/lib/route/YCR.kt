@@ -143,7 +143,11 @@ class YCR private constructor() {
                             ?.params
                             ?.get(REMOTE_INTERRUPT_INFO) as Collection<*>?
                     }
-                    .forEach { it.forEach { ii -> add(ii as InterceptorInfo) } }
+                    .forEach {
+                        it.forEach { ii ->
+                            add(ii as InterceptorInfo)
+                        }
+                    }
             }
         val countDownLatch = CountDownLatch(interceptors.size)
         val interrupt = executeInterceptor(postman, routeProvider, countDownLatch, interceptors)
@@ -163,7 +167,9 @@ class YCR private constructor() {
         var interrupt = false
         if (interceptors.isEmpty()) return interrupt
         val info = interceptors.pollFirst()
-        routeProvider.getRouteService(info.applicationId)?.handleInterceptor(
+        val routeService = routeProvider.getRouteService(info.applicationId)
+            ?: throw RuntimeException("远端组件未找到：${info.applicationId}")
+        routeService.handleInterceptor(
             RemoteParam().apply {
                 params[REMOTE_INTERRUPT_INFO] = info
                 params[REMOTE_ROUTE_BEAN] = RemoteRouteBean(postman)
@@ -174,11 +180,12 @@ class YCR private constructor() {
 
                 override fun onContinue(routeBean: RemoteRouteBean) = safeHandle {
                     postman.from(routeBean.routeBean as Postman)
+                    executeInterceptor(postman, routeProvider, countDownLatch, interceptors)
                     countDownLatch.countDown()
                 }
 
                 override fun onInterrupt(param: RemoteParam) = safeHandle {
-                    postman.from(param.params[REMOTE_ROUTE_BEAN] as Postman)
+                    postman.from((param.params[REMOTE_ROUTE_BEAN] as RemoteRouteBean).routeBean as Postman)
                     postman.interruptCallback?.run {
                         runOnMainThread {
                             try {

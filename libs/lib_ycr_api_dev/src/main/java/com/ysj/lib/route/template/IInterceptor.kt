@@ -11,7 +11,7 @@ import com.ysj.lib.route.entity.Postman
  * @author Ysj
  * Create time: 2020/10/5
  */
-interface IInterceptor : RouteTemplate {
+interface IInterceptor : RouteTemplate, Comparable<IInterceptor> {
 
     /**
      * 拦截器优先级，用于对匹配的拦截器进行排序，值越大优先级越高
@@ -29,4 +29,5 @@ interface IInterceptor : RouteTemplate {
      */
     fun onIntercept(postman: Postman, callback: InterceptorCallback)
 
+    override fun compareTo(other: IInterceptor): Int = other.priority() - priority()
 }
