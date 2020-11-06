@@ -20,7 +20,7 @@ YCR 集合了 ARouter 和 CC 的特色，并解决了如 CC 略难理解的 grad
 - [x] 支持 Kotlin，Java 混编
 - [ ] 支持路由参数便捷注入
 - [ ] 支持自定义路由过程的异常处理
-- [ ] 在集成化打包时去除 remote 相关代码，不影响 App 启动过程
+- [x] 在集成化打包时去除 remote 相关代码，不影响 App 启动过程
 
 
 
@@ -39,7 +39,7 @@ YCR 集合了 ARouter 和 CC 的特色，并解决了如 CC 略难理解的 grad
     - lib_ycr_apt —— YCR 库的注解处理器
     - lib_ycr_plugin —— YCR 库的插件
     - lib_ycr_api —— YCR 库的集成时 Api
-    - lib_ycr_api_dev —— YCR 库的开发时 Api（用于远程调用调试）（还在完善）
+    - lib_ycr_api_dev —— YCR 库的开发时 Api（用于远程调用调试）
 
 #### 2.在构建前先在项目根目录下执行该命令保持本地仓库应用最新的源码
 
