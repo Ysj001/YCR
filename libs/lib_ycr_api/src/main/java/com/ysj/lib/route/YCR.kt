@@ -17,12 +17,10 @@ import com.ysj.lib.route.lifecycle.ActivityResultFragment
 import com.ysj.lib.route.template.IInterceptor
 import com.ysj.lib.route.template.IProviderRoute
 import com.ysj.lib.route.template.RouteTemplate
-import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import kotlin.collections.HashMap
 
 /**
  * 路由的管理器
@@ -147,7 +145,7 @@ class YCR private constructor() {
         // 取得匹配的拦截器
         val interceptors = Caches.interceptors
         val countDownLatch = CountDownLatch(interceptors.size)
-        val interrupt = executeInterceptor(postman, countDownLatch, interceptors)
+        val interrupt = executeInterceptor(postman, countDownLatch, interceptors.iterator())
         // 等待所有拦截器处理完再返回结果
         countDownLatch.await(timeout, TimeUnit.MILLISECONDS)
         val remaining = countDownLatch.count
@@ -158,11 +156,11 @@ class YCR private constructor() {
     private fun executeInterceptor(
         postman: Postman,
         countDownLatch: CountDownLatch,
-        interceptors: TreeSet<IInterceptor>
+        interceptors: Iterator<IInterceptor>
     ): Boolean {
         var interrupt = false
-        if (interceptors.isEmpty()) return interrupt
-        interceptors.pollFirst().onIntercept(postman, object : InterceptorCallback {
+        if (!interceptors.hasNext()) return interrupt
+        interceptors.next().onIntercept(postman, object : InterceptorCallback {
 
             var isFinished = false
 
