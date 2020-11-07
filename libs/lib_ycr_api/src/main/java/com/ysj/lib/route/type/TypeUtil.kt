@@ -30,5 +30,5 @@ internal fun checkMethodParameterType(src: Class<*>, mdName: String, type: Class
                 else -> false
             }
             result
-        } ?: false
+        } ?: true
     }

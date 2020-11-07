@@ -77,6 +77,11 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
      * 路由调用链的最后一步，开始路由导航（异步的）
      */
     fun navigation(context: Context) {
+        // 如果当前线程是 YCR-route-handler-pool 则转为同步处理，防止死锁
+        if (Thread.currentThread().name.startsWith("YCR-route-handler-pool")) {
+            navigationSync(context)
+            return
+        }
         this.context = WeakReference(context)
         YCR.getInstance().executor.execute { YCR.getInstance().navigation(this) }
     }
@@ -87,7 +92,7 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
     fun navigationSync(context: Context): Any? {
         this.context = WeakReference(context)
         var result: Any? = null
-        addOnResultCallback<Any> { result = it }
+        addOnResultCallback<Any?> { result = it }
         YCR.getInstance().navigation(this)
         return result
     }

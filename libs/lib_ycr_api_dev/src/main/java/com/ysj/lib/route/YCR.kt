@@ -36,7 +36,6 @@ class YCR private constructor() {
     }
 
     companion object {
-        private const val TAG = "YCR"
 
         @JvmStatic
         fun getInstance() = Holder.instance
@@ -46,7 +45,7 @@ class YCR private constructor() {
     internal val mainHandler by lazy { Handler(Looper.getMainLooper()) }
 
     // 子线程执行器
-    internal val executor: Executor by lazy { Executors.newSingleThreadExecutor() }
+    internal val executor: Executor by lazy { Executors.newSingleThreadExecutor(YCRThreadFactory("route-handler")) }
 
     /**
      * 开始构建路由过程
@@ -73,17 +72,15 @@ class YCR private constructor() {
             if (!postman.greenChannel && handleRemoteInterceptor(postman)) return
             handleRoute(postman) { result ->
                 postman.routeResultCallbacks?.run {
-                    runOnMainThread {
-                        try {
-                            forEach { callback -> callback.onResult(result) }
-                        } catch (e: Exception) {
-                            callException(postman, YCRExceptionFactory.doOnResultException(e))
-                        }
+                    try {
+                        forEach { callback -> callback.onResult(result) }
+                    } catch (e: Exception) {
+                        callException(postman, YCRExceptionFactory.doOnResultException(e))
                     }
                 }
             }
         } catch (e: Exception) {
-            runOnMainThread { callException(postman, YCRExceptionFactory.exception(e)) }
+            callException(postman, YCRExceptionFactory.exception(e))
         }
     }
 
@@ -191,18 +188,16 @@ class YCR private constructor() {
                 override fun onInterrupt(param: RemoteParam) = safeHandle {
                     postman.from((param.params[REMOTE_ROUTE_BEAN] as RemoteRouteBean).routeBean as Postman)
                     postman.interruptCallback?.run {
-                        runOnMainThread {
-                            try {
-                                onInterrupt(
-                                    postman,
-                                    param.params[REMOTE_INTERRUPT_REASON] as InterruptReason<*>
-                                )
-                            } catch (e: Exception) {
-                                callException(
-                                    postman,
-                                    YCRExceptionFactory.doOnInterruptException(e)
-                                )
-                            }
+                        try {
+                            onInterrupt(
+                                postman,
+                                param.params[REMOTE_INTERRUPT_REASON] as InterruptReason<*>
+                            )
+                        } catch (e: Exception) {
+                            callException(
+                                postman,
+                                YCRExceptionFactory.doOnInterruptException(e)
+                            )
                         }
                     }
                     interrupt = true
