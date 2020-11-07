@@ -6,6 +6,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.ysj.lib.base.mock.MockUserLogin
 import com.ysj.lib.route.YCR
 import com.ysj.lib.route.annotation.Route
+import com.ysj.lib.route.entity.Postman
+import com.ysj.lib.route.exception.IYCRExceptions
 import kotlinx.android.synthetic.main.module_m1_activity_user_center.*
 
 /**
@@ -27,27 +29,39 @@ class UserCenterActivity : AppCompatActivity() {
         YCR.getInstance()
             .build("/base/MockUserLogin")
             .withRouteAction("logout")
-            .addOnResultCallback { _: Any? -> refreshUserInfo() }
+            .addOnResultCallback(::refreshUserInfo)
+            .doOnException(::doOnException)
             .navigation(this)
     }
 
     fun onSetAgeClicked(view: View) {
-
+        // 演示通过拦截器自动登录并修改年龄
+        YCR.getInstance()
+            .build("/base/MockUserLogin")
+            .withRouteAction("setAge")
+            .withInt("age", 18)
+            .addOnResultCallback(::refreshUserInfo)
+            .doOnException(::doOnException)
+            .navigation(this)
     }
 
-    private fun refreshUserInfo() {
+    private fun doOnException(postman: Postman, e: IYCRExceptions): Boolean {
+        e.printStackTrace()
+        return false
+    }
+
+    private fun refreshUserInfo(any: Any? = null) {
         YCR.getInstance()
             .build("/base/MockUserLogin")
             .withRouteAction("userInfo")
             .useGreenChannel()
             .addOnResultCallback { userInfo: MockUserLogin.UserInfo? ->
-                tvLoginState.text = userInfo?.userName ?: "未登录"
-                tvAge.text = userInfo?.age?.toString() ?: "未登录"
+                runOnUiThread {
+                    tvLoginState.text = userInfo?.userName ?: "未登录"
+                    tvAge.text = userInfo?.age?.toString() ?: "未登录"
+                }
             }
-            .doOnException { postman, e ->
-                e.printStackTrace()
-                false
-            }
+            .doOnException(::doOnException)
             .navigation(this)
     }
 }

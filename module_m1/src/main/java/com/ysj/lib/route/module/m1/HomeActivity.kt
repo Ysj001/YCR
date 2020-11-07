@@ -17,22 +17,25 @@ class HomeActivity : AppCompatActivity() {
     }
 
     fun onUserCenterClicked(view: View) {
+        // 演示拦截器的使用
         YCR.getInstance()
             .build("/m1/UserCenterActivity")
             .doOnInterrupt { postman, reason ->
                 if (reason.code != LoginInterceptor.INTERRUPT_CODE_NOT_LOGIN) return@doOnInterrupt
                 YCR.getInstance()
                     .build("/java/LoginActivity")
+                    .withRequestCode(1)
                     .addOnResultCallback { result: ActivityResult? ->
+                        // 演示代替 activity 的 onActivityResult
                         if (result == null) return@addOnResultCallback
-                        if (result.resultCode == RESULT_OK) {
+                        if (result.requestCode == 1 && result.resultCode == RESULT_OK) {
                             ToastUtil.showShortToast("登录成功")
                             YCR.getInstance().navigation(postman)
                         }
                     }
                     .navigationSync(this)
             }
-            .doOnException { postman, e ->
+            .doOnException { _, e ->
                 e.printStackTrace()
                 false
             }
