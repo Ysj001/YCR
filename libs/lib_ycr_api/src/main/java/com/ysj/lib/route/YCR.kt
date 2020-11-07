@@ -18,8 +18,8 @@ import com.ysj.lib.route.template.IInterceptor
 import com.ysj.lib.route.template.IProviderRoute
 import com.ysj.lib.route.template.RouteTemplate
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.Executor
-import java.util.concurrent.Executors
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 /**
@@ -42,10 +42,17 @@ class YCR private constructor() {
     }
 
     // 主线程 handler
-    internal val mainHandler by lazy { Handler(Looper.getMainLooper()) }
+    private val mainHandler by lazy { Handler(Looper.getMainLooper()) }
 
     // 子线程执行器
-    internal val executor: Executor by lazy { Executors.newSingleThreadExecutor(YCRThreadFactory("route-handler")) }
+    private val executor: ThreadPoolExecutor by lazy {
+        ThreadPoolExecutor(
+            1, 1,
+            0L, TimeUnit.MILLISECONDS,
+            LinkedBlockingQueue<Runnable>(),
+            YCRThreadFactory("default")
+        )
+    }
 
     /**
      * 开始构建路由过程
@@ -101,7 +108,7 @@ class YCR private constructor() {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     context.startActivity(intent)
                 } else {
-                    runOnMainThread {
+                    runOnMainThread(Runnable {
                         try {
                             if (postman.routeResultCallbacks == null || postman.requestCode < 0) {
                                 context.startActivityForResult(intent, postman.requestCode)
@@ -125,7 +132,7 @@ class YCR private constructor() {
                                 YCRExceptionFactory.navigationException(e)
                             )
                         }
-                    }
+                    })
                 }
             }
             RouteTypes.ACTION -> {
@@ -198,10 +205,17 @@ class YCR private constructor() {
         return interrupt
     }
 
-    internal inline fun runOnMainThread(crossinline block: () -> Unit) {
+    internal fun runOnMainThread(runnable: Runnable) {
         val isMainTH = Thread.currentThread() == Looper.getMainLooper().thread
-        if (isMainTH) block()
-        else mainHandler.post { block() }
+        if (isMainTH) runnable.run()
+        else mainHandler.post(runnable)
+    }
+
+    internal fun runOnExecutor(runnable: Runnable) {
+        if (executor.poolSize == executor.largestPoolSize
+            && executor.taskCount >= executor.poolSize
+        ) runnable.run()
+        else executor.execute(runnable)
     }
 
     private fun callException(postman: Postman, exception: IYCRExceptions) {
