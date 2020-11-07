@@ -1,42 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/btnToM1App"
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="onClick"
-        android:text="to m1 app" />
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:onClick="gotoHomePage"
+        android:text="这是启动页\n点击跳转到主页"
+        android:textSize="24dp" />
 
-    <Button
-        android:id="@+id/btnDoM1ActionAsync"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:onClick="onClick"
-        android:text="do action (async): m1_test" />
-
-    <Button
-        android:id="@+id/btnDoM1ActionSync"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:onClick="onClick"
-        android:text="do action (sync): m1_test" />
-
-    <Button
-        android:id="@+id/btnToJavaApp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:onClick="onClick"
-        android:text="to java app" />
-
-</LinearLayout>
+</FrameLayout>

@@ -3,9 +3,15 @@
     package="com.ysj.lib.base">
 
     <application>
-        <activity
-            android:name=".MainBaseActivity"
-            android:exported="true" />
+        <provider
+            android:name=".CoreProvider"
+            android:authorities="${applicationId}.core.provider"
+            android:exported="false"
+            android:grantUriPermissions="true" >
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>

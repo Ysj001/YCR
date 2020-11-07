@@ -33,6 +33,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -43,7 +44,5 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation project(':lib_base')
 
-//    kapt project(path: ':lib_ycr_apt')
     kapt "com.ysj.lib.route:ycr-compiler:$LIB_VERSION"
-//    implementation project(':module_m1')
 }

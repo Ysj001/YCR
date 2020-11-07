@@ -1,0 +1,10 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name="module_java_AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/module_java_colorPrimary</item>
+        <item name="colorPrimaryDark">@color/module_java_colorPrimaryDark</item>
+        <item name="colorAccent">@color/module_java_colorAccent</item>
+    </style>
+
+</resources>

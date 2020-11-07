@@ -4,13 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainBaseActivity">
+    tools:context=".MainActivity">
 
     <TextView
+        android:id="@+id/btnM1Action1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="我是 base 里的"
-        android:textSize="24sp" />
+        android:text="@string/module_java_app_name"
+        android:textSize="24dp" />
 
 </FrameLayout>

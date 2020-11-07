@@ -23,6 +23,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
@@ -57,7 +62,7 @@ dependencies {
         }
     }
 
-//    api "com.ysj.lib.route:ycr-api-dev:$LIB_VERSION"
-    api "com.ysj.lib.route:ycr-api:$LIB_VERSION"
+    debugApi "com.ysj.lib.route:ycr-api-dev:$LIB_VERSION"
+    releaseApi "com.ysj.lib.route:ycr-api:$LIB_VERSION"
     kapt "com.ysj.lib.route:ycr-compiler:$LIB_VERSION"
 }
