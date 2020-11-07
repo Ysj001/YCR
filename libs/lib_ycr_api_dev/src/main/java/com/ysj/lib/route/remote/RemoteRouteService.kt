@@ -71,7 +71,8 @@ internal class RemoteRouteService : IRouteService.Stub() {
                 Caches.actionCache[postman.className] ?: Class.forName(postman.className)
                     .getConstructor().newInstance() as IActionProcessor
             Caches.actionCache[postman.className] = processor
-            postman.context = WeakReference(RemoteRouteProvider.instance!!.context!!)
+            if (postman.getContext() == null) postman.context =
+                WeakReference(RemoteRouteProvider.instance!!.context!!)
             val actionResult = processor.doAction(postman) ?: return null
             if (actionResult !is Serializable && actionResult !is Parcelable) return null
             return RemoteParam().apply { params[REMOTE_ACTION_RESULT] = actionResult }
@@ -81,25 +82,21 @@ internal class RemoteRouteService : IRouteService.Stub() {
         return null
     }
 
-    override fun findInterceptor(remote: RemoteRouteBean): RemoteParam? {
-        val postman = remote.routeBean as Postman
-        if (postman.className.isEmpty() || postman.actionName.isEmpty()) return null
-        return RemoteParam().apply {
-            params[REMOTE_INTERRUPT_INFO] = Caches.interceptors
-                .map {
-                    InterceptorInfo(
-                        RemoteRouteProvider.instance!!.context!!.packageName,
-                        it.javaClass.name,
-                        it.priority()
-                    )
-                }
+    override fun findInterceptor(remote: RemoteRouteBean) = RemoteParam().apply {
+        params[REMOTE_INTERRUPT_INFO] = Caches.interceptors.map {
+            InterceptorInfo(
+                RemoteRouteProvider.instance!!.context!!.packageName,
+                it.javaClass.name,
+                it.priority()
+            )
         }
     }
 
     override fun handleInterceptor(param: RemoteParam, callback: RemoteInterceptorCallback) {
         val interceptorInfo = param.params[REMOTE_INTERRUPT_INFO] as InterceptorInfo
         val postman = (param.params[REMOTE_ROUTE_BEAN] as RemoteRouteBean).routeBean as Postman
-        postman.context = WeakReference(RemoteRouteProvider.instance!!.context!!)
+        if (postman.getContext() == null) postman.context =
+            WeakReference(RemoteRouteProvider.instance!!.context!!)
         // 取得匹配的拦截器
         Caches.interceptors.find { it.javaClass.name == interceptorInfo.className }!!
             .onIntercept(postman, object : InterceptorCallback {

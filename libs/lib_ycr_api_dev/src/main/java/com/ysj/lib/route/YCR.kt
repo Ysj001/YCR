@@ -53,7 +53,10 @@ class YCR private constructor() {
      *
      * @param path 路由的地址，对应 [Route.path]
      */
-    fun build(path: String) = Postman(subGroupFromPath(path), path)
+    fun build(path: String): Postman {
+        val group = subGroupFromPath(path)
+        return Postman(group, path.substring(group.length + 1))
+    }
 
     fun navigation(postman: Postman) {
         var routes = Caches.routeCache[postman.group]
@@ -62,9 +65,10 @@ class YCR private constructor() {
             Caches.routeCache[postman.group] = routes
         }
         try {
-            val routeBean = findRemoteRouteBean(postman.group, postman.path)
-                ?: throw YCRExceptionFactory.routePathException(postman.path)
-            routes[postman.path] = routeBean
+            val fullPath = "/${postman.group}${postman.path}"
+            val routeBean = findRemoteRouteBean(postman.group, fullPath)
+                ?: throw YCRExceptionFactory.routePathException(fullPath)
+            routes[fullPath] = routeBean
             postman.from(routeBean)
             if (!postman.greenChannel && handleRemoteInterceptor(postman)) return
             handleRoute(postman) { result ->

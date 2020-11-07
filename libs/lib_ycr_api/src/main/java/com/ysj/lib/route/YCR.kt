@@ -52,7 +52,10 @@ class YCR private constructor() {
      *
      * @param path 路由的地址，对应 [Route.path]
      */
-    fun build(path: String) = Postman(subGroupFromPath(path), path)
+    fun build(path: String): Postman {
+        val group = subGroupFromPath(path)
+        return Postman(group, path.substring(group.length + 1))
+    }
 
     fun navigation(postman: Postman) {
         var routes = Caches.routeCache[postman.group]
@@ -61,13 +64,14 @@ class YCR private constructor() {
             Caches.routeCache[postman.group] = routes
         }
         try {
-            var routeBean = routes[postman.path]
+            val fullPath = "/${postman.group}${postman.path}"
+            var routeBean = routes[fullPath]
             if (routeBean == null) {
                 getTemplateInstance<IProviderRoute>(
                     "${PACKAGE_NAME_ROUTE}.${PREFIX_ROUTE}${postman.group}"
                 )?.loadInto(routes)
-                routeBean = routes[postman.path]
-                    ?: throw YCRExceptionFactory.routePathException(postman.path)
+                routeBean =
+                    routes[fullPath] ?: throw YCRExceptionFactory.routePathException(fullPath)
             }
             postman.from(routeBean)
             if (!postman.greenChannel && handleInterceptor(postman)) return
@@ -129,7 +133,7 @@ class YCR private constructor() {
             RouteTypes.ACTION -> {
                 val actionProcessor = Caches.actionCache[postman.className]
                     ?: getTemplateInstance(postman.className)
-                    ?: throw YCRExceptionFactory.routePathException(postman.path)
+                    ?: throw YCRExceptionFactory.routePathException("/${postman.group}${postman.path}")
                 Caches.actionCache[postman.className] = actionProcessor
                 resultCallback(actionProcessor.doAction(postman))
             }
