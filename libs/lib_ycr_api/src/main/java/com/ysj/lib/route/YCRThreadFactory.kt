@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * @author Ysj
  * Create time: 2020/11/7
  */
-class YCRThreadFactory(poolName: String) : ThreadFactory {
+internal class YCRThreadFactory(poolName: String) : ThreadFactory {
 
     companion object {
         private val poolNumber = AtomicInteger(1)
@@ -17,7 +17,7 @@ class YCRThreadFactory(poolName: String) : ThreadFactory {
 
     private val group: ThreadGroup
     private val threadNumber = AtomicInteger(1)
-    private val namePrefix: String
+    val namePrefix: String
 
     init {
         val s = System.getSecurityManager()

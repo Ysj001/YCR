@@ -12,7 +12,7 @@ import java.io.Serializable
  * @author Ysj
  * Create time: 2020/9/23
  */
-interface IActionProcessor : RouteTemplate {
+interface IActionProcessor : YCRTemplate {
 
     /**
      * 执行行为

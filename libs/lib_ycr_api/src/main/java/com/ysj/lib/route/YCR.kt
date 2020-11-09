@@ -16,11 +16,12 @@ import com.ysj.lib.route.exception.YCRExceptionFactory
 import com.ysj.lib.route.lifecycle.ActivityResultFragment
 import com.ysj.lib.route.template.IInterceptor
 import com.ysj.lib.route.template.IProviderRoute
-import com.ysj.lib.route.template.RouteTemplate
+import com.ysj.lib.route.template.YCRTemplate
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.ReentrantLock
 
 /**
  * 路由的管理器
@@ -35,10 +36,11 @@ class YCR private constructor() {
     }
 
     companion object {
-        private const val TAG = "YCR"
 
         @JvmStatic
         fun getInstance() = Holder.instance
+
+        private fun getCustomExecutor(): ThreadPoolExecutor? = null
     }
 
     // 主线程 handler
@@ -46,13 +48,16 @@ class YCR private constructor() {
 
     // 子线程执行器
     private val executor: ThreadPoolExecutor by lazy {
-        ThreadPoolExecutor(
-            1, 1,
-            0L, TimeUnit.MILLISECONDS,
-            LinkedBlockingQueue<Runnable>(),
-            YCRThreadFactory("default")
-        )
+        getCustomExecutor()
+            ?: ThreadPoolExecutor(
+                1, 1,
+                0L, TimeUnit.MILLISECONDS,
+                LinkedBlockingQueue<Runnable>(),
+                YCRThreadFactory("default")
+            )
     }
+
+    private val lock = ReentrantLock()
 
     /**
      * 开始构建路由过程
@@ -65,22 +70,24 @@ class YCR private constructor() {
     }
 
     fun navigation(postman: Postman) {
-        var routes = Caches.routeCache[postman.group]
-        if (routes == null) {
-            routes = HashMap()
-            Caches.routeCache[postman.group] = routes
-        }
         try {
-            val fullPath = "/${postman.group}${postman.path}"
-            var routeBean = routes[fullPath]
-            if (routeBean == null) {
-                getTemplateInstance<IProviderRoute>(
-                    "${PACKAGE_NAME_ROUTE}.${PREFIX_ROUTE}${postman.group}"
-                )?.loadInto(routes)
-                routeBean =
-                    routes[fullPath] ?: throw YCRExceptionFactory.routePathException(fullPath)
+            sync {
+                var routes = Caches.routeCache[postman.group]
+                if (routes == null) {
+                    routes = HashMap()
+                    Caches.routeCache[postman.group] = routes
+                }
+                val fullPath = "/${postman.group}${postman.path}"
+                var routeBean = routes[fullPath]
+                if (routeBean == null) {
+                    getTemplateInstance<IProviderRoute>(
+                        "${PACKAGE_NAME_ROUTE}.${PREFIX_ROUTE}${postman.group}"
+                    )?.loadInto(routes)
+                    routeBean =
+                        routes[fullPath] ?: throw YCRExceptionFactory.routePathException(fullPath)
+                }
+                postman.from(routeBean)
             }
-            postman.from(routeBean)
             if (!postman.greenChannel && handleInterceptor(postman)) return
             handleRoute(postman) { result ->
                 postman.routeResultCallbacks?.run {
@@ -135,7 +142,7 @@ class YCR private constructor() {
                     })
                 }
             }
-            RouteTypes.ACTION -> {
+            RouteTypes.ACTION -> sync {
                 val actionProcessor = Caches.actionCache[postman.className]
                     ?: getTemplateInstance(postman.className)
                     ?: throw YCRExceptionFactory.routePathException("/${postman.group}${postman.path}")
@@ -212,10 +219,24 @@ class YCR private constructor() {
     }
 
     internal fun runOnExecutor(runnable: Runnable) {
-        if (executor.poolSize == executor.largestPoolSize
-            && executor.taskCount >= executor.poolSize
-        ) runnable.run()
+        val tf = executor.threadFactory
+        val currentThread = Thread.currentThread()
+        val isMainTH = currentThread == Looper.getMainLooper().thread
+        val isDefault = tf is YCRThreadFactory && tf.namePrefix.startsWith("YCR-default")
+        if (isDefault && !isMainTH && executorTaskFull()) runnable.run()
         else executor.execute(runnable)
+    }
+
+    private fun executorTaskFull() = executor.poolSize == executor.largestPoolSize
+            && executor.taskCount >= executor.poolSize
+
+    private inline fun <R> sync(block: () -> R): R {
+        lock.lock()
+        try {
+            return block()
+        } finally {
+            lock.unlock()
+        }
     }
 
     private fun callException(postman: Postman, exception: IYCRExceptions) {
@@ -223,11 +244,11 @@ class YCR private constructor() {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun <T : RouteTemplate> getTemplateInstance(className: String): T? {
+    private fun <T : YCRTemplate> getTemplateInstance(className: String): T? {
         try {
             return Class.forName(className).getConstructor().newInstance() as T
         } catch (e: Exception) {
-            Log.d(TAG, "$className 没有在该进程找到 --> ${e.message}")
+            Log.d("YCR-DEV", "$className 没有在该进程找到 --> ${e.message}")
         }
         return null
     }

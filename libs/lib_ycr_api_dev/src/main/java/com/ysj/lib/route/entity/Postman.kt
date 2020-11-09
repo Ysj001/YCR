@@ -74,8 +74,7 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
     fun useGreenChannel() = apply { this.greenChannel = true }
 
     /**
-     * 路由调用链的最后一步，开始路由导航
-     * - 注意：在调度器空闲时在子线程，否则在调用线程
+     * 路由调用链的最后一步，开始路由导航（非主线程）
      */
     fun navigation(context: Context) {
         this.context = WeakReference(context)
