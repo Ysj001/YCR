@@ -50,5 +50,5 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.3'
 
-    kapt "com.ysj.lib.route:ycr-compiler:$LIB_VERSION"
+    kapt "$LIB_GROUP_ID:ycr-compiler:$LIB_VERSION"
 }

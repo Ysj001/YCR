@@ -49,5 +49,5 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation project(path: ':lib_base')
 
-    kapt "com.ysj.lib.route:ycr-compiler:$LIB_VERSION"
+    kapt "$LIB_GROUP_ID:ycr-compiler:$LIB_VERSION"
 }

@@ -1,9 +1,9 @@
 package com.ysj.lib.base.mock
 
 import android.util.Log
-import com.ysj.lib.route.annotation.Route
-import com.ysj.lib.route.entity.Postman
-import com.ysj.lib.route.template.IActionProcessor
+import com.ysj.lib.ycr.annotation.Route
+import com.ysj.lib.ycr.entity.Postman
+import com.ysj.lib.ycr.template.IActionProcessor
 import java.io.Serializable
 
 /**

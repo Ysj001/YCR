@@ -1,11 +1,11 @@
 package com.ysj.lib.route.module.m1
 
 import com.ysj.lib.base.mock.MockUserLogin
-import com.ysj.lib.route.YCR
-import com.ysj.lib.route.callback.InterceptorCallback
-import com.ysj.lib.route.entity.InterruptReason
-import com.ysj.lib.route.entity.Postman
-import com.ysj.lib.route.template.IInterceptor
+import com.ysj.lib.ycr.YCR
+import com.ysj.lib.ycr.callback.InterceptorCallback
+import com.ysj.lib.ycr.entity.InterruptReason
+import com.ysj.lib.ycr.entity.Postman
+import com.ysj.lib.ycr.template.IInterceptor
 
 /**
  * 登录的拦截器

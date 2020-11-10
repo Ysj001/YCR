@@ -1,17 +1,15 @@
 package com.ysj.lib.route.module.java;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.ysj.lib.base.mock.MockUserLogin;
 import com.ysj.lib.base.utils.ToastUtil;
-import com.ysj.lib.route.YCR;
-import com.ysj.lib.route.annotation.Route;
+import com.ysj.lib.ycr.YCR;
+import com.ysj.lib.ycr.annotation.Route;
 
 @Route(path = "/java/LoginActivity")
 public class LoginActivity extends AppCompatActivity {

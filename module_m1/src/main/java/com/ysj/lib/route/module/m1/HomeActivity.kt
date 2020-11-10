@@ -4,9 +4,9 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.ysj.lib.base.utils.ToastUtil
-import com.ysj.lib.route.YCR
-import com.ysj.lib.route.annotation.Route
-import com.ysj.lib.route.entity.ActivityResult
+import com.ysj.lib.ycr.YCR
+import com.ysj.lib.ycr.annotation.Route
+import com.ysj.lib.ycr.entity.ActivityResult
 
 @Route("/m1/HomeActivity")
 class HomeActivity : AppCompatActivity() {

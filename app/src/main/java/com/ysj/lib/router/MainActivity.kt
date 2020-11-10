@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.ysj.lib.base.utils.ToastUtil
-import com.ysj.lib.route.YCR
+import com.ysj.lib.ycr.YCR
 
 class MainActivity : AppCompatActivity() {
 

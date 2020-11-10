@@ -1,8 +1,8 @@
 package com.ysj.lib.base
 
 import com.ysj.lib.base.utils.Run
-import com.ysj.lib.route.YCR
-import com.ysj.lib.route.template.IExecutorProvider
+import com.ysj.lib.ycr.YCR
+import com.ysj.lib.ycr.template.IExecutorProvider
 import java.util.concurrent.ThreadPoolExecutor
 
 /**

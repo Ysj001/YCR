@@ -1,7 +1,6 @@
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
-    id 'kotlin-android-extensions'
 }
 
 android {
@@ -14,6 +13,13 @@ android {
         versionName "1.0"
 
         consumerProguardFiles "consumer-rules.pro"
+    }
+
+    sourceSets.main {
+        java.srcDirs = [
+                'src/main/java',
+                '../lib_ycr_api_core/src/main/java',
+        ]
     }
 
     buildTypes {
@@ -37,7 +43,7 @@ dependencies {
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compileOnly 'androidx.core:core-ktx:1.3.1'
     compileOnly "androidx.appcompat:appcompat:1.2.0"
-    api "com.ysj.lib.route:ycr-annotation:$LIB_VERSION"
+    api "$LIB_GROUP_ID:ycr-annotation:$LIB_VERSION"
 }
 
 apply from: rootProject.file('mvn-upload.gradle')

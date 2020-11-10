@@ -4,10 +4,10 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.ysj.lib.base.mock.MockUserLogin
-import com.ysj.lib.route.YCR
-import com.ysj.lib.route.annotation.Route
-import com.ysj.lib.route.entity.Postman
-import com.ysj.lib.route.exception.IYCRExceptions
+import com.ysj.lib.ycr.YCR
+import com.ysj.lib.ycr.annotation.Route
+import com.ysj.lib.ycr.entity.Postman
+import com.ysj.lib.ycr.exception.IYCRExceptions
 import kotlinx.android.synthetic.main.module_m1_activity_user_center.*
 
 /**
