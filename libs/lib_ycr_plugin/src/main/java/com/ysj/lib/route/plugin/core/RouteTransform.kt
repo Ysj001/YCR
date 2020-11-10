@@ -8,6 +8,7 @@ import com.android.utils.FileUtils
 import com.ysj.lib.route.plugin.core.logger.YLogger
 import com.ysj.lib.route.plugin.core.visitor.AllClassVisitor
 import com.ysj.lib.route.plugin.core.visitor.PreVisitor
+import com.ysj.lib.route.plugin.core.visitor.entity.ClassInfo
 import org.gradle.api.Project
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
@@ -42,7 +43,27 @@ class RouteTransform(private val project: Project) : Transform() {
 
     private val logger = YLogger.getLogger(javaClass)
 
+    /** 不需要的 [JarEntry] 用于提升处理速度 */
     private val notNeedJarEntriesCache by lazy(LazyThreadSafetyMode.NONE) { HashSet<String>() }
+
+    /** 缓存的 [ClassInfo] */
+    val cacheClassInfo = HashSet<ClassInfo>()
+
+    /** 用于监测 IExecutorProvider 的实现是否存在多个 */
+    var executorProviderClassName: String? = null
+        set(value) {
+            if (field != null) {
+                throw RuntimeException(
+                    """
+                    存在多个 IExecutorProvider 请检查：
+                    $value
+                    或
+                    $executorProviderClassName
+                """.trimIndent()
+                )
+            }
+            field = value
+        }
 
     override fun getName() = PLUGIN_NAME
 
@@ -71,7 +92,6 @@ class RouteTransform(private val project: Project) : Transform() {
                                            outputProvider,
                                            isIncremental ->
             if (!isIncremental) outputProvider.deleteAll()
-            PreVisitor.cacheClassInfo.clear()
             // 预处理，用于提前获取信息
             inputs.forEach { prePrecess(it.jarInputs, it.directoryInputs) }
             inputs.forEach {
@@ -95,30 +115,30 @@ class RouteTransform(private val project: Project) : Transform() {
             FileUtils.copyFile(src, dest)
             return
         }
-        val jarFile = JarFile(src)
-        val jos = JarOutputStream(dest.outputStream())
-        jarFile.entries().toList()
-            .filter { true }
-            .forEach {
-                val inputStream = jarFile.getInputStream(it)
-                val zipEntry = ZipEntry(it.name)
-                if (it.name.endsWith(".class")) {
-                    //                    logger.quiet("process jar element --> ${element.name}")
-                    val cr = ClassReader(inputStream)
-                    val cw = ClassWriter(cr, ClassWriter.COMPUTE_MAXS)
-                    val cv = AllClassVisitor(this, cw)
-                    cr.accept(cv, ClassReader.EXPAND_FRAMES)
-                    jos.putNextEntry(zipEntry)
-                    jos.write(cw.toByteArray())
-                } else {
-                    jos.putNextEntry(zipEntry)
-                    jos.write(inputStream.readBytes())
-                }
-                jos.closeEntry()
-                inputStream.close()
+        JarFile(src).use { jf ->
+            JarOutputStream(dest.outputStream()).use { jos ->
+                jf.entries().toList()
+                    .filter { true }
+                    .forEach {
+                        jf.getInputStream(it).use { ips ->
+                            val zipEntry = ZipEntry(it.name)
+                            if (it.name.endsWith(".class")) {
+                                //                    logger.quiet("process jar element --> ${element.name}")
+                                val cr = ClassReader(ips)
+                                val cw = ClassWriter(cr, ClassWriter.COMPUTE_MAXS)
+                                val cv = AllClassVisitor(this, cw)
+                                cr.accept(cv, ClassReader.EXPAND_FRAMES)
+                                jos.putNextEntry(zipEntry)
+                                jos.write(cw.toByteArray())
+                            } else {
+                                jos.putNextEntry(zipEntry)
+                                jos.write(ips.readBytes())
+                            }
+                            jos.closeEntry()
+                        }
+                    }
             }
-        jos.close()
-        jarFile.close()
+        }
     }
 
     private fun processDir(input: DirectoryInput, output: TransformOutputProvider) {
@@ -134,38 +154,38 @@ class RouteTransform(private val project: Project) : Transform() {
             .filter { isNeedFile(it) }
             .forEach {
 //                logger.quiet("process file --> ${it.name}")
-                val inputStream = it.inputStream()
-                val cr = ClassReader(inputStream)
-                val cw = ClassWriter(cr, 0)
-                val cv = AllClassVisitor(this, cw)
-                cr.accept(cv, ClassReader.EXPAND_FRAMES)
-                val fos = FileOutputStream(it)
-                fos.write(cw.toByteArray())
-                fos.close()
-                inputStream.close()
+                it.inputStream().use { fis ->
+                    val cr = ClassReader(fis)
+                    val cw = ClassWriter(cr, 0)
+                    val cv = AllClassVisitor(this, cw)
+                    cr.accept(cv, ClassReader.EXPAND_FRAMES)
+                    FileOutputStream(it).use { fos ->
+                        fos.write(cw.toByteArray())
+                    }
+                }
             }
     }
 
     private fun prePrecess(jis: Collection<JarInput>, dis: Collection<DirectoryInput>) {
         jis.forEach { input ->
-            val jarFile = JarFile(input.file)
-            val entries = jarFile.entries().toList()
-            /*
-                由于该 transform 可能后于其他 transform
-                此时该 transform 的输入源会变为其他 transform 的输出
-                此时输入源的名称会发生变化，因此不能简单通过 input.file.name 过滤
-             */
-            if (notNeedJarEntries(entries)) {
-                jarFile.close()
-                notNeedJarEntriesCache.add(input.file.name)
-                return@forEach
-            }
-            entries.toList()
-                .filter { it.name.endsWith(".class") }
-                .forEach {
-                    logger.verbose("need process in jar --> ${it.name}")
-                    preVisitor(jarFile.getInputStream(it))
+            JarFile(input.file).use { jf ->
+                val entries = jf.entries().toList()
+                /*
+                    由于该 transform 可能后于其他 transform
+                    此时该 transform 的输入源会变为其他 transform 的输出
+                    此时输入源的名称会发生变化，因此不能简单通过 input.file.name 过滤
+                 */
+                if (notNeedJarEntries(entries)) {
+                    notNeedJarEntriesCache.add(input.file.name)
+                    return@forEach
                 }
+                entries.toList()
+                    .filter { it.name.endsWith(".class") }
+                    .forEach {
+                        logger.verbose("need process in jar --> ${it.name}")
+                        preVisitor(jf.getInputStream(it))
+                    }
+            }
         }
         dis.forEach { input ->
             input.file.walk()
@@ -178,11 +198,12 @@ class RouteTransform(private val project: Project) : Transform() {
     }
 
     private fun preVisitor(inputStream: InputStream) {
-        val cr = ClassReader(inputStream)
-        val cw = ClassWriter(cr, 0)
-        val cv = PreVisitor(cw)
-        cr.accept(cv, ClassReader.EXPAND_FRAMES)
-        inputStream.close()
+        inputStream.use {
+            val cr = ClassReader(it)
+            val cw = ClassWriter(cr, 0)
+            val cv = PreVisitor(this, cw)
+            cr.accept(cv, ClassReader.EXPAND_FRAMES)
+        }
     }
 
     private fun notNeedJarEntries(entries: List<JarEntry>): Boolean {

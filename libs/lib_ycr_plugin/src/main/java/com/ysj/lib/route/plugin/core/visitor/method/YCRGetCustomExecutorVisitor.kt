@@ -2,40 +2,33 @@ package com.ysj.lib.route.plugin.core.visitor.method
 
 import com.ysj.lib.route.plugin.core.RouteTransform
 import com.ysj.lib.route.plugin.core.visitor.BaseClassVisitor
+import com.ysj.lib.route.plugin.core.visitor.PreVisitor
 import com.ysj.lib.route.plugin.core.visitor.entity.MethodInfo
 import org.objectweb.asm.Opcodes
 
 /**
- * 处理 Caches 的静态初始化块
+ * 处理 YCR 中的 getCustomExecutor
  *
  * @author Ysj
  * Create time: 2020/10/7
  */
-class RouteCacheClInitVisitor : BaseMethodVisitor(
+class YCRGetCustomExecutorVisitor : BaseMethodVisitor(
     MethodInfo(
-        Opcodes.ACC_STATIC,
-        "<clinit>",
-        "()V"
+        Opcodes.ACC_PRIVATE or Opcodes.ACC_FINAL,
+        "getCustomExecutor",
+        "()Ljava/util/concurrent/ThreadPoolExecutor;"
     )
 ) {
 
     override fun match(bcv: BaseClassVisitor): Boolean =
-        bcv.classInfo.name == "com/ysj/lib/route/Caches" && methodInfo == bcv.methodInfo
+        bcv.classInfo.name == "com/ysj/lib/route/YCR\$Companion" && methodInfo == bcv.methodInfo
 
     override fun visitInsn(opcode: Int) {
-        if (opcode == Opcodes.RETURN) with(mv) {
-            // init {
-            //    interceptors.add(xxx)
-            // }
+        if (opcode == Opcodes.ARETURN) with(mv) {
+            // private fun getCustomExecutor(): ThreadPoolExecutor? = XXX().providerExecutor()
             (bcv.transform as RouteTransform).cacheClassInfo
-                .filter { it.interfaces.contains("com/ysj/lib/route/template/IInterceptor") }
+                .filter { it.interfaces.contains("com/ysj/lib/route/template/IExecutorProvider") }
                 .forEach {
-                    visitFieldInsn(
-                        Opcodes.GETSTATIC,
-                        bcv.classInfo.name,
-                        "interceptors",
-                        "Ljava/util/TreeSet;"
-                    )
                     visitTypeInsn(Opcodes.NEW, it.name)
                     visitInsn(Opcodes.DUP)
                     visitMethodInsn(
@@ -47,14 +40,15 @@ class RouteCacheClInitVisitor : BaseMethodVisitor(
                     )
                     visitMethodInsn(
                         Opcodes.INVOKEVIRTUAL,
-                        "java/util/TreeSet",
-                        "add",
-                        "(Ljava/lang/Object;)Z",
+                        it.name,
+                        "providerExecutor",
+                        "()Ljava/util/concurrent/ThreadPoolExecutor;",
                         false
                     )
-                    visitInsn(Opcodes.POP)
+                    visitInsn(Opcodes.ARETURN)
                     logger.lifecycle("注册了 ${it.name}")
                 }
+            return
         }
         super.visitInsn(opcode)
     }

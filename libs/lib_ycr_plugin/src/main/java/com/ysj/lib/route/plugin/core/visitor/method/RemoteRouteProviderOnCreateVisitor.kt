@@ -1,7 +1,7 @@
 package com.ysj.lib.route.plugin.core.visitor.method
 
+import com.ysj.lib.route.plugin.core.RouteTransform
 import com.ysj.lib.route.plugin.core.visitor.BaseClassVisitor
-import com.ysj.lib.route.plugin.core.visitor.PreVisitor
 import com.ysj.lib.route.plugin.core.visitor.entity.MethodInfo
 import org.objectweb.asm.Opcodes
 
@@ -25,7 +25,7 @@ class RemoteRouteProviderOnCreateVisitor : BaseMethodVisitor(
     override fun visitInsn(opcode: Int) {
         if (opcode == Opcodes.IRETURN) with(mv) {
             // registerRouteGroup("xxx class name")
-            PreVisitor.cacheClassInfo
+            (bcv.transform as RouteTransform).cacheClassInfo
                 .filter { it.interfaces.contains("com/ysj/lib/route/template/IProviderRoute") }
                 .forEach {
                     visitVarInsn(Opcodes.ALOAD, 0)

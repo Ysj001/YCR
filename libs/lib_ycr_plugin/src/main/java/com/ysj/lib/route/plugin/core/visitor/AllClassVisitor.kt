@@ -18,6 +18,7 @@ class AllClassVisitor(transform: Transform, visitor: ClassVisitor) :
 
     override val methodVisitors: ArrayList<BaseMethodVisitor> = arrayListOf(
         IRouteProviderLoadIntoVisitor(),
+        YCRGetCustomExecutorVisitor(),
         RemoteRouteProviderInitVisitor(),
         RemoteRouteProviderOnCreateVisitor(),
         RouteCacheClInitVisitor()
