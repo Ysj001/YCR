@@ -2,24 +2,28 @@
 
 [![Kotlin Version](https://img.shields.io/badge/Kotlin-1.3.72-blue.svg)](https://kotlinlang.org)  ![GitHub](https://img.shields.io/github/license/Ysj001/YCR)
 
-YCR 是一个帮助 Android 项目组件化改造的库。设计灵感来源于另外两个组件化框架（[*ARouter*](https://github.com/alibaba/ARouter)，[*CC*](https://github.com/luckybilly/CC)）
+YCR 是一个轻量级的，支持跨进程调用的，支持渐进式改造的组件化框架。
 
-YCR 集合了 ARouter 和 CC 的特色，并解决了如 CC 略难理解的 gradle 配置，不支持 startActivityForResult 的问题，也解决了 ARouter 开发前期繁琐的基础配置和不支持开发时跨进程调用的问题。
+设计灵感来源于另外两个组件化框架（[*ARouter*](https://github.com/alibaba/ARouter)，[*CC*](https://github.com/luckybilly/CC)）
 
-目前处于开发中...
+YCR 的设计初衷在于减少项目的组件化改造成本，并且采用贴近原生的设计思路，在尽可能保留原生能力上做扩展，以最大程度的保留兼容性和扩展性。整体设计和调用方式和 ARouter 类似，并继承了 CC 渐进式组件化的思想，提供了行为处理器用于处理组件间的交互行为，使新组件的开发不再必须要老项目提前解耦或下沉公共类。
 
 
 
-#### 进度&功能
+#### 功能&进度
 
 - [x] 页面，拦截器，行为处理器等组件自动注册
 - [x] 支持组件间行为调用，支持夸组件获取任意对象
 - [x] 支持开发时跨进程组件调用
-- [x] 支持路由过程拦截器 AOP
+- [x] 支持路由过程拦截器
 - [x] 支持绑定 Lifecycle 控制路由过程的生命周期
+- [x] 支持 startActivityForResult
+- [x] 支持调用过程无入侵式获取 ActivityResult
+- [ ] 支持原生跳转动画
+- [ ] 支持目标 Activity 路由参数注入
 - [x] 支持 Kotlin，Java 混编
-- [ ] 支持路由参数便捷注入
-- [ ] 支持自定义路由过程的异常处理
+- [x] 支持自定义局部的路由过程的异常处理，处理后可选择是否抛到全局
+- [ ] 支持自定义全局的路由过程的异常处理
 - [x] 在集成化打包时去除 remote 相关代码，不影响 App 启动过程
 
 
@@ -37,9 +41,10 @@ YCR 集合了 ARouter 和 CC 的特色，并解决了如 CC 略难理解的 grad
   - libs —— YCR 库的源码目录
     - lib_ycr_annoation —— YCR 库所用的注解和路由基础实体
     - lib_ycr_apt —— YCR 库的注解处理器
-    - lib_ycr_plugin —— YCR 库的插件
+    - lib_ycr_plugin —— YCR 库的插件，用于自动注册路由，拦截器等
+    - lib_ycr_api_core —— YCR 库 Api 的核心，用于实现 lib_ycr_api 和 lib_ycr_api_dev
     - lib_ycr_api —— YCR 库的集成时 Api
-    - lib_ycr_api_dev —— YCR 库的开发时 Api（用于远程调用调试）
+    - lib_ycr_api_dev —— YCR 库的开发时 Api（用于开发时跨进程调用）
 
 #### 2.在构建前先在项目根目录下执行该命令保持本地仓库应用最新的源码
 
@@ -87,6 +92,7 @@ public class YourInterceptor implements IInterceptor {
     @Override
     public void priority() { 
         // 定义拦截器的优先级，拦截器会按照该优先级顺序执行
+        // 优先级可以相同，但是相同的优先级不保证执行顺序
         return 1;
     }
 
@@ -99,6 +105,23 @@ public class YourInterceptor implements IInterceptor {
         // 你可以通过 InterruptReason 来告诉路由调用方中断路由的原因
         interceptorCallback.onInterrupt(postman, new InterruptReason<>(1, "", null));
     	// 注意此处 onContinue 和 onInterrupt 必须调用其中一个，但不能都调用
+    }
+}
+```
+
+#### 给 YCR 提供自定义的 ThreadPoolExecutor
+
+```java
+// 你可以通过实现 IExecutorProvider 来为 YCR 提供一个 ThreadPoolExecutor
+// 但这不是必须的，YCR 有自己默认的线程池（单线程）
+// 在一个 app 中只能有一个 IExecutorProvider 实现，否则会在编译时提示错误
+public class YourExecutorProvider implements IExecutorProvider {
+    @Nullable
+    @Override
+    public ThreadPoolExecutor providerExecutor() {
+        // 在这里返回你自己的线程池
+        // 若返回 null 时 YCR 会使用自己默认的线程池
+        return (ThreadPoolExecutor) Executors.newCachedThreadPool();
     }
 }
 ```
@@ -183,12 +206,12 @@ YCR.getInstance()
 
 这通常有 2 种原因
 
-1. 在主线程中调用时由于等待拦截器处理结果过长造成卡顿
+1. 在主线程中采用 navigationSync 方式调用时由于等待拦截器处理结果过长造成卡顿
 
-   解决方法：在子线程中调用，或减少拦截器等待时间。
+   解决方法：在子线程中调用，或减少拦截器处理时间。
 
 2. 在跨进程调用时长时间卡住，并且通过调试工具 dump 时显示类似如下
 
    ![problem_1.jpg](assets/problem_1.jpg)
 
-   解决方法：这是由于 binder 长时间等待目标返回结果造成的。这是由于目标进程进入后台时间过长后被系统挂起，只需要手动重新唤起目标即可。在使用模拟器进行跨进程调用则不会出现，这可能与手机厂商的系统调度有关，因此这也是跨进程调用功能只是作为开发时辅助的原因。
+   解决方法：这是由于 binder 长时间等待目标返回结果造成的。目标进程进入后台时间过长后会被系统挂起，只需要手动重新唤起目标即可。使用模拟器测试时不会出现，这可能与手机厂商的系统调度有关，因此这也是跨进程调用功能只是作为开发时辅助的原因之一。
