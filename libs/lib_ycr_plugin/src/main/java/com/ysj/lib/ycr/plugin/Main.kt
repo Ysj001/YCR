@@ -15,6 +15,7 @@ class Main : Plugin<Project> {
 
     override fun apply(project: Project) {
         project.extensions.create(RouteExtensions.NAME, RouteExtensions::class.java)
+        if (!project.plugins.hasPlugin("com.android.application")) return
         project.extensions.getByType(AppExtension::class.java).also { appExt ->
             appExt.registerTransform(RouteTransform(project).apply {
                 project.afterEvaluate {
