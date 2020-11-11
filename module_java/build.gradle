@@ -1,7 +1,5 @@
-def appId = applicationIds[project.name]
-
-apply plugin: 'com.android.application'
-//apply plugin: 'com.android.library'
+if (isRelease) apply plugin: 'com.android.library'
+else apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'ycr-plugin'
@@ -14,7 +12,7 @@ android {
     resourcePrefix "module_java_"
 
     defaultConfig {
-        if (!isRelease) applicationId appId
+        if (!isRelease) applicationId applicationIds[project.name]
         minSdkVersion androidConfig.minSdkVersion
         targetSdkVersion androidConfig.targetSdkVersion
         versionCode 1

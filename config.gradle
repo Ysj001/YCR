@@ -1,13 +1,13 @@
 ext {
     // false: 子模块可以独立运行
     // true ：打包整个项目 apk，子模块不可独立运行
-    isRelease = false
+    isRelease = true
 
     // ------------------ 模块的 applicationId ------------------
     applicationIds = [
             "app"        : "com.ysj.lib.router",
             "module_m1"  : "com.ysj.lib.route.module.m1",
-            "module_m2"  : "com.ysj.lib.route.module.m2",
+//            "module_m2"  : "com.ysj.lib.route.module.m2",
             "module_java": "com.ysj.lib.route.module.java",
     ]
 

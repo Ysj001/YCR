@@ -1,5 +1,3 @@
-def appId = applicationIds[project.name]
-
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
@@ -18,7 +16,7 @@ android {
     buildToolsVersion androidConfig.buildToolsVersion
 
     defaultConfig {
-        applicationId appId
+        applicationId applicationIds[project.name]
         minSdkVersion androidConfig.minSdkVersion
         targetSdkVersion androidConfig.targetSdkVersion
         versionCode 1
@@ -45,4 +43,9 @@ dependencies {
     implementation project(':lib_base')
 
     kapt "$LIB_GROUP_ID:ycr-compiler:$LIB_VERSION"
+
+    if (isRelease) applicationIds.each {
+        def moduleName = it.key
+        if (moduleName != project.name) implementation project(":$moduleName")
+    }
 }
