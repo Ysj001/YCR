@@ -29,7 +29,7 @@ import java.util.zip.ZipEntry
 class RouteTransform(private val project: Project) : Transform() {
 
     companion object {
-        const val PLUGIN_NAME = "RoutePlugin"
+        const val PLUGIN_NAME = "YCRPlugin"
     }
 
     /** 主 module 的 [AppExtension] */
