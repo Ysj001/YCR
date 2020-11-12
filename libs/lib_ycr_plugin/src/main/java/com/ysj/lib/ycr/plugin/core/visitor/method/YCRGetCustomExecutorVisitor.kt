@@ -2,7 +2,6 @@ package com.ysj.lib.ycr.plugin.core.visitor.method
 
 import com.ysj.lib.ycr.plugin.core.RouteTransform
 import com.ysj.lib.ycr.plugin.core.visitor.BaseClassVisitor
-import com.ysj.lib.ycr.plugin.core.visitor.PreVisitor
 import com.ysj.lib.ycr.plugin.core.visitor.entity.MethodInfo
 import org.objectweb.asm.Opcodes
 
@@ -47,8 +46,8 @@ class YCRGetCustomExecutorVisitor : BaseMethodVisitor(
                     )
                     visitInsn(Opcodes.ARETURN)
                     logger.lifecycle("注册了 ${it.name}")
+                    return
                 }
-            return
         }
         super.visitInsn(opcode)
     }
