@@ -124,10 +124,15 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
         if (this.routeResultCallbacks == null) this.routeResultCallbacks = ArrayList()
         this.routeResultCallbacks?.add(object : RouteResultCallback<Any?>() {
             override fun onResult(result: Any?) {
+                if (result is Unit) return
+                if (result == null) {
+                    callback.onResult(result)
+                    return
+                }
                 if (checkMethodParameterType(
                         callback.javaClass,
                         "onResult",
-                        result?.javaClass
+                        result.javaClass
                     )
                 ) callback.onResult(result as T?)
             }
@@ -140,10 +145,15 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
         if (this.routeResultCallbacks == null) this.routeResultCallbacks = ArrayList()
         this.routeResultCallbacks?.add(object : RouteResultCallback<Any?>() {
             override fun onResult(result: Any?) {
+                if (result is Unit) return
+                if (result == null) {
+                    callback(result)
+                    return
+                }
                 if (checkMethodParameterType(
                         callback.javaClass,
                         "invoke",
-                        result?.javaClass
+                        result.javaClass
                     )
                 ) callback(result as T?)
             }

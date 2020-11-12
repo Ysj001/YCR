@@ -14,11 +14,11 @@ package com.ysj.lib.ycr.type
  * @param mdName 要校验的方法名
  * @param type 目标类型
  */
-internal fun checkMethodParameterType(src: Class<*>, mdName: String, type: Class<*>?) =
+internal fun checkMethodParameterType(src: Class<*>, mdName: String, type: Class<*>) =
     src.methods.filter { it.name == mdName }.let { mds ->
         var mpt: Class<*> = mds[0].parameterTypes[0]
         if (mds.size > 1 && mpt == Any::class.java) mpt = mds[1].parameterTypes[0]
-        type?.let {
+        type.let {
             var result = mpt.isAssignableFrom(it)
             if (!result) result = when (it.name) {
                 "byte" -> java.lang.Byte::class.java === mpt
@@ -30,5 +30,5 @@ internal fun checkMethodParameterType(src: Class<*>, mdName: String, type: Class
                 else -> false
             }
             result
-        } ?: false
+        }
     }
