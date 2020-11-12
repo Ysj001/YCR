@@ -13,7 +13,7 @@ import java.io.Serializable
  * Create time: 2020/11/6
  */
 @Route("/base/MockUserLogin")
-class MockUserLogin : IActionProcessor {
+class MockUserLogin : IActionProcessor, Serializable {
 
     companion object {
         private const val TAG = "MockUserLogin"
@@ -22,23 +22,34 @@ class MockUserLogin : IActionProcessor {
         const val LEGAL_USER_NAME = "Ysj"
     }
 
-    private var userInfo: UserInfo? = null
+    var userInfo: UserInfo? = null
+        private set
 
     override fun doAction(postman: Postman): Any? {
         Log.i(TAG, "doAction: ${postman.actionName}")
         val bundle = postman.bundle
         return when (postman.actionName) {
-            "login" -> {
-                val userName = bundle.getString("userName", "")
-                val success = userName == LEGAL_USER_NAME
-                if (success) userInfo = UserInfo(userName)
-                success
-            }
-            "logout" -> Unit.also { userInfo = null }
+            "this" -> this
+            "login" -> login(bundle.getString("userName", ""))
+            "logout" -> logout()
             "userInfo" -> userInfo
-            "setAge" -> userInfo?.age = bundle.getInt("age")
+            "setAge" -> setAge(bundle.getInt("age"))
             else -> Unit
         }
+    }
+
+    fun login(userName: String): Boolean {
+        val success = userName == LEGAL_USER_NAME
+        if (success) userInfo = UserInfo(userName)
+        return success
+    }
+
+    fun logout() {
+        userInfo = null
+    }
+
+    fun setAge(age: Int) {
+        userInfo?.age = age
     }
 
     class UserInfo(

@@ -29,7 +29,7 @@ class UserCenterActivity : AppCompatActivity() {
         YCR.getInstance()
             .build("/base/MockUserLogin")
             .withRouteAction("logout")
-            .addOnResultCallback(::refreshUserInfo)
+            .doOnFinished(Runnable(::refreshUserInfo))
             .doOnException(::doOnException)
             .navigation(this)
     }
@@ -40,7 +40,7 @@ class UserCenterActivity : AppCompatActivity() {
             .build("/base/MockUserLogin")
             .withRouteAction("setAge")
             .withInt("age", 18)
-            .addOnResultCallback(::refreshUserInfo)
+            .doOnFinished(Runnable(::refreshUserInfo))
             .doOnException(::doOnException)
             .navigation(this)
     }
@@ -50,7 +50,7 @@ class UserCenterActivity : AppCompatActivity() {
         return false
     }
 
-    private fun refreshUserInfo(any: Any? = null) {
+    private fun refreshUserInfo() {
         YCR.getInstance()
             .build("/base/MockUserLogin")
             .withRouteAction("userInfo")
