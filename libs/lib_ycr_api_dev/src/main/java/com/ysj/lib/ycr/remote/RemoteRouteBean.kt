@@ -17,7 +17,7 @@ class RemoteRouteBean(val routeBean: RouteBean) : Parcelable {
     constructor(parcel: Parcel) : this(
         Postman(parcel.readString() ?: "", parcel.readString() ?: "")
             .apply {
-                types = RouteTypes("${parcel.readString()}")
+                types = parcel.readSerializable() as RouteTypes?
                 applicationId = "${parcel.readString()}"
                 className = "${parcel.readString()}"
             }
@@ -26,6 +26,7 @@ class RemoteRouteBean(val routeBean: RouteBean) : Parcelable {
             .withRouteAction(parcel.readString())
             .withFlags(parcel.readInt())
             .apply { if (parcel.readInt() == 1) useGreenChannel() }
+            .apply { if (parcel.readInt() == 1) isDestroy = true }
     )
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
@@ -33,7 +34,7 @@ class RemoteRouteBean(val routeBean: RouteBean) : Parcelable {
             dest.also {
                 it.writeString(group)
                 it.writeString(path)
-                it.writeString(types?.name)
+                it.writeSerializable(types)
                 it.writeString(applicationId)
                 it.writeString(className)
                 if (this is Postman) {
@@ -42,10 +43,12 @@ class RemoteRouteBean(val routeBean: RouteBean) : Parcelable {
                     it.writeString(actionName)
                     it.writeInt(this.flags)
                     it.writeInt(if (greenChannel) 1 else 0)
+                    it.writeInt(if (isDestroy) 1 else 0)
                 } else {
                     it.writeBundle(null)
                     it.writeInt(-1)
                     it.writeString(null)
+                    it.writeInt(0)
                     it.writeInt(0)
                     it.writeInt(0)
                 }

@@ -46,6 +46,12 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
     var actionName: String = ""
         private set
 
+    /** 可用于判断路由是否被销毁 */
+    var isDestroy = false
+        internal set
+
+    internal var lifecycle: Lifecycle? = null
+
     internal var context: WeakReference<Context>? = null
 
     internal var exceptionCallback: YCRExceptionCallback? = null
@@ -54,19 +60,35 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
 
     internal var interruptCallback: InterceptorCallback.InterruptCallback? = null
 
+    internal var finishedCallback: Runnable? = null
+
     override fun onDestroy(owner: LifecycleOwner) {
+        owner.lifecycle.removeObserver(this)
+        destroy()
+    }
+
+    /**
+     * 手动销毁路由，会中断路由过程并清除所有回调
+     */
+    fun destroy() {
+        isDestroy = true
+        lifecycle?.removeObserver(this)
         context?.clear()
         context = null
         exceptionCallback = null
         routeResultCallbacks = null
         interruptCallback = null
-        owner.lifecycle.removeObserver(this)
+        lifecycle = null
+        finishedCallback = null
     }
 
     /**
      * 绑定生命周期，当生命周期状态变更为 [Lifecycle.State.DESTROYED] 时会中断路由过程
      */
-    fun bindLifecycle(lifecycle: Lifecycle) = apply { lifecycle.addObserver(this) }
+    fun bindLifecycle(lifecycle: Lifecycle) = apply {
+        this.lifecycle = lifecycle
+        lifecycle.addObserver(this)
+    }
 
     /**
      * 调用该方法启用绿色通道，跳过所有拦截器
@@ -127,6 +149,11 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
             }
         })
     }
+
+    /**
+     * 路由调用过程结束的回调
+     */
+    fun doOnFinished(callback: Runnable) = apply { finishedCallback = callback }
 
     /**
      * 当路由过程中出现异常时回调

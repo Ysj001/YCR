@@ -84,8 +84,7 @@ class YCR private constructor() {
                 routes[fullPath] = routeBean
                 postman.from(routeBean)
             }
-            if (!postman.greenChannel && handleRemoteInterceptor(postman)) return
-            handleRoute(postman) { result ->
+            if (postman.greenChannel || !handleRemoteInterceptor(postman)) handleRoute(postman) { result ->
                 postman.routeResultCallbacks?.run {
                     try {
                         forEach { callback -> callback.onResult(result) }
@@ -94,6 +93,7 @@ class YCR private constructor() {
                     }
                 }
             }
+            postman.finishedCallback?.run()
         } catch (e: Exception) {
             callException(postman, YCRExceptionFactory.exception(e))
         }
@@ -181,7 +181,7 @@ class YCR private constructor() {
         interceptors: TreeSet<InterceptorInfo>
     ): Boolean {
         var interrupt = false
-        if (interceptors.isEmpty()) return interrupt
+        if (interceptors.isEmpty() || postman.isDestroy) return interrupt
         val info = interceptors.pollFirst()
         val routeService = routeProvider.getRouteService(info.applicationId)
             ?: throw RuntimeException("远端组件未找到：${info.applicationId}")

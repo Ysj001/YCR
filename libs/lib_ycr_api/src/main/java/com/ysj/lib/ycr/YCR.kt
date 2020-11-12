@@ -88,8 +88,7 @@ class YCR private constructor() {
                 }
                 postman.from(routeBean)
             }
-            if (!postman.greenChannel && handleInterceptor(postman)) return
-            handleRoute(postman) { result ->
+            if (postman.greenChannel || !handleInterceptor(postman)) handleRoute(postman) { result ->
                 postman.routeResultCallbacks?.run {
                     try {
                         forEach { callback -> callback.onResult(result) }
@@ -98,6 +97,7 @@ class YCR private constructor() {
                     }
                 }
             }
+            postman.finishedCallback?.run()
         } catch (e: Exception) {
             callException(postman, YCRExceptionFactory.exception(e))
         }
@@ -175,7 +175,7 @@ class YCR private constructor() {
         interceptors: Iterator<IInterceptor>
     ): Boolean {
         var interrupt = false
-        if (!interceptors.hasNext()) return interrupt
+        if (!interceptors.hasNext() || postman.isDestroy) return interrupt
         interceptors.next().onIntercept(postman, object : InterceptorCallback {
 
             var isFinished = false

@@ -1,18 +1,16 @@
 package com.ysj.lib.ycr.annotation
 
+import java.io.Serializable
+
 /**
  * 路由的类型
  *
  * @author Ysj
  * Create time: 2020/8/4
  */
-inline class RouteTypes(val name: String) {
+sealed class RouteTypes(val name: String) : Serializable {
 
-    companion object {
+    object ACTIVITY : RouteTypes("ACTIVITY")
 
-        val ACTIVITY = RouteTypes("ACTIVITY")
-
-        val ACTION = RouteTypes("ACTION")
-    }
-
+    object ACTION : RouteTypes("ACTION")
 }
