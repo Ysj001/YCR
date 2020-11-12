@@ -17,7 +17,7 @@ class RemoteRouteBean(val routeBean: RouteBean) : Parcelable {
     constructor(parcel: Parcel) : this(
         Postman(parcel.readString() ?: "", parcel.readString() ?: "")
             .apply {
-                types = parcel.readSerializable() as RouteTypes?
+                types = RouteTypes("${parcel.readString()}")
                 applicationId = "${parcel.readString()}"
                 className = "${parcel.readString()}"
             }
@@ -34,7 +34,7 @@ class RemoteRouteBean(val routeBean: RouteBean) : Parcelable {
             dest.also {
                 it.writeString(group)
                 it.writeString(path)
-                it.writeSerializable(types)
+                it.writeString(types?.name)
                 it.writeString(applicationId)
                 it.writeString(className)
                 if (this is Postman) {
