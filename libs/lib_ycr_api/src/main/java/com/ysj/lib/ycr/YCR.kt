@@ -97,7 +97,7 @@ class YCR private constructor() {
                     }
                 }
             }
-            postman.finishedCallback?.run()
+            postman.finishedCallback?.onFinished()
         } catch (e: Exception) {
             callException(postman, YCRExceptionFactory.exception(e))
         }
@@ -115,7 +115,7 @@ class YCR private constructor() {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     context.startActivity(intent)
                 } else {
-                    runOnMainThread(Runnable {
+                    runOnMainThread {
                         try {
                             if (postman.routeResultCallbacks == null || postman.requestCode < 0) {
                                 context.startActivityForResult(intent, postman.requestCode)
@@ -139,7 +139,7 @@ class YCR private constructor() {
                                 YCRExceptionFactory.navigationException(e)
                             )
                         }
-                    })
+                    }
                 }
             }
             RouteTypes.ACTION -> sync {

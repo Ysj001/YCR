@@ -10,10 +10,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import com.ysj.lib.ycr.YCR
 import com.ysj.lib.ycr.annotation.RouteBean
+import com.ysj.lib.ycr.callback.FinishedCallback
 import com.ysj.lib.ycr.callback.InterceptorCallback
 import com.ysj.lib.ycr.callback.RouteResultCallback
 import com.ysj.lib.ycr.callback.YCRExceptionCallback
-import com.ysj.lib.ycr.exception.IYCRExceptions
 import com.ysj.lib.ycr.lifecycle.RouteLifecycleObserver
 import com.ysj.lib.ycr.type.checkMethodParameterType
 import java.io.Serializable
@@ -60,7 +60,7 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
 
     internal var interruptCallback: InterceptorCallback.InterruptCallback? = null
 
-    internal var finishedCallback: Runnable? = null
+    internal var finishedCallback: FinishedCallback? = null
 
     override fun onDestroy(owner: LifecycleOwner) {
         owner.lifecycle.removeObserver(this)
@@ -100,7 +100,7 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
      */
     fun navigation(context: Context) {
         this.context = WeakReference(context)
-        YCR.getInstance().runOnExecutor(Runnable { YCR.getInstance().navigation(this) })
+        YCR.getInstance().runOnExecutor { YCR.getInstance().navigation(this) }
     }
 
     /**
@@ -163,35 +163,18 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
     /**
      * 路由调用过程结束的回调
      */
-    fun doOnFinished(callback: Runnable) = apply { finishedCallback = callback }
+    fun doOnFinished(callback: FinishedCallback) = apply { finishedCallback = callback }
 
     /**
      * 当路由过程中出现异常时回调
      */
-    fun doOnException(callback: YCRExceptionCallback) = apply {
-        this.exceptionCallback = callback
-    }
-
-    @JvmSynthetic
-    fun doOnException(callback: (Postman, IYCRExceptions) -> Boolean) = apply {
-        doOnException(object : YCRExceptionCallback {
-            override fun handleException(postman: Postman, e: IYCRExceptions) = callback(postman, e)
-        })
-    }
+    fun doOnException(callback: YCRExceptionCallback) = apply { this.exceptionCallback = callback }
 
     /**
      * 当被拦截器拦截，拦截器执行 [InterceptorCallback.onInterrupt] 后回调
      */
     fun doOnInterrupt(callback: InterceptorCallback.InterruptCallback) = apply {
         this.interruptCallback = callback
-    }
-
-    @JvmSynthetic
-    fun doOnInterrupt(callback: (Postman, InterruptReason<*>) -> Unit) = apply {
-        doOnInterrupt(object : InterceptorCallback.InterruptCallback {
-            override fun onInterrupt(postman: Postman, reason: InterruptReason<*>) =
-                callback(postman, reason)
-        })
     }
 
     /**
@@ -319,6 +302,7 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
         this.requestCode = postman.requestCode
         this.flags = postman.flags
         this.greenChannel = postman.greenChannel
+        this.isDestroy = postman.isDestroy
         from(postman as RouteBean)
     }
 

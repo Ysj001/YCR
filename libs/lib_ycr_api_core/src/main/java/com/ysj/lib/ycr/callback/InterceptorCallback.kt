@@ -11,7 +11,7 @@ import com.ysj.lib.ycr.entity.Postman
  */
 interface InterceptorCallback {
 
-    interface InterruptCallback {
+    fun interface InterruptCallback {
         fun onInterrupt(postman: Postman, reason: InterruptReason<*>)
     }
 

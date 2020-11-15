@@ -9,7 +9,7 @@ import com.ysj.lib.ycr.exception.IYCRExceptions
  * @author Ysj
  * Create time: 2020/10/27
  */
-interface YCRExceptionCallback {
+fun interface YCRExceptionCallback {
 
     /**
      * 处理异常
