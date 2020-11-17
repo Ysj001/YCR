@@ -35,10 +35,6 @@ class HomeActivity : AppCompatActivity() {
                     }
                     .navigationSync(this)
             }
-            .doOnException { _, e ->
-                e.printStackTrace()
-                false
-            }
             .navigation(this)
     }
 

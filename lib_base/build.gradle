@@ -62,7 +62,7 @@ dependencies {
         }
     }
 
-    if(isRelease) debugApi "$LIB_GROUP_ID:ycr-api:$LIB_VERSION"
+    if (isRelease) debugApi "$LIB_GROUP_ID:ycr-api:$LIB_VERSION"
     else debugApi "$LIB_GROUP_ID:ycr-api-dev:$LIB_VERSION"
     releaseApi "$LIB_GROUP_ID:ycr-api:$LIB_VERSION"
     kapt "$LIB_GROUP_ID:ycr-compiler:$LIB_VERSION"

@@ -6,8 +6,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.ysj.lib.base.mock.MockUserLogin
 import com.ysj.lib.ycr.YCR
 import com.ysj.lib.ycr.annotation.Route
-import com.ysj.lib.ycr.entity.Postman
-import com.ysj.lib.ycr.exception.IYCRExceptions
 import kotlinx.android.synthetic.main.module_m1_activity_user_center.*
 
 /**
@@ -29,8 +27,7 @@ class UserCenterActivity : AppCompatActivity() {
         YCR.getInstance()
             .build("/base/MockUserLogin")
             .withRouteAction("logout")
-            .doOnFinished(Runnable(::refreshUserInfo))
-            .doOnException(::doOnException)
+            .doOnFinished(::refreshUserInfo)
             .navigation(this)
     }
 
@@ -40,14 +37,8 @@ class UserCenterActivity : AppCompatActivity() {
             .build("/base/MockUserLogin")
             .withRouteAction("setAge")
             .withInt("age", 18)
-            .doOnFinished(Runnable(::refreshUserInfo))
-            .doOnException(::doOnException)
+            .doOnFinished(::refreshUserInfo)
             .navigation(this)
-    }
-
-    private fun doOnException(postman: Postman, e: IYCRExceptions): Boolean {
-        e.printStackTrace()
-        return false
     }
 
     private fun refreshUserInfo() {
@@ -61,7 +52,6 @@ class UserCenterActivity : AppCompatActivity() {
                     tvAge.text = userInfo?.age?.toString() ?: "未登录"
                 }
             }
-            .doOnException(::doOnException)
             .navigation(this)
     }
 }
