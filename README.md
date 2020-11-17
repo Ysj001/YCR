@@ -1,12 +1,12 @@
 ## YCR —— YComponentRouter
 
-[![Kotlin Version](https://img.shields.io/badge/Kotlin-1.3.72-blue.svg)](https://kotlinlang.org)  ![GitHub](https://img.shields.io/github/license/Ysj001/YCR)
+[![Kotlin Version](https://img.shields.io/badge/Kotlin-1.4.10-blue.svg)](https://kotlinlang.org)  ![GitHub](https://img.shields.io/github/license/Ysj001/YCR)
 
 YCR 是一个轻量级的，支持跨进程调用的，支持渐进式改造的组件化框架。
 
-设计灵感来源于另外两个组件化框架（[*ARouter*](https://github.com/alibaba/ARouter)，[*CC*](https://github.com/luckybilly/CC)）
+YCR 的设计初衷在于减少项目的组件化改造成本。框架整体采用贴近原生的设计思路，在尽可能保留原生能力上做扩展，以最大程度的保留兼容性和扩展性。
 
-YCR 的设计初衷在于减少项目的组件化改造成本，并且采用贴近原生的设计思路，在尽可能保留原生能力上做扩展，以最大程度的保留兼容性和扩展性。整体设计和调用方式和 ARouter 类似，并继承了 CC 渐进式组件化的思想，提供了行为处理器用于处理组件间的交互行为，使新组件的开发不再必须要老项目提前解耦或下沉公共类。
+YCR 的整体设计和调用方式和 [*ARouter*](https://github.com/alibaba/ARouter) 类似，如果你之前采用的是 ARouter 方案，相信你很快就能上手。YCR 也继承了 [*CC*](https://github.com/luckybilly/CC) 渐进式组件化的思想，提供了行为处理器用于处理组件间的交互行为，使新组件的开发不再必须要老项目提前解耦或下沉公共类，并且提供了跨进程调用能力使新组件的开发更加便捷。
 
 
 
@@ -23,7 +23,7 @@ YCR 的设计初衷在于减少项目的组件化改造成本，并且采用贴�
 - [ ] 支持目标 Activity 路由参数注入
 - [x] 支持 Kotlin，Java 混编
 - [x] 支持自定义局部的路由过程的异常处理，处理后可选择是否抛到全局
-- [ ] 支持自定义全局的路由过程的异常处理
+- [x] 支持自定义全局的路由过程的异常处理
 - [x] 在集成化打包时去除 remote 相关代码，不影响 App 启动过程
 
 
@@ -215,3 +215,9 @@ YCR.getInstance()
    ![problem_1.jpg](assets/problem_1.jpg)
 
    解决方法：这是由于 binder 长时间等待目标返回结果造成的。目标进程进入后台时间过长后会被系统挂起，只需要手动重新唤起目标即可。使用模拟器测试时不会出现，这可能与手机厂商的系统调度有关，因此这也是跨进程调用功能只是作为开发时辅助的原因之一。
+
+
+
+### 其它
+
+- 如果觉得本库对你有所帮助请给个 Star 吧！
