@@ -14,11 +14,12 @@ import com.ysj.lib.ycr.entity.Postman
 interface IInterceptor : YCRTemplate, Comparable<IInterceptor> {
 
     /**
-     * 拦截器优先级，用于对匹配的拦截器进行排序，值越大优先级越高
+     * 优先级，用于对其进行排序，值越大优先级越高
+     * - 注意：优先级可以相同，相同优先级不保证执行顺序
      *
      * @return default: 0 [Short.MIN_VALUE] ~ [Short.MAX_VALUE]
      */
-    fun priority(): Short
+    fun priority(): Short = 0
 
     /**
      * 对拦截到的数据进行处理

@@ -3,6 +3,7 @@ package com.ysj.lib.ycr.exception
 import com.ysj.lib.ycr.annotation.RouteTypes
 import com.ysj.lib.ycr.callback.InterceptorCallback
 import com.ysj.lib.ycr.callback.RouteResultCallback
+import java.io.Serializable
 import java.security.InvalidParameterException
 
 /*
@@ -70,7 +71,7 @@ open class YCRExternalException(
 // ==========================================================================
 
 /** 用于标记是 YCR 的异常类型 */
-interface IYCRExceptions {
+interface IYCRExceptions : Serializable {
 
     /** 错误码 */
     val code: Int

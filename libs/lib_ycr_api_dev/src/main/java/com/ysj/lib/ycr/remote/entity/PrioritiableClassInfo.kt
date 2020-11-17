@@ -1,22 +1,22 @@
-package com.ysj.lib.ycr.entity
+package com.ysj.lib.ycr.remote.entity
 
 import java.io.Serializable
 
 /**
- * 拦截器信息实体
+ * 有优先级排序的 Class 信息实体
  *
  * @author Ysj
  * Create time: 2020/10/31
  */
-class InterceptorInfo(
+class PrioritiableClassInfo(
     val applicationId: String,
     val className: String,
     val priority: Short
-) : Serializable, Comparable<InterceptorInfo> {
+) : Serializable, Comparable<PrioritiableClassInfo> {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is InterceptorInfo) return false
+        if (other !is PrioritiableClassInfo) return false
 
         if (applicationId != other.applicationId) return false
         if (className != other.className) return false
@@ -34,7 +34,6 @@ class InterceptorInfo(
         return "InterceptorInfo(applicationId='$applicationId', className='$className', priority=$priority)"
     }
 
-    override fun compareTo(other: InterceptorInfo): Int =
-        other.priority - priority
+    override fun compareTo(other: PrioritiableClassInfo): Int = other.priority - priority
 
 }

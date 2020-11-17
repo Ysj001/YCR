@@ -9,18 +9,19 @@ import com.ysj.lib.ycr.annotation.Route
 import com.ysj.lib.ycr.annotation.RouteTypes
 import com.ysj.lib.ycr.annotation.subGroupFromPath
 import com.ysj.lib.ycr.entity.ActivityResult
-import com.ysj.lib.ycr.entity.InterceptorInfo
 import com.ysj.lib.ycr.entity.InterruptReason
 import com.ysj.lib.ycr.entity.Postman
 import com.ysj.lib.ycr.exception.IYCRExceptions
 import com.ysj.lib.ycr.exception.YCRExceptionFactory
 import com.ysj.lib.ycr.lifecycle.ActivityResultFragment
 import com.ysj.lib.ycr.remote.*
+import com.ysj.lib.ycr.remote.entity.PrioritiableClassInfo
 import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.collections.HashMap
 
@@ -145,43 +146,48 @@ class YCR private constructor() {
 
     private fun handleRemoteInterceptor(postman: Postman): Boolean {
         postman.getContext() ?: return true
-        val isMainTH = Thread.currentThread() == Looper.getMainLooper().thread
-        // 拦截器超时时间
-        val timeout = if (isMainTH) INTERCEPTOR_TIME_OUT_MAIN_TH else INTERCEPTOR_TIME_OUT_SUB_TH
         val routeProvider = RemoteRouteProvider.instance ?: return false
         val routeService = routeProvider.getRouteService() ?: return false
-        val interceptors = TreeSet<InterceptorInfo>()
+        val interceptors = TreeSet<PrioritiableClassInfo>()
             .apply {
                 (routeService.allApplicationId.params[REMOTE_ALL_APPLICATION_ID] as Collection<*>)
                     .mapNotNull {
                         routeProvider.getRouteService(it as String)
-                            ?.findInterceptor(RemoteRouteBean(postman))
+                            ?.allInterceptors
                             ?.params
                             ?.get(REMOTE_INTERRUPT_INFO) as Collection<*>?
                     }
                     .forEach {
                         it.forEach { ii ->
-                            add(ii as InterceptorInfo)
+                            add(ii as PrioritiableClassInfo)
                         }
                     }
             }
+        val isMainTH = Thread.currentThread() == Looper.getMainLooper().thread
+        // 拦截器超时时间
+        val timeout = if (isMainTH) INTERCEPTOR_TIME_OUT_MAIN_TH else INTERCEPTOR_TIME_OUT_SUB_TH
         val countDownLatch = CountDownLatch(interceptors.size)
-        val interrupt = executeInterceptor(postman, routeProvider, countDownLatch, interceptors)
+        val interrupt = AtomicBoolean(false)
+        executeInterceptor(postman, routeProvider, interrupt, countDownLatch, interceptors)
         // 等待所有拦截器处理完再返回结果
         countDownLatch.await(timeout, TimeUnit.MILLISECONDS)
         val remaining = countDownLatch.count
         if (remaining != 0L) throw YCRExceptionFactory.interceptorTimeOutException(remaining)
-        return interrupt
+        return interrupt.get()
     }
 
     private fun executeInterceptor(
         postman: Postman,
         routeProvider: RemoteRouteProvider,
+        interrupt: AtomicBoolean,
         countDownLatch: CountDownLatch,
-        interceptors: TreeSet<InterceptorInfo>
-    ): Boolean {
-        var interrupt = false
-        if (interceptors.isEmpty() || postman.isDestroy) return interrupt
+        interceptors: TreeSet<PrioritiableClassInfo>
+    ) {
+        if (postman.isDestroy) {
+            while (countDownLatch.count > 0) countDownLatch.countDown()
+            return
+        }
+        if (interceptors.isEmpty()) return
         val info = interceptors.pollFirst()
         val routeService = routeProvider.getRouteService(info.applicationId)
             ?: throw RuntimeException("远端组件未找到：${info.applicationId}")
@@ -196,7 +202,13 @@ class YCR private constructor() {
 
                 override fun onContinue(routeBean: RemoteRouteBean) = safeHandle {
                     postman.from(routeBean.routeBean as Postman)
-                    executeInterceptor(postman, routeProvider, countDownLatch, interceptors)
+                    executeInterceptor(
+                        postman,
+                        routeProvider,
+                        interrupt,
+                        countDownLatch,
+                        interceptors
+                    )
                     countDownLatch.countDown()
                 }
 
@@ -215,7 +227,7 @@ class YCR private constructor() {
                             )
                         }
                     }
-                    interrupt = true
+                    interrupt.set(true)
                     while (countDownLatch.count > 0) countDownLatch.countDown()
                 }
 
@@ -228,7 +240,6 @@ class YCR private constructor() {
                 }
             }
         )
-        return interrupt
     }
 
     private fun doRemoteAction(postman: Postman) =
@@ -268,7 +279,32 @@ class YCR private constructor() {
     }
 
     private fun callException(postman: Postman, exception: IYCRExceptions) {
-        postman.exceptionCallback?.handleException(postman, exception)
+        if (postman.exceptionCallback?.handleException(postman, exception) == true) return
+        postman.getContext() ?: return
+        val routeProvider = RemoteRouteProvider.instance ?: return
+        val routeService = routeProvider.getRouteService() ?: return
+        TreeSet<PrioritiableClassInfo>()
+            .apply {
+                (routeService.allApplicationId.params[REMOTE_ALL_APPLICATION_ID] as Collection<*>)
+                    .mapNotNull {
+                        routeProvider.getRouteService(it as String)
+                            ?.allGlobalExceptionProcessors
+                            ?.params
+                            ?.get(REMOTE_EXCEPTION_PROCESSOR_INFO) as Collection<*>?
+                    }
+                    .forEach {
+                        it.forEach { ii ->
+                            add(ii as PrioritiableClassInfo)
+                        }
+                    }
+            }
+            .forEach {
+                if (routeService.handleExceptionProcessor(RemoteParam().apply {
+                        params[REMOTE_EXCEPTION_PROCESSOR_INFO] = it
+                        params[REMOTE_YCR_EXCEPTION] = exception
+                        params[REMOTE_ROUTE_BEAN] = RemoteRouteBean(postman)
+                    })) return
+            }
     }
 
 }

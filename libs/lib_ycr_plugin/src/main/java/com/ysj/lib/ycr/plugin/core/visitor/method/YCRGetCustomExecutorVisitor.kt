@@ -1,5 +1,7 @@
 package com.ysj.lib.ycr.plugin.core.visitor.method
 
+import com.ysj.lib.ycr.plugin.core.CLASS_IExecutorProvider
+import com.ysj.lib.ycr.plugin.core.CLASS_YCR
 import com.ysj.lib.ycr.plugin.core.RouteTransform
 import com.ysj.lib.ycr.plugin.core.visitor.BaseClassVisitor
 import com.ysj.lib.ycr.plugin.core.visitor.entity.MethodInfo
@@ -20,13 +22,13 @@ class YCRGetCustomExecutorVisitor : BaseMethodVisitor(
 ) {
 
     override fun match(bcv: BaseClassVisitor): Boolean =
-        bcv.classInfo.name == "com/ysj/lib/ycr/YCR\$Companion" && methodInfo == bcv.methodInfo
+        bcv.classInfo.name == "$CLASS_YCR\$Companion" && methodInfo == bcv.methodInfo
 
     override fun visitInsn(opcode: Int) {
         if (opcode == Opcodes.ARETURN) with(mv) {
             // private fun getCustomExecutor(): ThreadPoolExecutor? = XXX().providerExecutor()
             (bcv.transform as RouteTransform).cacheClassInfo
-                .filter { it.interfaces.contains("com/ysj/lib/ycr/template/IExecutorProvider") }
+                .filter { it.interfaces.contains(CLASS_IExecutorProvider) }
                 .forEach {
                     visitTypeInsn(Opcodes.NEW, it.name)
                     visitInsn(Opcodes.DUP)

@@ -25,3 +25,9 @@ internal const val REMOTE_INTERRUPT_INFO = "REMOTE_INTERRUPT_INFO"
 /** 用于存取远程拦截器拦截原因 */
 internal const val REMOTE_INTERRUPT_REASON = "REMOTE_INTERRUPT_REASON"
 
+/** 用于存取异常处理器信息 */
+internal const val REMOTE_EXCEPTION_PROCESSOR_INFO = "REMOTE_EXCEPTION_PROCESSOR_INFO"
+
+/** 用于存取 YCR 异常 */
+internal const val REMOTE_YCR_EXCEPTION = "REMOTE_YCR_EXCEPTION"
+

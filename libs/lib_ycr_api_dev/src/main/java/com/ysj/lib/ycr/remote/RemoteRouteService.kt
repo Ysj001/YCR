@@ -4,9 +4,10 @@ import android.os.Parcelable
 import android.util.Log
 import com.ysj.lib.ycr.Caches
 import com.ysj.lib.ycr.callback.InterceptorCallback
-import com.ysj.lib.ycr.entity.InterceptorInfo
 import com.ysj.lib.ycr.entity.InterruptReason
 import com.ysj.lib.ycr.entity.Postman
+import com.ysj.lib.ycr.exception.IYCRExceptions
+import com.ysj.lib.ycr.remote.entity.PrioritiableClassInfo
 import com.ysj.lib.ycr.template.IActionProcessor
 import java.io.Serializable
 import java.lang.ref.WeakReference
@@ -82,9 +83,9 @@ internal class RemoteRouteService : IRouteService.Stub() {
         return null
     }
 
-    override fun findInterceptor(remote: RemoteRouteBean) = RemoteParam().apply {
+    override fun getAllInterceptors(): RemoteParam = RemoteParam().apply {
         params[REMOTE_INTERRUPT_INFO] = Caches.interceptors.map {
-            InterceptorInfo(
+            PrioritiableClassInfo(
                 RemoteRouteProvider.instance!!.context!!.packageName,
                 it.javaClass.name,
                 it.priority()
@@ -93,7 +94,7 @@ internal class RemoteRouteService : IRouteService.Stub() {
     }
 
     override fun handleInterceptor(param: RemoteParam, callback: RemoteInterceptorCallback) {
-        val interceptorInfo = param.params[REMOTE_INTERRUPT_INFO] as InterceptorInfo
+        val interceptorInfo = param.params[REMOTE_INTERRUPT_INFO] as PrioritiableClassInfo
         val postman = (param.params[REMOTE_ROUTE_BEAN] as RemoteRouteBean).routeBean as Postman
         if (postman.getContext() == null) postman.context =
             WeakReference(RemoteRouteProvider.instance!!.context!!)
@@ -111,6 +112,27 @@ internal class RemoteRouteService : IRouteService.Stub() {
                     })
                 }
             })
+    }
+
+    override fun getAllGlobalExceptionProcessors(): RemoteParam = RemoteParam().apply {
+        params[REMOTE_EXCEPTION_PROCESSOR_INFO] = Caches.globalExceptionProcessors.map {
+            PrioritiableClassInfo(
+                RemoteRouteProvider.instance!!.context!!.packageName,
+                it.javaClass.name,
+                it.priority()
+            )
+        }
+    }
+
+    override fun handleExceptionProcessor(param: RemoteParam): Boolean {
+        val exceptionProcessorInfo = param.params[REMOTE_EXCEPTION_PROCESSOR_INFO] as PrioritiableClassInfo
+        val postman = (param.params[REMOTE_ROUTE_BEAN] as RemoteRouteBean).routeBean as Postman
+        if (postman.getContext() == null) postman.context =
+            WeakReference(RemoteRouteProvider.instance!!.context!!)
+        // 取得匹配的异常处理器
+        return Caches.globalExceptionProcessors
+            .find { it.javaClass.name == exceptionProcessorInfo.className }!!
+            .handleException(postman, param.params[REMOTE_YCR_EXCEPTION] as IYCRExceptions)
     }
 
 }

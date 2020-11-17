@@ -21,6 +21,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.ReentrantLock
 
 /**
@@ -161,28 +162,38 @@ class YCR private constructor() {
         // 取得匹配的拦截器
         val interceptors = Caches.interceptors
         val countDownLatch = CountDownLatch(interceptors.size)
-        val interrupt = executeInterceptor(postman, countDownLatch, interceptors.iterator())
+        val interrupt = AtomicBoolean(false)
+        executeInterceptor(
+            postman,
+            countDownLatch,
+            interrupt,
+            interceptors.iterator()
+        )
         // 等待所有拦截器处理完再返回结果
         countDownLatch.await(timeout, TimeUnit.MILLISECONDS)
         val remaining = countDownLatch.count
         if (remaining != 0L) throw YCRExceptionFactory.interceptorTimeOutException(remaining)
-        return interrupt
+        return interrupt.get()
     }
 
     private fun executeInterceptor(
         postman: Postman,
         countDownLatch: CountDownLatch,
+        interrupt: AtomicBoolean,
         interceptors: Iterator<IInterceptor>
-    ): Boolean {
-        var interrupt = false
-        if (!interceptors.hasNext() || postman.isDestroy) return interrupt
+    ) {
+        if (postman.isDestroy) {
+            while (countDownLatch.count > 0) countDownLatch.countDown()
+            return
+        }
+        if (!interceptors.hasNext()) return
         interceptors.next().onIntercept(postman, object : InterceptorCallback {
 
             var isFinished = false
 
             override fun onContinue(postman: Postman) = safeHandle {
-                executeInterceptor(postman, countDownLatch, interceptors)
                 countDownLatch.countDown()
+                executeInterceptor(postman, countDownLatch, interrupt, interceptors)
             }
 
             override fun onInterrupt(postman: Postman, reason: InterruptReason<*>) =
@@ -197,7 +208,7 @@ class YCR private constructor() {
                             )
                         }
                     }
-                    interrupt = true
+                    interrupt.set(true)
                     while (countDownLatch.count > 0) countDownLatch.countDown()
                 }
 
@@ -209,7 +220,6 @@ class YCR private constructor() {
                 isFinished = true
             }
         })
-        return interrupt
     }
 
     internal fun runOnMainThread(runnable: Runnable) {
@@ -240,7 +250,10 @@ class YCR private constructor() {
     }
 
     private fun callException(postman: Postman, exception: IYCRExceptions) {
-        postman.exceptionCallback?.handleException(postman, exception)
+        if (postman.exceptionCallback?.handleException(postman, exception) == true) return
+        Caches.globalExceptionProcessors.forEach {
+            if (it.handleException(postman, exception)) return
+        }
     }
 
     @Suppress("UNCHECKED_CAST")

@@ -1,7 +1,11 @@
 package com.ysj.lib.ycr.plugin.core.visitor.method
 
+import com.ysj.lib.ycr.plugin.core.CLASS_Caches
+import com.ysj.lib.ycr.plugin.core.CLASS_IGlobalExceptionProcessor
+import com.ysj.lib.ycr.plugin.core.CLASS_IInterceptor
 import com.ysj.lib.ycr.plugin.core.RouteTransform
 import com.ysj.lib.ycr.plugin.core.visitor.BaseClassVisitor
+import com.ysj.lib.ycr.plugin.core.visitor.entity.ClassInfo
 import com.ysj.lib.ycr.plugin.core.visitor.entity.MethodInfo
 import org.objectweb.asm.Opcodes
 
@@ -20,20 +24,22 @@ class RouteCacheClInitVisitor : BaseMethodVisitor(
 ) {
 
     override fun match(bcv: BaseClassVisitor): Boolean =
-        bcv.classInfo.name == "com/ysj/lib/ycr/Caches" && methodInfo == bcv.methodInfo
+        bcv.classInfo.name == CLASS_Caches && methodInfo == bcv.methodInfo
 
     override fun visitInsn(opcode: Int) {
         if (opcode == Opcodes.RETURN) with(mv) {
             // init {
             //    interceptors.add(xxx)
+            //    globalExceptionProcessors.add(xxx)
             // }
             (bcv.transform as RouteTransform).cacheClassInfo
-                .filter { it.interfaces.contains("com/ysj/lib/ycr/template/IInterceptor") }
+                .filter(::filter)
                 .forEach {
                     visitFieldInsn(
                         Opcodes.GETSTATIC,
                         bcv.classInfo.name,
-                        "interceptors",
+                        if (it.interfaces.contains(CLASS_IInterceptor)) "interceptors"
+                        else "globalExceptionProcessors",
                         "Ljava/util/TreeSet;"
                     )
                     visitTypeInsn(Opcodes.NEW, it.name)
@@ -58,4 +64,8 @@ class RouteCacheClInitVisitor : BaseMethodVisitor(
         }
         super.visitInsn(opcode)
     }
+
+    private fun filter(classInfo: ClassInfo): Boolean =
+        classInfo.interfaces.contains(CLASS_IInterceptor)
+                || classInfo.interfaces.contains(CLASS_IGlobalExceptionProcessor)
 }

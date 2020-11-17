@@ -1,5 +1,7 @@
 package com.ysj.lib.ycr.plugin.core.visitor.method
 
+import com.ysj.lib.ycr.plugin.core.CLASS_IProviderRoute
+import com.ysj.lib.ycr.plugin.core.CLASS_RouteBean
 import com.ysj.lib.ycr.plugin.core.RouteTransform
 import com.ysj.lib.ycr.plugin.core.visitor.BaseClassVisitor
 import com.ysj.lib.ycr.plugin.core.visitor.entity.MethodInfo
@@ -16,14 +18,14 @@ class IRouteProviderLoadIntoVisitor : BaseMethodVisitor(
         Opcodes.ACC_PUBLIC,
         "loadInto",
         "(Ljava/util/Map;)V",
-        "(Ljava/util/Map<Ljava/lang/String;Lcom/ysj/lib/ycr/annotation/RouteBean;>;)V"
+        "(Ljava/util/Map<Ljava/lang/String;L$CLASS_RouteBean;>;)V"
     )
 ) {
 
     private var showLog = true
 
     override fun match(bcv: BaseClassVisitor): Boolean =
-        bcv.classInfo.interfaces.contains("com/ysj/lib/ycr/template/IProviderRoute")
+        bcv.classInfo.interfaces.contains(CLASS_IProviderRoute)
                 && bcv.methodInfo == methodInfo
 
     override fun visitLdcInsn(value: Any?) = super.visitLdcInsn(

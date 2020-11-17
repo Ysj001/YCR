@@ -2,6 +2,7 @@ package com.ysj.lib.ycr
 
 import com.ysj.lib.ycr.annotation.RouteBean
 import com.ysj.lib.ycr.template.IActionProcessor
+import com.ysj.lib.ycr.template.IGlobalExceptionProcessor
 import com.ysj.lib.ycr.template.IInterceptor
 import java.util.*
 import kotlin.collections.HashMap
@@ -23,4 +24,6 @@ internal object Caches {
     /** 所有拦截器 */
     val interceptors = TreeSet<IInterceptor>()
 
+    /** 所有全局异常处理器 */
+    val globalExceptionProcessors = TreeSet<IGlobalExceptionProcessor>()
 }

@@ -33,12 +33,22 @@ interface IRouteService {
     RemoteParam doAction(in RemoteRouteBean routeBean);
 
     /**
-     * 查找匹配的拦截器
+     * 获取该进程所有的拦截器
      */
-    RemoteParam findInterceptor(in RemoteRouteBean routeBean);
+    RemoteParam getAllInterceptors();
 
     /**
      * 处理拦截器
      */
     void handleInterceptor(in RemoteParam param, in RemoteInterceptorCallback callback);
+
+    /**
+     * 获取该进程所有的全局异常处理器
+     */
+    RemoteParam getAllGlobalExceptionProcessors();
+
+    /**
+     * 处理全局异常处理器
+     */
+    boolean handleExceptionProcessor(in RemoteParam param);
 }

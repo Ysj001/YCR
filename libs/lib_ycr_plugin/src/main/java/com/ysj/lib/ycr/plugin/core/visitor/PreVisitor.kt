@@ -1,6 +1,6 @@
 package com.ysj.lib.ycr.plugin.core.visitor
 
-import com.ysj.lib.ycr.plugin.core.RouteTransform
+import com.ysj.lib.ycr.plugin.core.*
 import com.ysj.lib.ycr.plugin.core.logger.YLogger
 import com.ysj.lib.ycr.plugin.core.visitor.entity.ClassInfo
 import org.objectweb.asm.ClassVisitor
@@ -27,7 +27,7 @@ class PreVisitor(val tf: RouteTransform, visitor: ClassVisitor) :
     ) {
         super.visit(version, access, name, signature, superName, interfaces)
         if (checkYCRInterface(interfaces)) {
-            if (interfaces!!.contains("com/ysj/lib/ycr/template/IExecutorProvider")) {
+            if (interfaces!!.contains(CLASS_IExecutorProvider)) {
                 tf.executorProviderClassName = name
             }
             val classInfo = ClassInfo(
@@ -45,8 +45,9 @@ class PreVisitor(val tf: RouteTransform, visitor: ClassVisitor) :
 
     private fun checkYCRInterface(interfaces: Array<out String>?): Boolean {
         if (interfaces.isNullOrEmpty()) return false
-        return interfaces.contains("com/ysj/lib/ycr/template/IProviderRoute")
-                || interfaces.contains("com/ysj/lib/ycr/template/IInterceptor")
-                || interfaces.contains("com/ysj/lib/ycr/template/IExecutorProvider")
+        return interfaces.contains(CLASS_IProviderRoute)
+                || interfaces.contains(CLASS_IInterceptor)
+                || interfaces.contains(CLASS_IGlobalExceptionProcessor)
+                || interfaces.contains(CLASS_IExecutorProvider)
     }
 }
