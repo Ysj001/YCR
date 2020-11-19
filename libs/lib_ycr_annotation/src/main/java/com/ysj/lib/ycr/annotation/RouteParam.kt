@@ -8,7 +8,7 @@ package com.ysj.lib.ycr.annotation
  */
 @Target(AnnotationTarget.FIELD)
 @Retention(AnnotationRetention.BINARY)
-annotation class Autowrite(
+annotation class RouteParam(
     /**
      * 如果没有传则默认用该注解作用的 field 的名字
      */

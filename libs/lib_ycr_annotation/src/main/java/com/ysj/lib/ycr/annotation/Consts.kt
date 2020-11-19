@@ -15,3 +15,6 @@ const val SEPARATOR = "$$"
 
 /** 路由生成的文件前缀 */
 const val PREFIX_ROUTE = "Route${SEPARATOR}Path${SEPARATOR}"
+
+/** 参数注入生成的文件后缀 */
+const val SUFFIX_ROUTE_PARAM = "${SEPARATOR}RouteParam"
