@@ -276,11 +276,20 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
     fun withBinder(key: String?, value: IBinder?) = apply { bundle.putBinder(key, value) }
 
     /**
+     * Inserts a Bundle value into the mapping of this Bundle, replacing
+     * any existing value for the given key.  Either key or value may be null.
+     *
+     * @param key a String, or null
+     * @param value a Bundle object, or null
+     */
+    fun withBundle(key: String?, value: Bundle?) = apply { bundle.putBundle(key, value) }
+
+    /**
      * Inserts all mappings from the given Bundle into this Bundle.
      *
      * @param bundle a Bundle
      */
-    fun withBundle(bundle: Bundle?) = apply {
+    fun withAll(bundle: Bundle?) = apply {
         if (bundle == null) return@apply
         this.bundle.putAll(bundle)
     }
@@ -297,7 +306,7 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
      * 将另一个 [Postman] 中的数据复制过来
      */
     internal fun from(postman: Postman) {
-        withBundle(postman.bundle)
+        withAll(postman.bundle)
         this.actionName = postman.actionName
         this.requestCode = postman.requestCode
         this.flags = postman.flags

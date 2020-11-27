@@ -6,7 +6,7 @@ package com.ysj.lib.ycr.template
  * @author Ysj
  * Create time: 2020/11/20
  */
-interface IProviderParam {
+interface IProviderParam : YCRTemplate {
 
     /**
      * 注入参数

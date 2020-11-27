@@ -15,6 +15,7 @@ import com.ysj.lib.ycr.exception.IYCRExceptions
 import com.ysj.lib.ycr.exception.YCRExceptionFactory
 import com.ysj.lib.ycr.lifecycle.ActivityResultFragment
 import com.ysj.lib.ycr.template.IInterceptor
+import com.ysj.lib.ycr.template.IProviderParam
 import com.ysj.lib.ycr.template.IProviderRoute
 import com.ysj.lib.ycr.template.YCRTemplate
 import java.util.concurrent.CountDownLatch
@@ -70,6 +71,19 @@ class YCR private constructor() {
         return Postman(group, path.substring(group.length + 1))
     }
 
+    /**
+     * 注入参数，配合 [RouteParam] 注解
+     *
+     * @param obj 要注入参数的对象
+     */
+    fun inject(obj: Any?) {
+        if (obj == null) return
+        val injector: IProviderParam = getTemplateInstance(
+            obj.javaClass.name + SUFFIX_ROUTE_PARAM
+        ) ?: return
+        injector.injectParam(obj)
+    }
+
     fun navigation(postman: Postman) {
         try {
             sync {
@@ -111,6 +125,7 @@ class YCR private constructor() {
             RouteTypes.ACTIVITY -> {
                 val intent = Intent()
                     .addFlags(postman.flags)
+                    .putExtras(postman.bundle)
                     .setComponent(ComponentName(postman.applicationId, postman.className))
                 if (context !is Activity) {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

@@ -21,7 +21,7 @@ class RemoteRouteBean(val routeBean: RouteBean) : Parcelable {
                 applicationId = "${parcel.readString()}"
                 className = "${parcel.readString()}"
             }
-            .withBundle(parcel.readBundle())
+            .withAll(parcel.readBundle())
             .withRequestCode(parcel.readInt())
             .withRouteAction(parcel.readString())
             .withFlags(parcel.readInt())
