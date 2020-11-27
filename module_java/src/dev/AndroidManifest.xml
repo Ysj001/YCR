@@ -19,6 +19,9 @@
         <activity
             android:name=".LoginActivity"
             android:exported="true" />
+        <activity
+            android:name=".InjectParamActivity"
+            android:exported="true" />
     </application>
 
 </manifest>

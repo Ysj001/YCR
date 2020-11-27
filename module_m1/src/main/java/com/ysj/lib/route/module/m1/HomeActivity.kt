@@ -3,6 +3,7 @@ package com.ysj.lib.route.module.m1
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import com.ysj.lib.base.mock.MockUserLogin
 import com.ysj.lib.base.utils.ToastUtil
 import com.ysj.lib.ycr.YCR
 import com.ysj.lib.ycr.annotation.Route
@@ -35,6 +36,18 @@ class HomeActivity : AppCompatActivity() {
                     }
                     .navigationSync(this)
             }
+            .navigation(this)
+    }
+
+    fun onInjectParamClicked(view: View) {
+        // 路由参数注入演示
+        YCR.getInstance()
+            .build("/java/InjectParamActivity")
+            .withInt("i", 100)
+            .withBoolean("b", true)
+            .withString("str", "test")
+            .withSerializable("userInfo", MockUserLogin.UserInfo("inject test", 20))
+            .apply { withBundle("bd", Bundle(bundle)) }
             .navigation(this)
     }
 

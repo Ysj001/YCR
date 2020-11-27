@@ -55,6 +55,10 @@ class MockUserLogin : IActionProcessor, Serializable {
     class UserInfo(
         val userName: String,
         var age: Int = 0
-    ) : Serializable
+    ) : Serializable{
+        override fun toString(): String {
+            return "userName=$userName, age=$age"
+        }
+    }
 
 }
