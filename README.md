@@ -20,7 +20,7 @@ YCR 的整体设计和调用方式和 [*ARouter*](https://github.com/alibaba/ARo
 - [x] 支持 startActivityForResult
 - [x] 支持调用过程无入侵式获取 ActivityResult
 - [ ] 支持原生跳转动画
-- [ ] 支持目标 Activity 路由参数注入
+- [x] 支持目标 Activity 路由参数注入
 - [x] 支持 Kotlin，Java 混编
 - [x] 支持自定义局部的路由过程的异常处理，处理后可选择是否抛到全局
 - [x] 支持自定义全局的路由过程的异常处理
@@ -61,6 +61,30 @@ YCR 的整体设计和调用方式和 [*ARouter*](https://github.com/alibaba/ARo
 @Route(path = "/test/activity")
 public class YourActivity extend Activity {
     ...
+}
+```
+
+#### 参数注入
+
+```java
+public class YourActivity extends Activity {
+
+    @RouteParam
+    int i;
+    @RouteParam
+    boolean b;
+    @RouteParam
+    String str;
+    // 通过 name 手动指定 key
+    @RouteParam(name = "name")
+    String aaa;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // 通过该代码标记该类需要注入
+        YCR.getInstance().inject(this);
+    }
 }
 ```
 
