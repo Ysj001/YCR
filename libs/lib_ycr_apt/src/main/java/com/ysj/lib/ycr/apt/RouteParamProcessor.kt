@@ -131,12 +131,12 @@ class RouteParamProcessor : BaseProcess() {
                     ) -> """${head}getSerializableExtra("$name") as $typeName"""
                     typeUtils.isSubtype(
                         typeMirror,
-                        elementUtils.getTypeElement("android.os.Parcelable").asType()
-                    ) -> """${head}getParcelableExtra("$name") as $typeName"""
-                    typeUtils.isSubtype(
-                        typeMirror,
                         elementUtils.getTypeElement("android.os.Bundle").asType()
                     ) -> """${head}getBundleExtra("$name")"""
+                    typeUtils.isSubtype(
+                        typeMirror,
+                        elementUtils.getTypeElement("android.os.Parcelable").asType()
+                    ) -> """${head}getParcelableExtra("$name") as $typeName"""
                     else -> throw RuntimeException("@${routeParamClass.simpleName} 注解不支持该类型：$typeName")
                 }
             }
