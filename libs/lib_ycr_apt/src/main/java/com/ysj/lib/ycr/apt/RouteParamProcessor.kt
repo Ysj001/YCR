@@ -2,7 +2,6 @@ package com.ysj.lib.ycr.apt
 
 import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.*
-import com.ysj.lib.ycr.annotation.PACKAGE_NAME_ROUTE
 import com.ysj.lib.ycr.annotation.RouteParam
 import com.ysj.lib.ycr.annotation.SUFFIX_ROUTE_PARAM
 import java.io.Serializable
@@ -99,7 +98,7 @@ class RouteParamProcessor : BaseProcess() {
                 .addSuperinterface(ClassName.bestGuess(TEMPLATE_PATH))
                 .addFunction(funInjectParam.build())
                 .build()
-            FileSpec.builder(PACKAGE_NAME_ROUTE, typeSpec.name!!).addType(typeSpec).build()
+            FileSpec.builder(typeClass.packageName, typeSpec.name!!).addType(typeSpec).build()
                 .writeTo(filer)
             printlnMessage("@${routeParamClass.simpleName} --- 已处理：class:${type.simpleName}")
         }
