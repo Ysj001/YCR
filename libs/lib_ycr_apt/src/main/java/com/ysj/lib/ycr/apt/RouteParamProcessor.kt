@@ -82,6 +82,7 @@ class RouteParamProcessor : BaseProcess() {
         // }
         val funInjectParam = FunSpec.builder("injectParam")
             .addModifiers(KModifier.PUBLIC, KModifier.OVERRIDE)
+            .addParameter("target", ANY)
         parameterMap.forEach { entry ->
             val type = entry.key
             val typeClass = ClassName.bestGuess(type.qualifiedName.toString())
@@ -89,7 +90,6 @@ class RouteParamProcessor : BaseProcess() {
                 "@${routeParamClass.simpleName} 注解只能作用在：$AFFECT_ACTIVITY"
             )
             funInjectParam.clearBody()
-                .addParameter("target", ANY)
                 .addStatement("target as %T", typeClass)
             entry.value.forEach { funInjectParam.addStatement(getStatement(it)) }
             // 生成类文件
