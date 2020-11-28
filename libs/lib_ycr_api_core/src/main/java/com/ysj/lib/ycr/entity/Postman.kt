@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.IBinder
 import android.os.Parcelable
+import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import com.ysj.lib.ycr.YCR
@@ -36,6 +37,18 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
 
     /** [Activity] 的 requestCode */
     var requestCode: Int = -1
+        private set
+
+    /** Additional options for how the Activity should be started. [android.app.ActivityOptions] */
+    var optionsCompat: Bundle? = null
+        private set
+
+    /** A resource ID of the animation resource to use for the incoming activity.  Use 0 for no animation. */
+    var enterAnim = -1
+        private set
+
+    /** A resource ID of the animation resource to use for the outgoing activity.  Use 0 for no animation. */
+    var exitAnim = -1
         private set
 
     /** 表示是否使用绿色通道，为 true 会跳过拦截器 */
@@ -196,6 +209,25 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
     }
 
     /**
+     * Set normal transition anim
+     */
+    fun withTransition(enterAnim: Int, exitAnim: Int) = apply {
+        this.enterAnim = enterAnim
+        this.exitAnim = exitAnim
+    }
+
+    /**
+     * Set options compat
+     */
+    fun withOptionsCompat(compat: ActivityOptionsCompat) =
+        apply { this.optionsCompat = compat.toBundle() }
+
+    /**
+     * Set options compat
+     */
+    fun withOptionsCompat(compat: Bundle?) = apply { this.optionsCompat = compat }
+
+    /**
      * 设置 [Activity] 的 requestCode
      *
      * @param requestCode
@@ -306,7 +338,11 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
      * 将另一个 [Postman] 中的数据复制过来
      */
     internal fun from(postman: Postman) {
-        withAll(postman.bundle)
+        this.bundle.clear()
+        this.bundle.putAll(postman.bundle)
+        this.optionsCompat = postman.optionsCompat
+        this.exitAnim = postman.exitAnim
+        this.enterAnim = postman.enterAnim
         this.actionName = postman.actionName
         this.requestCode = postman.requestCode
         this.flags = postman.flags

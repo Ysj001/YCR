@@ -123,34 +123,50 @@ class YCR private constructor() {
                     .addFlags(postman.flags)
                     .putExtras(postman.bundle)
                     .setComponent(ComponentName(postman.applicationId, postman.className))
-                if (context !is Activity) {
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    context.startActivity(intent)
-                } else {
-                    runOnMainThread {
-                        try {
-                            if (postman.routeResultCallbacks == null || postman.requestCode < 0) {
-                                context.startActivityForResult(intent, postman.requestCode)
-                            } else {
-                                val sfm = context.fragmentManager
-                                var fragment = sfm.findFragmentByTag(ActivityResultFragment.TAG)
-                                if (fragment === null) {
-                                    fragment = ActivityResultFragment()
-                                    fragment.listener = { rqc: Int, rsc: Int, data: Intent? ->
-                                        resultCallback(ActivityResult(rqc, rsc, data))
-                                    }
-                                    sfm.beginTransaction().add(fragment, ActivityResultFragment.TAG)
-                                        .commitAllowingStateLoss()
-                                    sfm.executePendingTransactions()
-                                }
-                                fragment.startActivityForResult(intent, postman.requestCode)
-                            }
-                        } catch (e: Exception) {
-                            callException(
-                                postman,
-                                YCRExceptionFactory.navigationException(e)
-                            )
+                runOnMainThread {
+                    try {
+                        if (context !is Activity) {
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            context.startActivity(intent, postman.optionsCompat)
+                            return@runOnMainThread
                         }
+                        if (postman.routeResultCallbacks == null || postman.requestCode < 0) {
+                            context.startActivityForResult(
+                                intent,
+                                postman.requestCode,
+                                postman.optionsCompat
+                            )
+                            if (postman.enterAnim != -1 && postman.exitAnim != -1) context.overridePendingTransition(
+                                postman.enterAnim,
+                                postman.exitAnim
+                            )
+                            return@runOnMainThread
+                        }
+                        val sfm = context.fragmentManager
+                        var fragment = sfm.findFragmentByTag(ActivityResultFragment.TAG)
+                        if (fragment === null) {
+                            fragment = ActivityResultFragment()
+                            fragment.listener = { rqc: Int, rsc: Int, data: Intent? ->
+                                resultCallback(ActivityResult(rqc, rsc, data))
+                            }
+                            sfm.beginTransaction().add(fragment, ActivityResultFragment.TAG)
+                                .commitAllowingStateLoss()
+                            sfm.executePendingTransactions()
+                        }
+                        fragment.startActivityForResult(
+                            intent,
+                            postman.requestCode,
+                            postman.optionsCompat
+                        )
+                        if (postman.enterAnim != -1 && postman.exitAnim != -1) context.overridePendingTransition(
+                            postman.enterAnim,
+                            postman.exitAnim
+                        )
+                    } catch (e: Exception) {
+                        callException(
+                            postman,
+                            YCRExceptionFactory.navigationException(e)
+                        )
                     }
                 }
             }
