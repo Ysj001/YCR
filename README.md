@@ -19,7 +19,7 @@ YCR 的整体设计和调用方式和 [*ARouter*](https://github.com/alibaba/ARo
 - [x] 支持绑定 Lifecycle 控制路由过程的生命周期
 - [x] 支持 startActivityForResult
 - [x] 支持调用过程无入侵式获取 ActivityResult
-- [ ] 支持原生跳转动画
+- [x] 支持设置原生转场动画
 - [x] 支持目标 Activity 路由参数注入
 - [x] 支持 Kotlin，Java 混编
 - [x] 支持自定义局部的路由过程的异常处理，处理后可选择是否抛到全局
