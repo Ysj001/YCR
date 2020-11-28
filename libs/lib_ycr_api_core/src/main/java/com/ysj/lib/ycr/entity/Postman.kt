@@ -144,7 +144,7 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
                 }
                 if (checkMethodParameterType(
                         callback.javaClass,
-                        "onResult",
+                        callback::onResult.name,
                         result.javaClass
                     )
                 ) callback.onResult(result as T?)
@@ -165,7 +165,7 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
                 }
                 if (checkMethodParameterType(
                         callback.javaClass,
-                        "invoke",
+                        callback::invoke.name,
                         result.javaClass
                     )
                 ) callback(result as T?)
