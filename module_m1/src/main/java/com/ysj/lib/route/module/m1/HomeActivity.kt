@@ -17,7 +17,7 @@ class HomeActivity : AppCompatActivity() {
         setContentView(R.layout.module_m1_activity_home)
     }
 
-    fun onUserCenterClicked(view: View) {
+    fun interceptorDemo(view: View) {
         // 演示拦截器的使用
         YCR.getInstance()
             .build("/m1/UserCenterActivity")
@@ -39,7 +39,7 @@ class HomeActivity : AppCompatActivity() {
             .navigation(this)
     }
 
-    fun onInjectParamClicked(view: View) {
+    fun injectParamDemo(view: View) {
         // 路由参数注入演示
         YCR.getInstance()
             .build("/java/InjectParamActivity")
@@ -48,6 +48,15 @@ class HomeActivity : AppCompatActivity() {
             .withString("str", "test")
             .withSerializable("userInfo", MockUserLogin.UserInfo("inject test", 20))
             .apply { withBundle("bd", Bundle(bundle)) }
+            .navigation(this)
+    }
+
+    fun transitionDemo(view: View) {
+        // 演示设置转场效果
+        YCR.getInstance()
+            .build("/m1/HomeActivity")
+            .withTransition(R.anim.module_m1_entry, R.anim.module_m1_exit)
+            .doOnFinished(::finish)
             .navigation(this)
     }
 

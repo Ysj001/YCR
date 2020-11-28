@@ -13,16 +13,22 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="16dp"
-        android:onClick="onInjectParamClicked"
-        android:text="参数注入演示"
-        android:textSize="24dp" />
+        android:onClick="injectParamDemo"
+        android:text="演示参数注入"
+        android:textSize="18sp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="演示转场"
+        android:onClick="transitionDemo"
+        android:textSize="18sp" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="16dp"
-        android:onClick="onUserCenterClicked"
-        android:text="个人中心"
-        android:textSize="24dp" />
+        android:onClick="interceptorDemo"
+        android:text="演示拦截器"
+        android:textSize="18sp" />
 </LinearLayout>
