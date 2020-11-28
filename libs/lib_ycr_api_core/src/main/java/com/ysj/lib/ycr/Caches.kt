@@ -4,6 +4,7 @@ import com.ysj.lib.ycr.annotation.RouteBean
 import com.ysj.lib.ycr.template.IActionProcessor
 import com.ysj.lib.ycr.template.IGlobalExceptionProcessor
 import com.ysj.lib.ycr.template.IInterceptor
+import com.ysj.lib.ycr.template.IProviderParam
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -20,6 +21,9 @@ internal object Caches {
 
     /** 行为的缓存 key：action 的 className，value：[IActionProcessor] 的实现 */
     val actionCache = HashMap<String, IActionProcessor>()
+
+    /** 参数注入器的缓存 key：目标的 className，value：[IProviderParam] 的实现 */
+    val paramCache = HashMap<String, IProviderParam>()
 
     /** 所有拦截器 */
     val interceptors = TreeSet<IInterceptor>()

@@ -1,22 +1,17 @@
 package com.ysj.lib.ycr
 
-import android.app.Activity
-import android.content.ComponentName
-import android.content.Intent
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
-import com.ysj.lib.ycr.annotation.*
-import com.ysj.lib.ycr.entity.ActivityResult
+import com.ysj.lib.ycr.annotation.Route
+import com.ysj.lib.ycr.annotation.RouteParam
+import com.ysj.lib.ycr.annotation.RouteTypes
+import com.ysj.lib.ycr.annotation.subGroupFromPath
 import com.ysj.lib.ycr.entity.InterruptReason
 import com.ysj.lib.ycr.entity.Postman
 import com.ysj.lib.ycr.exception.IYCRExceptions
 import com.ysj.lib.ycr.exception.YCRExceptionFactory
-import com.ysj.lib.ycr.lifecycle.ActivityResultFragment
 import com.ysj.lib.ycr.remote.*
 import com.ysj.lib.ycr.remote.entity.PrioritiableClassInfo
-import com.ysj.lib.ycr.template.IProviderParam
-import com.ysj.lib.ycr.template.YCRTemplate
 import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.LinkedBlockingQueue
@@ -78,11 +73,8 @@ class YCR private constructor() {
      * @param obj 要注入参数的对象
      */
     fun inject(obj: Any?) {
-        if (obj == null) return
-        val injector: IProviderParam = getTemplateInstance(
-            obj.javaClass.name + SUFFIX_ROUTE_PARAM
-        ) ?: return
-        injector.injectParam(obj)
+        obj ?: return
+        inject(obj, null)
     }
 
     fun navigation(postman: Postman) {
@@ -116,60 +108,8 @@ class YCR private constructor() {
 
     @Suppress("DEPRECATION")
     private fun handleRoute(postman: Postman, resultCallback: (Any?) -> Unit) {
-        val context = postman.getContext() ?: return
         when (postman.types) {
-            RouteTypes.ACTIVITY -> {
-                val intent = Intent()
-                    .addFlags(postman.flags)
-                    .putExtras(postman.bundle)
-                    .setComponent(ComponentName(postman.applicationId, postman.className))
-                runOnMainThread {
-                    try {
-                        if (context !is Activity) {
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            context.startActivity(intent, postman.optionsCompat)
-                            return@runOnMainThread
-                        }
-                        if (postman.routeResultCallbacks == null || postman.requestCode < 0) {
-                            context.startActivityForResult(
-                                intent,
-                                postman.requestCode,
-                                postman.optionsCompat
-                            )
-                            if (postman.enterAnim != -1 && postman.exitAnim != -1) context.overridePendingTransition(
-                                postman.enterAnim,
-                                postman.exitAnim
-                            )
-                            return@runOnMainThread
-                        }
-                        val sfm = context.fragmentManager
-                        var fragment = sfm.findFragmentByTag(ActivityResultFragment.TAG)
-                        if (fragment === null) {
-                            fragment = ActivityResultFragment()
-                            fragment.listener = { rqc: Int, rsc: Int, data: Intent? ->
-                                resultCallback(ActivityResult(rqc, rsc, data))
-                            }
-                            sfm.beginTransaction().add(fragment, ActivityResultFragment.TAG)
-                                .commitAllowingStateLoss()
-                            sfm.executePendingTransactions()
-                        }
-                        fragment.startActivityForResult(
-                            intent,
-                            postman.requestCode,
-                            postman.optionsCompat
-                        )
-                        if (postman.enterAnim != -1 && postman.exitAnim != -1) context.overridePendingTransition(
-                            postman.enterAnim,
-                            postman.exitAnim
-                        )
-                    } catch (e: Exception) {
-                        callException(
-                            postman,
-                            YCRExceptionFactory.navigationException(e)
-                        )
-                    }
-                }
-            }
+            RouteTypes.ACTIVITY -> handleRouteActivity(postman, resultCallback)
             RouteTypes.ACTION -> resultCallback(doRemoteAction(postman))
             else -> throw YCRExceptionFactory.routeTypeException(postman.types.toString())
         }
@@ -309,7 +249,7 @@ class YCR private constructor() {
         }
     }
 
-    private fun callException(postman: Postman, exception: IYCRExceptions) {
+    internal fun callException(postman: Postman, exception: IYCRExceptions) {
         if (postman.exceptionCallback?.handleException(postman, exception) == true) return
         postman.getContext() ?: return
         val routeProvider = RemoteRouteProvider.instance ?: return
@@ -338,13 +278,4 @@ class YCR private constructor() {
             }
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun <T : YCRTemplate> getTemplateInstance(className: String): T? {
-        try {
-            return Class.forName(className).getConstructor().newInstance() as T
-        } catch (e: Exception) {
-            Log.d("YCR-DEV", "$className 没有在该进程找到 --> ${e.message}")
-        }
-        return null
-    }
 }
