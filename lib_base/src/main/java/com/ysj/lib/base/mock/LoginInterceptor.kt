@@ -1,11 +1,10 @@
-package com.ysj.lib.route.module.m1
+package com.ysj.lib.base.mock
 
-import com.ysj.lib.base.mock.MockUserLogin
 import com.ysj.lib.ycr.YCR
 import com.ysj.lib.ycr.callback.InterceptorCallback
 import com.ysj.lib.ycr.entity.InterruptReason
 import com.ysj.lib.ycr.entity.Postman
-import com.ysj.lib.ycr.template.IInterceptor
+import com.ysj.lib.ycr.template.IGlobalInterceptor
 
 /**
  * 登录的拦截器
@@ -13,14 +12,12 @@ import com.ysj.lib.ycr.template.IInterceptor
  * @author Ysj
  * Create time: 2020/11/7
  */
-class LoginInterceptor : IInterceptor {
+class LoginInterceptor : IGlobalInterceptor {
 
     companion object {
         /** 未登录的拦截码 */
         const val INTERRUPT_CODE_NOT_LOGIN = -1
     }
-
-    override fun priority(): Short = 0
 
     override fun onIntercept(postman: Postman, callback: InterceptorCallback) {
         when (postman.path) {
@@ -36,7 +33,7 @@ class LoginInterceptor : IInterceptor {
         val userInfo = YCR.getInstance()
             .build("/base/MockUserLogin")
             .withRouteAction("userInfo")
-            .useGreenChannel()
+            .skipGlobalInterceptor()
             .navigationSync(context) as? MockUserLogin.UserInfo
         if (userInfo != null) {
             callback.onContinue(postman)
@@ -55,14 +52,14 @@ class LoginInterceptor : IInterceptor {
         val userInfo = YCR.getInstance()
             .build("/base/MockUserLogin")
             .withRouteAction("userInfo")
-            .useGreenChannel()
+            .skipGlobalInterceptor()
             .navigationSync(context) as? MockUserLogin.UserInfo
         if (userInfo == null) {
             YCR.getInstance()
                 .build("/base/MockUserLogin")
                 .withRouteAction("login")
                 .withString("userName", "Ysj")
-                .useGreenChannel()
+                .skipGlobalInterceptor()
                 .addOnResultCallback { _: Any? ->
                     YCR.getInstance().navigation(postman)
                     callback.onContinue(postman)

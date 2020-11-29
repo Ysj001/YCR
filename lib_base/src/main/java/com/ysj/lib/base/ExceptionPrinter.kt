@@ -7,7 +7,7 @@ import com.ysj.lib.ycr.exception.IYCRExceptions
 import com.ysj.lib.ycr.template.IGlobalExceptionProcessor
 
 /**
- *
+ * 演示全局异常处理器捕获异常并打印
  *
  * @author Ysj
  * Create time: 2020/11/17

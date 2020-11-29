@@ -33,7 +33,6 @@ public class LoginActivity extends AppCompatActivity {
                 .build("/base/MockUserLogin")
                 .withRouteAction("login")
                 .withString("userName", userName)
-                .useGreenChannel()
                 .navigationSync(this);
         if (!loginSuccess) {
             ToastUtil.showLongToast("合法的用户名为：" + MockUserLogin.LEGAL_USER_NAME);

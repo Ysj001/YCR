@@ -45,7 +45,6 @@ class UserCenterActivity : AppCompatActivity() {
         YCR.getInstance()
             .build("/base/MockUserLogin")
             .withRouteAction("userInfo")
-            .useGreenChannel()
             .addOnResultCallback { userInfo: MockUserLogin.UserInfo? ->
                 runOnUiThread {
                     tvLoginState.text = userInfo?.userName ?: "未登录"

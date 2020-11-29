@@ -3,14 +3,21 @@ package com.ysj.lib.route.module.m1
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import com.ysj.lib.base.mock.LoginInterceptor
 import com.ysj.lib.base.mock.MockUserLogin
 import com.ysj.lib.base.utils.ToastUtil
 import com.ysj.lib.ycr.YCR
 import com.ysj.lib.ycr.annotation.Route
+import com.ysj.lib.ycr.callback.InterceptorCallback
 import com.ysj.lib.ycr.entity.ActivityResult
+import com.ysj.lib.ycr.entity.InterruptReason
+import com.ysj.lib.ycr.entity.Postman
+import com.ysj.lib.ycr.template.IInterceptor
 
 @Route("/m1/HomeActivity")
 class HomeActivity : AppCompatActivity() {
+
+    private var skipLocalInterceptor = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,7 +28,21 @@ class HomeActivity : AppCompatActivity() {
         // 演示拦截器的使用
         YCR.getInstance()
             .build("/m1/UserCenterActivity")
+            .withInterceptor(object : IInterceptor {
+                // 演示局部拦截器
+                override fun onIntercept(postman: Postman, callback: InterceptorCallback) {
+                    if (skipLocalInterceptor) callback.onContinue(postman)
+                    else {
+                        callback.onInterrupt(
+                            postman,
+                            InterruptReason<Any>(111, "我是局部拦截器，再点一次跳过")
+                        )
+                        skipLocalInterceptor = true
+                    }
+                }
+            })
             .doOnInterrupt { postman, reason ->
+                ToastUtil.showShortToast(reason.msg)
                 if (reason.code != LoginInterceptor.INTERRUPT_CODE_NOT_LOGIN) return@doOnInterrupt
                 YCR.getInstance()
                     .build("/java/LoginActivity")
