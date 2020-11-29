@@ -1,7 +1,5 @@
 package com.ysj.lib.ycr.annotation
 
-import kotlin.IllegalArgumentException
-
 /*
  * 该文件用于处理路由相关
  *
@@ -19,7 +17,7 @@ fun checkRouterPath(path: String?) {
         throw IllegalArgumentException("path 值为空")
     if (!path.startsWith("/"))
         throw IllegalArgumentException("path 值不正确，开头必须为 /")
-    if (path.length < 2 || path.split("/").size > 3)
+    if (path.length < 2)
         throw IllegalArgumentException("path 值格式不正确，参考：/group/path")
 }
 
