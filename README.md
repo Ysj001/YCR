@@ -67,7 +67,7 @@ YCR 的整体设计和调用方式和 [*ARouter*](https://github.com/alibaba/ARo
 ```java
 // 通过 @Route 标记 Activity 即可实现页面间路由
 @Route(path = "/test/activity")
-public class YourActivity extend Activity {
+public class YourActivity extends Activity {
     ...
 }
 ```
@@ -120,8 +120,29 @@ public class YourActionProcessor implements IActionProcessor {
 #### 拦截器
 
 ```java
-// 通过实现 IInterceptor 接口来定义一个拦截器
-public class YourInterceptor implements IInterceptor {
+// 通过实现 IInterceptor 接口来定义一个局部拦截器
+public class YourLocalInterceptor implements IInterceptor {
+    @Override
+    public void onIntercept(@NotNull Postman postman, 
+                            @NotNull InterceptorCallback interceptorCallback) {
+		// 表示该拦截器允许继续后续的路由
+        interceptorCallback.onContinue(postman);
+        // 表示该拦截器不允许后续路由，并中断后续拦截器
+        // 你可以通过 InterruptReason 来告诉路由调用方中断路由的原因
+        interceptorCallback.onInterrupt(postman, new InterruptReason<>(1, "", null));
+    	// 注意此处 onContinue 和 onInterrupt 必须调用其中一个，但不能都调用
+    }
+}
+
+// 局部拦截器通过如下方式调用
+// YCR.getInstance().buile("your path").withInterceptor(new YourLocalInterceptor())
+```
+
+```java
+// 通过实现 IGlobalInterceptor 接口来定义一个全局拦截器
+// 全局拦截器执行于局部拦截器后，若局部拦截器拦截了则不会调用全局拦截器
+// 全局拦截器会在符合调用条件时自动调用，不需要手动调用
+public class YourInterceptor implements IGlobalInterceptor {
     
     @Override
     public void priority() { 
@@ -133,12 +154,7 @@ public class YourInterceptor implements IInterceptor {
     @Override
     public void onIntercept(@NotNull Postman postman, 
                             @NotNull InterceptorCallback interceptorCallback) {
-		// 表示该拦截器允许继续后续的路由
-        interceptorCallback.onContinue(postman);
-        // 表示该拦截器不允许后续路由，并中断后续拦截器
-        // 你可以通过 InterruptReason 来告诉路由调用方中断路由的原因
-        interceptorCallback.onInterrupt(postman, new InterruptReason<>(1, "", null));
-    	// 注意此处 onContinue 和 onInterrupt 必须调用其中一个，但不能都调用
+		// 此处的处理方式和局部拦截器一致
     }
 }
 ```
