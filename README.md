@@ -54,6 +54,13 @@ YCR 的整体设计和调用方式和 [*ARouter*](https://github.com/alibaba/ARo
 
 ### 如何使用
 
+#### 混淆配置
+
+```text
+-keep class * implements com.ysj.lib.ycr.template.YCRTemplate
+-keep class * implements java.io.Serializable {<methods>;}
+```
+
 #### 页面路由
 
 ```java
