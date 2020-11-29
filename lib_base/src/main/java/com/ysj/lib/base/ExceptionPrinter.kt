@@ -1,5 +1,6 @@
 package com.ysj.lib.base
 
+import android.util.Log
 import com.ysj.lib.base.utils.ToastUtil
 import com.ysj.lib.ycr.entity.Postman
 import com.ysj.lib.ycr.exception.IYCRExceptions
@@ -13,8 +14,10 @@ import com.ysj.lib.ycr.template.IGlobalExceptionProcessor
  */
 class ExceptionPrinter : IGlobalExceptionProcessor {
 
+    private val TAG = "ExceptionPrinter"
+
     override fun handleException(postman: Postman, e: IYCRExceptions): Boolean {
-        e.printStackTrace()
+        Log.w(TAG, "", e as Throwable)
         ToastUtil.showShortToast(e.message)
         return false
     }
