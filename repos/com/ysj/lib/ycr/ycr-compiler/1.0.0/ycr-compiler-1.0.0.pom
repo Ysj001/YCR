@@ -30,7 +30,7 @@
     <dependency>
       <groupId>com.squareup</groupId>
       <artifactId>kotlinpoet</artifactId>
-      <version>1.6.0</version>
+      <version>1.7.2</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
