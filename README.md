@@ -6,7 +6,7 @@ YCR 是一个轻量级的，支持跨进程调用的，支持渐进式改造的�
 
 YCR 的设计初衷在于减少项目的组件化改造成本。框架整体采用贴近原生的设计思路，在尽可能保留原生能力上做扩展，以最大程度的保留兼容性和扩展性。
 
-YCR 的整体设计和调用方式和 [*ARouter*](https://github.com/alibaba/ARouter) 类似，如果你之前采用的是 ARouter 方案，相信你很快就能上手。YCR 也继承了 [*CC*](https://github.com/luckybilly/CC) 渐进式组件化的思想，提供了行为处理器用于处理组件间的交互行为，使新组件的开发不再必须要老项目提前解耦或下沉公共类，并且提供了跨进程调用能力使新组件的开发更加便捷。
+YCR 的整体设计和调用方式和 [*ARouter*](https://github.com/alibaba/ARouter) 类似，如果你之前采用的是 ARouter 方案，相信你很快就能上手。YCR 也继承了 [*CC*](https://github.com/luckybilly/CC) 渐进式组件化的思想，提供了行为处理器用于处理组件间的交互行为，使新组件的开发不再必须要老项目提前解耦或下沉公共类，并且提供了开发时跨进程调用能力使新组件的开发更加便捷。
 
 
 
@@ -15,8 +15,9 @@ YCR 的整体设计和调用方式和 [*ARouter*](https://github.com/alibaba/ARo
 - [x] 页面，拦截器，行为处理器等组件自动注册
 - [x] 支持组件间行为调用，支持夸组件获取任意对象
 - [x] 支持开发时跨进程组件调用
-- [x] 支持路由过程拦截器
+- [x] 支持路由过程拦截器。支持全局拦截器和局部拦截器分层拦截
 - [x] 支持绑定 Lifecycle 控制路由过程的生命周期
+- [x] 支持手动中断路由过程
 - [x] 支持 startActivityForResult
 - [x] 支持调用过程无入侵式获取 ActivityResult
 - [x] 支持设置原生转场动画
@@ -24,7 +25,7 @@ YCR 的整体设计和调用方式和 [*ARouter*](https://github.com/alibaba/ARo
 - [x] 支持 Kotlin，Java 混编
 - [x] 支持自定义局部的路由过程的异常处理，处理后可选择是否抛到全局
 - [x] 支持自定义全局的路由过程的异常处理
-- [x] 在集成化打包时去除 remote 相关代码，不影响 App 启动过程
+- [x] 分离开发时库和发布时库，使其更精简并且对 App 启动过程 0 影响
 
 
 
@@ -94,6 +95,8 @@ public class YourActivity extends Activity {
     }
 }
 ```
+
+#### 异常处理器
 
 #### 行为处理器
 
