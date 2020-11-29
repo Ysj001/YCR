@@ -91,7 +91,7 @@ class YCR private constructor() {
                 routes[fullPath] = routeBean
                 postman.from(routeBean)
             }
-            if (postman.greenChannel || !handleRemoteInterceptor(postman)) handleRoute(postman) { result ->
+            if (!handleInterceptor(postman)) handleRoute(postman) { result ->
                 postman.routeResultCallbacks?.run {
                     try {
                         forEach { callback -> callback.onResult(result) }
@@ -115,11 +115,11 @@ class YCR private constructor() {
         }
     }
 
-    private fun handleRemoteInterceptor(postman: Postman): Boolean {
+    private fun handleInterceptor(postman: Postman): Boolean {
         postman.getContext() ?: return true
         val routeProvider = RemoteRouteProvider.instance ?: return false
         val routeService = routeProvider.getRouteService() ?: return false
-        val interceptors = TreeSet<PrioritiableClassInfo>()
+        val globalInterceptors = TreeSet<PrioritiableClassInfo>()
             .apply {
                 (routeService.allApplicationId.params[REMOTE_ALL_APPLICATION_ID] as Collection<*>)
                     .mapNotNull {
@@ -134,12 +134,31 @@ class YCR private constructor() {
                         }
                     }
             }
+        // 取得局部拦截器
+        val interceptors = postman.interceptors
         val isMainTH = Thread.currentThread() == Looper.getMainLooper().thread
         // 拦截器超时时间
-        val timeout = if (isMainTH) INTERCEPTOR_TIME_OUT_MAIN_TH else INTERCEPTOR_TIME_OUT_SUB_TH
-        val countDownLatch = CountDownLatch(interceptors.size)
+        val timeout = if (isMainTH) INTERCEPTOR_TIME_OUT_MAIN_TH else postman.interceptorTimeout
+        val countDownLatch = CountDownLatch(globalInterceptors.size + (interceptors?.size ?: 0))
         val interrupt = AtomicBoolean(false)
-        executeInterceptor(postman, routeProvider, interrupt, countDownLatch, interceptors)
+        // 先执行局部拦截器
+        if (interceptors != null) executeInterceptor(
+            postman,
+            countDownLatch,
+            interrupt,
+            interceptors.iterator()
+        )
+        if (postman.skipGlobalInterceptor) {
+            while (countDownLatch.count > 0) countDownLatch.countDown()
+        }
+        // 若局部拦截器未拦截，再执行全局拦截器
+        if (!interrupt.get() && !postman.skipGlobalInterceptor) executeInterceptor(
+            postman,
+            routeProvider,
+            interrupt,
+            countDownLatch,
+            globalInterceptors
+        )
         // 等待所有拦截器处理完再返回结果
         countDownLatch.await(timeout, TimeUnit.MILLISECONDS)
         val remaining = countDownLatch.count

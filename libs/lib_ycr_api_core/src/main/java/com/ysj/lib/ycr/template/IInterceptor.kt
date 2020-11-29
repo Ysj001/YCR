@@ -1,7 +1,5 @@
 package com.ysj.lib.ycr.template
 
-import com.ysj.lib.ycr.INTERCEPTOR_TIME_OUT_MAIN_TH
-import com.ysj.lib.ycr.INTERCEPTOR_TIME_OUT_SUB_TH
 import com.ysj.lib.ycr.callback.InterceptorCallback
 import com.ysj.lib.ycr.entity.Postman
 
@@ -11,24 +9,13 @@ import com.ysj.lib.ycr.entity.Postman
  * @author Ysj
  * Create time: 2020/10/5
  */
-interface IInterceptor : YCRTemplate, Comparable<IInterceptor> {
+interface IInterceptor : YCRTemplate {
 
     /**
-     * 优先级，用于对其进行排序，值越大优先级越高
-     * - 注意：优先级可以相同，相同优先级不保证执行顺序
-     *
-     * @return default: 0 [Short.MIN_VALUE] ~ [Short.MAX_VALUE]
-     */
-    fun priority(): Short = 0
-
-    /**
-     * 对拦截到的数据进行处理
-     * - 注意：不要在其中做过于耗时的操作，
-     * 框架中只允许（主线程 [INTERCEPTOR_TIME_OUT_MAIN_TH]，其它线程 [INTERCEPTOR_TIME_OUT_SUB_TH]）
+     * 对拦截到的路由过程进行处理
      *
      * @param callback  拦截器结果回调
      */
     fun onIntercept(postman: Postman, callback: InterceptorCallback)
 
-    override fun compareTo(other: IInterceptor): Int = other.priority() - priority()
 }

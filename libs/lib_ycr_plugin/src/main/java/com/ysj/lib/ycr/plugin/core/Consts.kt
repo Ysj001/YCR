@@ -14,7 +14,7 @@ const val CLASS_RouteBean = "com/ysj/lib/ycr/annotation/RouteBean"
 
 // ======================= template =======================
 const val CLASS_IProviderRoute = "com/ysj/lib/ycr/template/IProviderRoute"
-const val CLASS_IInterceptor = "com/ysj/lib/ycr/template/IInterceptor"
+const val CLASS_IGlobalInterceptor = "com/ysj/lib/ycr/template/IGlobalInterceptor"
 const val CLASS_IGlobalExceptionProcessor = "com/ysj/lib/ycr/template/IGlobalExceptionProcessor"
 const val CLASS_IExecutorProvider = "com/ysj/lib/ycr/template/IExecutorProvider"
 // ========================================================

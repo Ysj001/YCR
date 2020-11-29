@@ -5,12 +5,17 @@ import android.content.ComponentName
 import android.content.Intent
 import android.util.Log
 import com.ysj.lib.ycr.annotation.SUFFIX_ROUTE_PARAM
+import com.ysj.lib.ycr.callback.InterceptorCallback
 import com.ysj.lib.ycr.entity.ActivityResult
+import com.ysj.lib.ycr.entity.InterruptReason
 import com.ysj.lib.ycr.entity.Postman
 import com.ysj.lib.ycr.exception.YCRExceptionFactory
 import com.ysj.lib.ycr.lifecycle.ActivityResultFragment
+import com.ysj.lib.ycr.template.IInterceptor
 import com.ysj.lib.ycr.template.IProviderParam
 import com.ysj.lib.ycr.template.YCRTemplate
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.atomic.AtomicBoolean
 
 /*
  * YCR 扩展
@@ -86,6 +91,52 @@ internal fun YCR.handleRouteActivity(postman: Postman, resultCallback: (Any?) ->
             )
         }
     }
+
+internal fun YCR.executeInterceptor(
+    postman: Postman,
+    countDownLatch: CountDownLatch,
+    interrupt: AtomicBoolean,
+    interceptors: Iterator<IInterceptor>
+) {
+    if (postman.isDestroy) {
+        while (countDownLatch.count > 0) countDownLatch.countDown()
+        return
+    }
+    if (!interceptors.hasNext()) return
+    interceptors.next().onIntercept(postman, object : InterceptorCallback {
+
+        var isFinished = false
+
+        override fun onContinue(postman: Postman) = safeHandle {
+            countDownLatch.countDown()
+            executeInterceptor(postman, countDownLatch, interrupt, interceptors)
+        }
+
+        override fun onInterrupt(postman: Postman, reason: InterruptReason<*>) =
+            safeHandle {
+                postman.interruptCallback?.run {
+                    try {
+                        onInterrupt(postman, reason)
+                    } catch (e: Exception) {
+                        callException(
+                            postman,
+                            YCRExceptionFactory.doOnInterruptException(e)
+                        )
+                    }
+                }
+                interrupt.set(true)
+                while (countDownLatch.count > 0) countDownLatch.countDown()
+            }
+
+        fun safeHandle(block: () -> Unit) {
+            if (isFinished) throw YCRExceptionFactory.interceptorRepeatProcessException(
+                interceptors.toString()
+            )
+            block()
+            isFinished = true
+        }
+    })
+}
 
 internal fun <T : YCRTemplate> getTemplateInstance(className: String): T? {
     try {

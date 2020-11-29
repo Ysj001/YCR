@@ -27,7 +27,8 @@ class RemoteRouteBean(val routeBean: RouteBean) : Parcelable {
             .withFlags(parcel.readInt())
             .withOptionsCompat(parcel.readBundle())
             .withTransition(parcel.readInt(), parcel.readInt())
-            .apply { if (parcel.readInt() == 1) useGreenChannel() }
+            .interceptorTimeout(parcel.readLong())
+            .apply { if (parcel.readInt() == 1) skipGlobalInterceptor() }
             .apply { if (parcel.readInt() == 1) isDestroy = true }
     )
 
@@ -47,7 +48,8 @@ class RemoteRouteBean(val routeBean: RouteBean) : Parcelable {
                     it.writeBundle(optionsCompat)
                     it.writeInt(enterAnim)
                     it.writeInt(exitAnim)
-                    it.writeInt(if (greenChannel) 1 else 0)
+                    it.writeLong(interceptorTimeout)
+                    it.writeInt(if (skipGlobalInterceptor) 1 else 0)
                     it.writeInt(if (isDestroy) 1 else 0)
                 } else {
                     it.writeBundle(null)
@@ -57,6 +59,7 @@ class RemoteRouteBean(val routeBean: RouteBean) : Parcelable {
                     it.writeBundle(null)
                     it.writeInt(-1)
                     it.writeInt(-1)
+                    it.writeLong(0)
                     it.writeInt(0)
                     it.writeInt(0)
                 }

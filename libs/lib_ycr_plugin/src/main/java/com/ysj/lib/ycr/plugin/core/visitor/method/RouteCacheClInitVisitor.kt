@@ -2,7 +2,7 @@ package com.ysj.lib.ycr.plugin.core.visitor.method
 
 import com.ysj.lib.ycr.plugin.core.CLASS_Caches
 import com.ysj.lib.ycr.plugin.core.CLASS_IGlobalExceptionProcessor
-import com.ysj.lib.ycr.plugin.core.CLASS_IInterceptor
+import com.ysj.lib.ycr.plugin.core.CLASS_IGlobalInterceptor
 import com.ysj.lib.ycr.plugin.core.RouteTransform
 import com.ysj.lib.ycr.plugin.core.visitor.BaseClassVisitor
 import com.ysj.lib.ycr.plugin.core.visitor.entity.ClassInfo
@@ -38,7 +38,7 @@ class RouteCacheClInitVisitor : BaseMethodVisitor(
                     visitFieldInsn(
                         Opcodes.GETSTATIC,
                         bcv.classInfo.name,
-                        if (it.interfaces.contains(CLASS_IInterceptor)) "interceptors"
+                        if (it.interfaces.contains(CLASS_IGlobalInterceptor)) "interceptors"
                         else "globalExceptionProcessors",
                         "Ljava/util/TreeSet;"
                     )
@@ -66,6 +66,6 @@ class RouteCacheClInitVisitor : BaseMethodVisitor(
     }
 
     private fun filter(classInfo: ClassInfo): Boolean =
-        classInfo.interfaces.contains(CLASS_IInterceptor)
+        classInfo.interfaces.contains(CLASS_IGlobalInterceptor)
                 || classInfo.interfaces.contains(CLASS_IGlobalExceptionProcessor)
 }

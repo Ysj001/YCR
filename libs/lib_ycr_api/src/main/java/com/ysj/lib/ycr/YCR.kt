@@ -3,12 +3,9 @@ package com.ysj.lib.ycr
 import android.os.Handler
 import android.os.Looper
 import com.ysj.lib.ycr.annotation.*
-import com.ysj.lib.ycr.callback.InterceptorCallback
-import com.ysj.lib.ycr.entity.InterruptReason
 import com.ysj.lib.ycr.entity.Postman
 import com.ysj.lib.ycr.exception.IYCRExceptions
 import com.ysj.lib.ycr.exception.YCRExceptionFactory
-import com.ysj.lib.ycr.template.IInterceptor
 import com.ysj.lib.ycr.template.IProviderRoute
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.LinkedBlockingQueue
@@ -92,7 +89,7 @@ class YCR private constructor() {
                 }
                 postman.from(routeBean)
             }
-            if (postman.greenChannel || !handleInterceptor(postman)) handleRoute(postman) { result ->
+            if (!handleInterceptor(postman)) handleRoute(postman) { result ->
                 postman.routeResultCallbacks?.run {
                     try {
                         forEach { callback -> callback.onResult(result) }
@@ -126,68 +123,35 @@ class YCR private constructor() {
         postman.getContext() ?: return true
         val isMainTH = Thread.currentThread() == Looper.getMainLooper().thread
         // 拦截器超时时间
-        val timeout = if (isMainTH) INTERCEPTOR_TIME_OUT_MAIN_TH else INTERCEPTOR_TIME_OUT_SUB_TH
-        // 取得匹配的拦截器
-        val interceptors = Caches.interceptors
-        val countDownLatch = CountDownLatch(interceptors.size)
+        val timeout = if (isMainTH) INTERCEPTOR_TIME_OUT_MAIN_TH else postman.interceptorTimeout
+        // 取得局部拦截器
+        val interceptors = postman.interceptors
+        // 取得全局拦截器
+        val globalInterceptors = Caches.interceptors
+        val countDownLatch = CountDownLatch(globalInterceptors.size + (interceptors?.size ?: 0))
         val interrupt = AtomicBoolean(false)
-        executeInterceptor(
+        // 先执行局部拦截器
+        if (interceptors != null) executeInterceptor(
             postman,
             countDownLatch,
             interrupt,
             interceptors.iterator()
+        )
+        if (postman.skipGlobalInterceptor) {
+            while (countDownLatch.count > 0) countDownLatch.countDown()
+        }
+        // 如果局部拦截器未拦截则执行全局拦截器
+        if (!interrupt.get() && !postman.skipGlobalInterceptor) executeInterceptor(
+            postman,
+            countDownLatch,
+            interrupt,
+            globalInterceptors.iterator()
         )
         // 等待所有拦截器处理完再返回结果
         countDownLatch.await(timeout, TimeUnit.MILLISECONDS)
         val remaining = countDownLatch.count
         if (remaining != 0L) throw YCRExceptionFactory.interceptorTimeOutException(remaining)
         return interrupt.get()
-    }
-
-    private fun executeInterceptor(
-        postman: Postman,
-        countDownLatch: CountDownLatch,
-        interrupt: AtomicBoolean,
-        interceptors: Iterator<IInterceptor>
-    ) {
-        if (postman.isDestroy) {
-            while (countDownLatch.count > 0) countDownLatch.countDown()
-            return
-        }
-        if (!interceptors.hasNext()) return
-        interceptors.next().onIntercept(postman, object : InterceptorCallback {
-
-            var isFinished = false
-
-            override fun onContinue(postman: Postman) = safeHandle {
-                countDownLatch.countDown()
-                executeInterceptor(postman, countDownLatch, interrupt, interceptors)
-            }
-
-            override fun onInterrupt(postman: Postman, reason: InterruptReason<*>) =
-                safeHandle {
-                    postman.interruptCallback?.run {
-                        try {
-                            onInterrupt(postman, reason)
-                        } catch (e: Exception) {
-                            callException(
-                                postman,
-                                YCRExceptionFactory.doOnInterruptException(e)
-                            )
-                        }
-                    }
-                    interrupt.set(true)
-                    while (countDownLatch.count > 0) countDownLatch.countDown()
-                }
-
-            fun safeHandle(block: () -> Unit) {
-                if (isFinished) throw YCRExceptionFactory.interceptorRepeatProcessException(
-                    interceptors.toString()
-                )
-                block()
-                isFinished = true
-            }
-        })
     }
 
     internal fun runOnMainThread(runnable: Runnable) {
@@ -201,11 +165,11 @@ class YCR private constructor() {
         val currentThread = Thread.currentThread()
         val isMainTH = currentThread == Looper.getMainLooper().thread
         val isDefault = tf is YCRThreadFactory && tf.namePrefix.startsWith("YCR-default")
-        if (isDefault && !isMainTH && executorTaskFull()) runnable.run()
+        if (isDefault && !isMainTH && isExecutorTaskFull()) runnable.run()
         else executor.execute(runnable)
     }
 
-    private fun executorTaskFull() = executor.poolSize == executor.largestPoolSize
+    private fun isExecutorTaskFull() = executor.poolSize == executor.largestPoolSize
             && executor.taskCount >= executor.poolSize
 
     private inline fun <R> sync(block: () -> R): R {

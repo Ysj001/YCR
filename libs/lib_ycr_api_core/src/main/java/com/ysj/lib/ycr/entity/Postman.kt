@@ -9,6 +9,7 @@ import android.os.Parcelable
 import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
+import com.ysj.lib.ycr.INTERCEPTOR_TIME_OUT_SUB_TH
 import com.ysj.lib.ycr.YCR
 import com.ysj.lib.ycr.annotation.RouteBean
 import com.ysj.lib.ycr.callback.FinishedCallback
@@ -16,6 +17,7 @@ import com.ysj.lib.ycr.callback.InterceptorCallback
 import com.ysj.lib.ycr.callback.RouteResultCallback
 import com.ysj.lib.ycr.callback.YCRExceptionCallback
 import com.ysj.lib.ycr.lifecycle.RouteLifecycleObserver
+import com.ysj.lib.ycr.template.IInterceptor
 import com.ysj.lib.ycr.type.checkMethodParameterType
 import java.io.Serializable
 import java.lang.ref.WeakReference
@@ -51,8 +53,16 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
     var exitAnim = -1
         private set
 
-    /** 表示是否使用绿色通道，为 true 会跳过拦截器 */
-    var greenChannel: Boolean = false
+    /** 表示是否使用绿色通道，为 true 会跳过全局拦截器 */
+    var skipGlobalInterceptor: Boolean = false
+        private set
+
+    /** 运行在子线程时的拦截器超时时间 */
+    var interceptorTimeout: Long = INTERCEPTOR_TIME_OUT_SUB_TH
+        private set
+
+    /** 局部拦截器 */
+    var interceptors: Array<out IInterceptor>? = null
         private set
 
     /** 要执行的行为名称 */
@@ -104,9 +114,14 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
     }
 
     /**
-     * 调用该方法启用绿色通道，跳过所有拦截器
+     * 调用该方法会跳过所有全局拦截器
      */
-    fun useGreenChannel() = apply { this.greenChannel = true }
+    fun skipGlobalInterceptor() = apply { this.skipGlobalInterceptor = true }
+
+    /**
+     * 设置拦截器超时时间（ms），0 表示不超时，默认 [INTERCEPTOR_TIME_OUT_SUB_TH]
+     */
+    fun interceptorTimeout(timeout: Long) = apply { this.interceptorTimeout = timeout }
 
     /**
      * 路由调用链的最后一步，开始路由导航
@@ -191,14 +206,6 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
     }
 
     /**
-     * Set special flags controlling how this intent is handled.
-     *
-     * @see Intent.setFlags
-     * @param flags The desired flags.
-     */
-    fun withFlags(flags: Int) = apply { this.flags = flags }
-
-    /**
      * 设置要执行的行为
      *
      * @param actionName 要执行的行为的名称
@@ -207,6 +214,20 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
         if (actionName.isNullOrEmpty()) return@apply
         this.actionName = actionName
     }
+
+    /**
+     * 设置局部拦截器，会按照设置的顺序执行
+     */
+    fun withInterceptor(vararg interceptors: IInterceptor) =
+        apply { this.interceptors = interceptors }
+
+    /**
+     * Set special flags controlling how this intent is handled.
+     *
+     * @see Intent.setFlags
+     * @param flags The desired flags.
+     */
+    fun withFlags(flags: Int) = apply { this.flags = flags }
 
     /**
      * Set normal transition anim
@@ -338,6 +359,7 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
      * 将另一个 [Postman] 中的数据复制过来
      */
     internal fun from(postman: Postman) {
+        if (postman === this) return
         this.bundle.clear()
         this.bundle.putAll(postman.bundle)
         this.optionsCompat = postman.optionsCompat
@@ -346,7 +368,8 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
         this.actionName = postman.actionName
         this.requestCode = postman.requestCode
         this.flags = postman.flags
-        this.greenChannel = postman.greenChannel
+        this.skipGlobalInterceptor = postman.skipGlobalInterceptor
+        this.interceptorTimeout = postman.interceptorTimeout
         this.isDestroy = postman.isDestroy
         from(postman as RouteBean)
     }

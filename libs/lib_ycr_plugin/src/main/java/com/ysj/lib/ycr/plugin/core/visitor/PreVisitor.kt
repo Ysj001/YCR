@@ -46,7 +46,7 @@ class PreVisitor(val tf: RouteTransform, visitor: ClassVisitor) :
     private fun checkYCRInterface(interfaces: Array<out String>?): Boolean {
         if (interfaces.isNullOrEmpty()) return false
         return interfaces.contains(CLASS_IProviderRoute)
-                || interfaces.contains(CLASS_IInterceptor)
+                || interfaces.contains(CLASS_IGlobalInterceptor)
                 || interfaces.contains(CLASS_IGlobalExceptionProcessor)
                 || interfaces.contains(CLASS_IExecutorProvider)
     }
