@@ -57,7 +57,7 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
     var skipGlobalInterceptor: Boolean = false
         private set
 
-    /** 运行在子线程时的拦截器超时时间 */
+    /** 运行在子线程时的拦截器超时时间（ms），为 0 表示不超时 */
     var interceptorTimeout: Long = INTERCEPTOR_TIME_OUT_SUB_TH
         private set
 

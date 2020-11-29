@@ -160,7 +160,8 @@ class YCR private constructor() {
             globalInterceptors
         )
         // 等待所有拦截器处理完再返回结果
-        countDownLatch.await(timeout, TimeUnit.MILLISECONDS)
+        if (timeout == 0L) countDownLatch.await()
+        else countDownLatch.await(timeout, TimeUnit.MILLISECONDS)
         val remaining = countDownLatch.count
         if (remaining != 0L) throw YCRExceptionFactory.interceptorTimeOutException(remaining)
         return interrupt.get()
