@@ -17,6 +17,7 @@ interface IGlobalExceptionProcessor : YCRTemplate, Comparable<IGlobalExceptionPr
      *
      * @return default: 0 [Short.MIN_VALUE] ~ [Short.MAX_VALUE]
      */
+    @JvmDefault
     fun priority(): Short = 0
 
     /**
@@ -28,5 +29,6 @@ interface IGlobalExceptionProcessor : YCRTemplate, Comparable<IGlobalExceptionPr
      */
     fun handleException(postman: Postman, e: IYCRExceptions): Boolean
 
+    @JvmDefault
     override fun compareTo(other: IGlobalExceptionProcessor): Int = other.priority() - priority()
 }

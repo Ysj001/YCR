@@ -14,7 +14,9 @@ interface IGlobalInterceptor : IInterceptor, Comparable<IGlobalInterceptor> {
      *
      * @return default: 0 [Short.MIN_VALUE] ~ [Short.MAX_VALUE]
      */
+    @JvmDefault
     fun priority(): Short = 0
 
+    @JvmDefault
     override fun compareTo(other: IGlobalInterceptor): Int = other.priority() - priority()
 }
