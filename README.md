@@ -1,6 +1,6 @@
 ## YCR —— YComponentRouter
 
-[![Kotlin Version](https://img.shields.io/badge/Kotlin-1.4.10-blue.svg)](https://kotlinlang.org)  ![GitHub](https://img.shields.io/github/license/Ysj001/YCR)
+ [![Kotlin Version](https://img.shields.io/badge/Kotlin-1.4.10-blue.svg)](https://kotlinlang.org)  ![GitHub](https://img.shields.io/github/license/Ysj001/YCR)
 
 YCR 是一个轻量级的，支持跨进程调用的，支持渐进式改造的组件化框架。
 
@@ -55,6 +55,69 @@ YCR 的整体设计和调用方式和 [*ARouter*](https://github.com/alibaba/ARo
 
 ### 如何使用
 
+#### 依赖&环境
+
+```groovy
+// Top-level build file
+buildscript {
+    ext.kotlin_version = '1.4.10'
+    ext.LIB_VERSION = 'xxx.xxx.xxx'
+    ... ...
+    dependencies {
+        ... ...
+        // kotlin 插件
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        // YCR 库插件
+        classpath "com.ysj.lib.ycr:ycr-plugin:$LIB_VERSION"
+    }
+}
+```
+
+```groovy
+// 导入 kotlin 相关插件
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
+// 若该 module 是组件则必须要导入 YCR 插件
+apply plugin: 'ycr-plugin'
+
+// 设置 ycr-plugin 的编译参数
+ycr {
+    // 若该 module 是主组件，则必须设置
+    main = true
+    // 设置 YCR 编译时日志输出等级（可选）
+    loggerLevel = 1
+}
+
+android {
+	... ...
+    // 设置 java 环境为 java 8
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        // 设置 kotlin 环境为 jvm 1.8
+        jvmTarget = '1.8'
+        // 设置 kotlin 接口兼容 java 8 的默认方法
+        freeCompilerArgs = ["-Xjvm-default=enable"]
+    }
+}
+
+dependencies {
+    ... ...
+    // kotlin 依赖
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation 'androidx.core:core-ktx:1.3.1'
+    
+    // 根据实际情况导入依赖
+    // implementation "com.ysj.lib.ycr:ycr-api:$LIB_VERSION"
+    // implementation "com.ysj.lib.ycr:ycr-api-dev:$LIB_VERSION"
+    // kapt "com.ysj.lib.ycr:ycr-compiler:$LIB_VERSION"
+}
+```
+
 #### 混淆配置
 
 ```text
@@ -97,6 +160,25 @@ public class YourActivity extends Activity {
 ```
 
 #### 异常处理器
+
+```java
+
+public class YourExceptionProcessor implements IGlobalExceptionProcessor {
+
+    @Override
+    public short priority() {
+        // 你可以通过重写该方法定义异常处理器的优先级
+        // 优先级可以相同，但是相同的优先级不保证执行顺序
+        return 0;
+    }
+
+    @Override
+    public boolean handleException(@NotNull Postman postman, 
+                                   @NotNull IYCRExceptions iycrExceptions) {
+        return false;
+    }
+}
+```
 
 #### 行为处理器
 
@@ -141,16 +223,16 @@ public class YourLocalInterceptor implements IInterceptor {
 ```java
 // 通过实现 IGlobalInterceptor 接口来定义一个全局拦截器
 // 全局拦截器执行于局部拦截器后，若局部拦截器拦截了则不会调用全局拦截器
-// 全局拦截器会在符合调用条件时自动调用，不需要手动调用
+// 全局拦截器会在符合调用条件时自动调用
 public class YourInterceptor implements IGlobalInterceptor {
     
     @Override
     public void priority() { 
-        // 定义拦截器的优先级，拦截器会按照该优先级顺序执行
+        // 你可以通过重写该方法定义拦截器的优先级
         // 优先级可以相同，但是相同的优先级不保证执行顺序
         return 1;
     }
-
+    
     @Override
     public void onIntercept(@NotNull Postman postman, 
                             @NotNull InterceptorCallback interceptorCallback) {
@@ -270,4 +352,6 @@ YCR.getInstance()
 
 ### 其它
 
-- 如果觉得本库对你有所帮助请给个 Star 吧！
+- 欢迎 Issues，Fork
+- 如果觉得对你有所帮助请给个 Star 吧！
+
