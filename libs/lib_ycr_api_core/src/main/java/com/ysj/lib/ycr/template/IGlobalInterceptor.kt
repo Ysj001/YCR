@@ -18,5 +18,9 @@ interface IGlobalInterceptor : IInterceptor, Comparable<IGlobalInterceptor> {
     fun priority(): Short = 0
 
     @JvmDefault
-    override fun compareTo(other: IGlobalInterceptor): Int = other.priority() - priority()
+    override fun compareTo(other: IGlobalInterceptor): Int {
+        var compare = other.priority() - priority()
+        if (compare == 0) compare = 1
+        return compare
+    }
 }

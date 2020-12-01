@@ -30,5 +30,9 @@ interface IGlobalExceptionProcessor : YCRTemplate, Comparable<IGlobalExceptionPr
     fun handleException(postman: Postman, e: IYCRExceptions): Boolean
 
     @JvmDefault
-    override fun compareTo(other: IGlobalExceptionProcessor): Int = other.priority() - priority()
+    override fun compareTo(other: IGlobalExceptionProcessor): Int {
+        var compare = other.priority() - priority()
+        if (compare == 0) compare = 1
+        return compare
+    }
 }
