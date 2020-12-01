@@ -52,7 +52,7 @@ class RouteTransform(private val project: Project) : Transform() {
     /** 用于监测 IExecutorProvider 的实现是否存在多个 */
     var executorProviderClassName: String? = null
         set(value) {
-            if (field != null) {
+            if (field != null && field != value) {
                 throw RuntimeException(
                     """
                     存在多个 IExecutorProvider 请检查：

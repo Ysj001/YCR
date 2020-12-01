@@ -38,7 +38,7 @@ class RouteCacheClInitVisitor : BaseMethodVisitor(
                     visitFieldInsn(
                         Opcodes.GETSTATIC,
                         bcv.classInfo.name,
-                        if (it.interfaces.contains(CLASS_IGlobalInterceptor)) "interceptors"
+                        if (hasInterface(it, CLASS_IGlobalInterceptor)) "interceptors"
                         else "globalExceptionProcessors",
                         "Ljava/util/TreeSet;"
                     )
@@ -67,18 +67,18 @@ class RouteCacheClInitVisitor : BaseMethodVisitor(
 
     private fun filter(classInfo: ClassInfo): Boolean {
         if (classInfo.access and Opcodes.ACC_ABSTRACT == Opcodes.ACC_ABSTRACT) return false
-        return hasInterface(classInfo)
+        return hasInterface(classInfo, CLASS_IGlobalInterceptor, CLASS_IGlobalExceptionProcessor)
     }
 
-    private fun hasInterface(classInfo: ClassInfo?): Boolean {
+    private fun hasInterface(classInfo: ClassInfo?, vararg interfaceName: String): Boolean {
         classInfo ?: return false
-        var result = classInfo.interfaces.contains(CLASS_IGlobalInterceptor)
-                || classInfo.interfaces.contains(CLASS_IGlobalExceptionProcessor)
-        if (!result && classInfo.superName.isNotEmpty()) {
+        var result = interfaceName.find { it in classInfo.interfaces } != null
+        if (!result) {
             result = hasInterface(
                 (bcv.transform as RouteTransform)
                     .cacheClassInfo
-                    .find { it.name == classInfo.superName }
+                    .find { it.name == classInfo.superName },
+                *interfaceName
             )
         }
         return result
