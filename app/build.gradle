@@ -4,10 +4,11 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'ycr-plugin'
 
+// 设置 ycr-plugin 的编译参数
 ycr {
-    // 向 route-plugin 标识该 module 是主组件
+    // 若该 module 是主组件，则必须设置
     main = true
-    // 设置日志输出等级
+    // 设置 YCR 编译时日志输出等级（可选）
     loggerLevel = 1
 }
 
