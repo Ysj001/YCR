@@ -65,7 +65,22 @@ class RouteCacheClInitVisitor : BaseMethodVisitor(
         super.visitInsn(opcode)
     }
 
-    private fun filter(classInfo: ClassInfo): Boolean =
-        classInfo.interfaces.contains(CLASS_IGlobalInterceptor)
+    private fun filter(classInfo: ClassInfo): Boolean {
+        if (classInfo.access and Opcodes.ACC_ABSTRACT == Opcodes.ACC_ABSTRACT) return false
+        return hasInterface(classInfo)
+    }
+
+    private fun hasInterface(classInfo: ClassInfo?): Boolean {
+        classInfo ?: return false
+        var result = classInfo.interfaces.contains(CLASS_IGlobalInterceptor)
                 || classInfo.interfaces.contains(CLASS_IGlobalExceptionProcessor)
+        if (!result && classInfo.superName.isNotEmpty()) {
+            result = hasInterface(
+                (bcv.transform as RouteTransform)
+                    .cacheClassInfo
+                    .find { it.name == classInfo.superName }
+            )
+        }
+        return result
+    }
 }
