@@ -1,12 +1,25 @@
 ## YCR —— YComponentRouter
 
- [![Kotlin Version](https://img.shields.io/badge/Kotlin-1.4.10-blue.svg)](https://kotlinlang.org)  ![GitHub](https://img.shields.io/github/license/Ysj001/YCR)
+ [![Kotlin Version](https://img.shields.io/badge/Kotlin-1.4.10-blue.svg)](https://kotlinlang.org)   ![GitHub](https://img.shields.io/github/license/Ysj001/YCR)
 
 YCR 是一个轻量级的，支持跨进程调用的，支持渐进式改造的组件化框架。
 
 YCR 的设计初衷在于减少项目的组件化改造成本。框架整体采用贴近原生的设计思路，在尽可能保留原生能力上做扩展，以最大程度的保留兼容性和扩展性。
 
 YCR 的整体设计和调用方式和 [*ARouter*](https://github.com/alibaba/ARouter) 类似，如果你之前采用的是 ARouter 方案，相信你很快就能上手。YCR 也继承了 [*CC*](https://github.com/luckybilly/CC) 渐进式组件化的思想，提供了行为处理器用于处理组件间的交互行为，使新组件的开发不再必须要老项目提前解耦或下沉公共类，并且提供了开发时跨进程调用能力使新组件的开发更加便捷。
+
+
+
+#### Last version
+
+[![Download](https://api.bintray.com/packages/ysj/Github-Android/YCR/images/download.svg?version=1.0.0)](https://bintray.com/ysj/Github-Android/YCR/1.0.0/link)
+
+| module       | describe                                                   |
+| :----------- | :--------------------------------------------------------- |
+| ycr-api      | YCR 库常规开发包，不带跨进程功能                           |
+| ycr-api-dev  | YCR 库开发时辅助包，带跨进程调用功能，可提升开发效率       |
+| ycr-compiler | YCR 库的注解处理器包，用于处理 @Route 和 @RouteParam       |
+| ycr-plugin   | YCR 库的插件包，用于收集路由，行为等信息并自动注册到框架中 |
 
 
 
@@ -29,7 +42,7 @@ YCR 的整体设计和调用方式和 [*ARouter*](https://github.com/alibaba/ARo
 
 
 
-### 如何构建
+### 如何编译源码
 
 #### 1.了解项目结构
 
