@@ -29,7 +29,7 @@ public class LoginActivity extends AppCompatActivity {
             ToastUtil.showShortToast("用户名不能为空");
             return;
         }
-        Boolean loginSuccess = (Boolean) YCR.getInstance()
+        Boolean loginSuccess = YCR.getInstance()
                 .build("/base/MockUserLogin")
                 .withRouteAction("login")
                 .withString("userName", userName)

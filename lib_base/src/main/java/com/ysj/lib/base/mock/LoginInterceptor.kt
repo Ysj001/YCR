@@ -30,11 +30,11 @@ class LoginInterceptor : IGlobalInterceptor {
     // 演示没登录时中断路由并提示
     private fun demoHandle1(postman: Postman, callback: InterceptorCallback) {
         val context = postman.getContext() ?: return
-        val userInfo = YCR.getInstance()
+        val userInfo: MockUserLogin.UserInfo? = YCR.getInstance()
             .build("/base/MockUserLogin")
             .withRouteAction("userInfo")
             .skipGlobalInterceptor()
-            .navigationSync(context) as? MockUserLogin.UserInfo
+            .navigationSync(context)
         if (userInfo != null) {
             callback.onContinue(postman)
             return
@@ -49,11 +49,11 @@ class LoginInterceptor : IGlobalInterceptor {
             callback.onContinue(postman)
             return
         }
-        val userInfo = YCR.getInstance()
+        val userInfo: MockUserLogin.UserInfo? = YCR.getInstance()
             .build("/base/MockUserLogin")
             .withRouteAction("userInfo")
             .skipGlobalInterceptor()
-            .navigationSync(context) as? MockUserLogin.UserInfo
+            .navigationSync(context)
         if (userInfo == null) {
             YCR.getInstance()
                 .build("/base/MockUserLogin")
