@@ -41,9 +41,9 @@ class YCR private constructor() {
     private val executor: ThreadPoolExecutor by lazy {
         getCustomExecutor()
             ?: ThreadPoolExecutor(
-                1, 1,
-                0L, TimeUnit.MILLISECONDS,
-                LinkedBlockingQueue<Runnable>(),
+                0, Int.MAX_VALUE,
+                6000_0L, TimeUnit.MILLISECONDS,
+                SynchronousQueue(),
                 YCRThreadFactory("default")
             )
     }
@@ -161,17 +161,7 @@ class YCR private constructor() {
         else mainHandler.post(runnable)
     }
 
-    internal fun runOnExecutor(runnable: Runnable) {
-        val tf = executor.threadFactory
-        val currentThread = Thread.currentThread()
-        val isMainTH = currentThread == Looper.getMainLooper().thread
-        val isDefault = tf is YCRThreadFactory && tf.namePrefix.startsWith("YCR-default")
-        if (isDefault && !isMainTH && isExecutorTaskFull()) runnable.run()
-        else executor.execute(runnable)
-    }
-
-    private fun isExecutorTaskFull() = executor.poolSize == executor.largestPoolSize
-            && executor.taskCount >= executor.poolSize
+    internal fun runOnExecutor(runnable: Runnable) = executor.execute(runnable)
 
     private inline fun <R> sync(block: () -> R): R {
         lock.lock()

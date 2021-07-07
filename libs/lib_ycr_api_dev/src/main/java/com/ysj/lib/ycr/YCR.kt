@@ -14,7 +14,7 @@ import com.ysj.lib.ycr.remote.*
 import com.ysj.lib.ycr.remote.entity.PrioritiableClassInfo
 import java.util.*
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.SynchronousQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -48,9 +48,9 @@ class YCR private constructor() {
     private val executor: ThreadPoolExecutor by lazy {
         getCustomExecutor()
             ?: ThreadPoolExecutor(
-                1, 1,
-                0L, TimeUnit.MILLISECONDS,
-                LinkedBlockingQueue<Runnable>(),
+                0, Int.MAX_VALUE,
+                6000_0L, TimeUnit.MILLISECONDS,
+                SynchronousQueue(),
                 YCRThreadFactory("default")
             )
     }
@@ -248,17 +248,7 @@ class YCR private constructor() {
         else mainHandler.post(runnable)
     }
 
-    internal fun runOnExecutor(runnable: Runnable) {
-        val tf = executor.threadFactory
-        val currentThread = Thread.currentThread()
-        val isMainTH = currentThread == Looper.getMainLooper().thread
-        val isDefault = tf is YCRThreadFactory && tf.namePrefix.startsWith("YCR-default")
-        if (isDefault && !isMainTH && executorTaskFull()) runnable.run()
-        else executor.execute(runnable)
-    }
-
-    private fun executorTaskFull() = executor.poolSize == executor.largestPoolSize
-            && executor.taskCount >= executor.poolSize
+    internal fun runOnExecutor(runnable: Runnable) = executor.execute(runnable)
 
     private inline fun <R> sync(block: () -> R): R {
         lock.lock()
