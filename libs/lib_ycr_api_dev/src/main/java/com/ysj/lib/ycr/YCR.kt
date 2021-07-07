@@ -117,7 +117,7 @@ class YCR private constructor() {
 
     private fun handleInterceptor(postman: Postman): Boolean {
         postman.getContext() ?: return true
-        val routeProvider = RemoteRouteProvider.instance ?: return false
+        val routeProvider = RemoteRouteProvider.instance
         val routeService = routeProvider.getRouteService() ?: return false
         val globalInterceptors = TreeSet<PrioritiableClassInfo>()
             .apply {
@@ -235,12 +235,12 @@ class YCR private constructor() {
 
     private fun doRemoteAction(postman: Postman) =
         RemoteRouteProvider.instance
-            ?.getRouteService(postman.applicationId)
+            .getRouteService(postman.applicationId)
             ?.doAction(RemoteRouteBean(postman))
             ?.params?.get(REMOTE_ACTION_RESULT)
 
     private fun findRemoteRouteBean(group: String, path: String) =
-        RemoteRouteProvider.instance?.getRouteService()?.findRouteBean(group, path)?.routeBean
+        RemoteRouteProvider.instance.getRouteService()?.findRouteBean(group, path)?.routeBean
 
     internal fun runOnMainThread(runnable: Runnable) {
         val isMainTH = Thread.currentThread() == Looper.getMainLooper().thread
@@ -272,7 +272,7 @@ class YCR private constructor() {
     internal fun callException(postman: Postman, exception: IYCRExceptions) {
         if (postman.exceptionCallback?.handleException(postman, exception) == true) return
         postman.getContext() ?: return
-        val routeProvider = RemoteRouteProvider.instance ?: return
+        val routeProvider = RemoteRouteProvider.instance
         val routeService = routeProvider.getRouteService() ?: return
         TreeSet<PrioritiableClassInfo>()
             .apply {

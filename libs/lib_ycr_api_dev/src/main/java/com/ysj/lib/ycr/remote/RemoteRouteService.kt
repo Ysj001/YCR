@@ -33,7 +33,7 @@ internal class RemoteRouteService : IRouteService.Stub() {
     private val allApplicationId = HashSet<String>()
 
     override fun registerToMainApp(applicationId: String) {
-        RemoteRouteProvider.instance!!.also {
+        RemoteRouteProvider.instance.also {
             if (it.mainApplicationId != applicationId) {
                 it.routeServiceCache.remove(applicationId)
             }
@@ -73,7 +73,7 @@ internal class RemoteRouteService : IRouteService.Stub() {
                     .getConstructor().newInstance() as IActionProcessor
             Caches.actionCache[postman.className] = processor
             if (postman.getContext() == null) postman.context =
-                WeakReference(RemoteRouteProvider.instance!!.context!!)
+                WeakReference(RemoteRouteProvider.instance.context!!)
             val actionResult = processor.doAction(postman) ?: return null
             if (actionResult !is Serializable && actionResult !is Parcelable) return null
             return RemoteParam().apply { params[REMOTE_ACTION_RESULT] = actionResult }
@@ -86,7 +86,7 @@ internal class RemoteRouteService : IRouteService.Stub() {
     override fun getAllInterceptors(): RemoteParam = RemoteParam().apply {
         params[REMOTE_INTERRUPT_INFO] = Caches.interceptors.map {
             PrioritiableClassInfo(
-                RemoteRouteProvider.instance!!.context!!.packageName,
+                RemoteRouteProvider.instance.context!!.packageName,
                 it.javaClass.name,
                 it.priority()
             )
@@ -97,7 +97,7 @@ internal class RemoteRouteService : IRouteService.Stub() {
         val interceptorInfo = param.params[REMOTE_INTERRUPT_INFO] as PrioritiableClassInfo
         val postman = (param.params[REMOTE_ROUTE_BEAN] as RemoteRouteBean).routeBean as Postman
         if (postman.getContext() == null) postman.context =
-            WeakReference(RemoteRouteProvider.instance!!.context!!)
+            WeakReference(RemoteRouteProvider.instance.context!!)
         // 取得匹配的拦截器
         Caches.interceptors.find { it.javaClass.name == interceptorInfo.className }!!
             .onIntercept(postman, object : InterceptorCallback {
@@ -117,7 +117,7 @@ internal class RemoteRouteService : IRouteService.Stub() {
     override fun getAllGlobalExceptionProcessors(): RemoteParam = RemoteParam().apply {
         params[REMOTE_EXCEPTION_PROCESSOR_INFO] = Caches.globalExceptionProcessors.map {
             PrioritiableClassInfo(
-                RemoteRouteProvider.instance!!.context!!.packageName,
+                RemoteRouteProvider.instance.context!!.packageName,
                 it.javaClass.name,
                 it.priority()
             )
@@ -128,7 +128,7 @@ internal class RemoteRouteService : IRouteService.Stub() {
         val exceptionProcessorInfo = param.params[REMOTE_EXCEPTION_PROCESSOR_INFO] as PrioritiableClassInfo
         val postman = (param.params[REMOTE_ROUTE_BEAN] as RemoteRouteBean).routeBean as Postman
         if (postman.getContext() == null) postman.context =
-            WeakReference(RemoteRouteProvider.instance!!.context!!)
+            WeakReference(RemoteRouteProvider.instance.context!!)
         // 取得匹配的异常处理器
         return Caches.globalExceptionProcessors
             .find { it.javaClass.name == exceptionProcessorInfo.className }!!

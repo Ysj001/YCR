@@ -24,7 +24,8 @@ internal class RemoteRouteProvider : ContentProvider() {
     companion object {
         private const val TAG = "RemoteRouteProvider"
 
-        var instance: RemoteRouteProvider? = null
+        lateinit var instance: RemoteRouteProvider
+            private set
     }
 
     /** 主组件的 application id */
