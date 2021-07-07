@@ -134,12 +134,13 @@ class Postman(group: String, path: String) : RouteBean(group, path), RouteLifecy
     /**
      * 路由调用链的最后一步，开始路由导航（同步的）
      */
-    fun navigationSync(context: Context): Any? {
+    @Suppress("UNCHECKED_CAST")
+    fun <R> navigationSync(context: Context): R {
         this.context = WeakReference(context)
-        var result: Any? = null
-        addOnResultCallback<Any?> { result = it }
+        var result: R? = null
+        addOnResultCallback<R> { result = it }
         YCR.getInstance().navigation(this)
-        return result
+        return result as R
     }
 
     /**
