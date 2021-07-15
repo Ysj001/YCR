@@ -8,7 +8,7 @@ import com.ysj.lib.ycr.exception.IYCRExceptions
 import com.ysj.lib.ycr.exception.YCRExceptionFactory
 import com.ysj.lib.ycr.template.IProviderRoute
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.SynchronousQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
