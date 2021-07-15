@@ -11,6 +11,12 @@ const val KOTLIN_VERSION = "1.4.10"
 /** com.android.tools.build:gradle version */
 const val ANDROID_GRADLE_VERSION = "4.1.3"
 
+/** 实际在工程中使用的 YCR 库版本 */
+const val YCR_VERSION = "1.0.1-SNAPSHOT"
+
+/** 实际在工程中使用的 YCR 库的 group id */
+const val YCR_GROUP_ID = "io.github.ysj001"
+
 /**
  * false: 子模块可以独立运行
  * true ：打包整个项目 apk，子模块不可独立运行

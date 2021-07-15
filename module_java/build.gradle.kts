@@ -39,5 +39,5 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.2.0")
     implementation("androidx.constraintlayout:constraintlayout:2.0.3")
 
-    kapt("$LIB_GROUP_ID:ycr-compiler:$LIB_VERSION")
+    kapt("$YCR_GROUP_ID:ycr-compiler:$YCR_VERSION")
 }

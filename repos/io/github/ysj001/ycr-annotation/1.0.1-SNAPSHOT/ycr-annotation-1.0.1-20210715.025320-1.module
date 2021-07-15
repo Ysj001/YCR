@@ -1,0 +1,114 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "io.github.ysj001",
+    "module": "ycr-annotation",
+    "version": "1.0.1-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "6.5",
+      "buildId": "n5p3ey772nfahcu7cn3rjhhaiu"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 8,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.localToProject": "public",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "files": [
+        {
+          "name": "ycr-annotation-1.0.1-SNAPSHOT.jar",
+          "url": "ycr-annotation-1.0.1-SNAPSHOT.jar",
+          "size": 9370,
+          "sha512": "38ff8b2d86546cbd8ed316009e85807a1b09ee65ee07cd11c3a411b2903e999563286e4c18b422b118fdc95d4703e2a1299d6e8279b52d9da82cccb2be1be073",
+          "sha256": "abdf85a3cff8a96941587273966d454f3a4393429c66dea37f0c1904184f76bc",
+          "sha1": "3eb8740ddfb5a48775a62cbff706a3ef5be2fd51",
+          "md5": "0c3c1be37bb39d96ac3bbbbcc2192d86"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 8,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.localToProject": "public",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.4.10"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "ycr-annotation-1.0.1-SNAPSHOT.jar",
+          "url": "ycr-annotation-1.0.1-SNAPSHOT.jar",
+          "size": 9370,
+          "sha512": "38ff8b2d86546cbd8ed316009e85807a1b09ee65ee07cd11c3a411b2903e999563286e4c18b422b118fdc95d4703e2a1299d6e8279b52d9da82cccb2be1be073",
+          "sha256": "abdf85a3cff8a96941587273966d454f3a4393429c66dea37f0c1904184f76bc",
+          "sha1": "3eb8740ddfb5a48775a62cbff706a3ef5be2fd51",
+          "md5": "0c3c1be37bb39d96ac3bbbbcc2192d86"
+        }
+      ]
+    },
+    {
+      "name": "javadocElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "ycr-annotation-1.0.1-SNAPSHOT-javadoc.jar",
+          "url": "ycr-annotation-1.0.1-SNAPSHOT-javadoc.jar",
+          "size": 261,
+          "sha512": "f9993b8c025d5e017498ad99c16f35cd1c3f525934258c73411787c493670ff34e379f4937e9cccf959afa64b35122a7f8842c5116d77ff3c58b8b44716b1099",
+          "sha256": "eebe15b2ff76d6470baffefd6473abadf3861c6246ac3b1f4db26b927f9a0c06",
+          "sha1": "9c2ee00b1b6e8e3192a5f4f8cf43acc76c91293a",
+          "md5": "7db135f904a83a6bf5c9817125a7658f"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "ycr-annotation-1.0.1-SNAPSHOT-sources.jar",
+          "url": "ycr-annotation-1.0.1-SNAPSHOT-sources.jar",
+          "size": 4308,
+          "sha512": "b60f42b3eef75047026c4e4d594d7b7b1a050bc3250b02fe94ef33aeec0f526949eca72b5aa55baeaaff2072c3d42baa692e052d506aa50b4567232f6fad45f4",
+          "sha256": "e0c447eb719dbb1f6f387eead92d9d03a26e781e0bb5b800e442aca8ad7f6178",
+          "sha1": "29c7b417559ff34e7ac0b7e9680104bd48dcd5c4",
+          "md5": "3b135acf89cae9026ecee65e37f3b226"
+        }
+      ]
+    }
+  ]
+}

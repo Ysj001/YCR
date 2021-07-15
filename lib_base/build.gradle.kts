@@ -39,9 +39,9 @@ dependencies {
     api("androidx.legacy:legacy-support-v4:1.0.0")
     api("androidx.constraintlayout:constraintlayout:2.0.4")
 
-    if (isRelease) api("$LIB_GROUP_ID:ycr-api:$LIB_VERSION")
-    else api("$LIB_GROUP_ID:ycr-api-dev:$LIB_VERSION")
-//    releaseApi("$LIB_GROUP_ID:ycr-api:$LIB_VERSION")
-//    debugApi("$LIB_GROUP_ID:ycr-api-dev:$LIB_VERSION")
-    kapt("$LIB_GROUP_ID:ycr-compiler:$LIB_VERSION")
+    if (isRelease) api("$YCR_GROUP_ID:ycr-api:$YCR_VERSION")
+    else api("$YCR_GROUP_ID:ycr-api-dev:$YCR_VERSION")
+//    releaseApi("$YCR_GROUP_ID:ycr-api:$YCR_VERSION")
+//    debugApi("$YCR_GROUP_ID:ycr-api-dev:$YCR_VERSION")
+    kapt("$YCR_GROUP_ID:ycr-compiler:$YCR_VERSION")
 }

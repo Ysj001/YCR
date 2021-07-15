@@ -38,5 +38,5 @@ dependencies {
 //    implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation(project(":lib_base"))
 
-    kapt("$LIB_GROUP_ID:ycr-compiler:$LIB_VERSION")
+    kapt("$YCR_GROUP_ID:ycr-compiler:$YCR_VERSION")
 }

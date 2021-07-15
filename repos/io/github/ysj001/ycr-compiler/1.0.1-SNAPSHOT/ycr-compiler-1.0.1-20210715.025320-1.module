@@ -1,0 +1,128 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "io.github.ysj001",
+    "module": "ycr-compiler",
+    "version": "1.0.1-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "6.5",
+      "buildId": "n5p3ey772nfahcu7cn3rjhhaiu"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 8,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.localToProject": "public",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "files": [
+        {
+          "name": "ycr-compiler-1.0.1-SNAPSHOT.jar",
+          "url": "ycr-compiler-1.0.1-SNAPSHOT.jar",
+          "size": 18111,
+          "sha512": "5babbb687eff7dd2c8209b02063bb2bdaf37aeac23ffcd1b2dc1184277d07c4125f4ebe1a9544ede2f380736647264c58c1a76574fe02e58b1158e104c89f255",
+          "sha256": "acd576aa8bcf41f02beefa2189201d90bebec1ac3f18dbd7b194208c9638425f",
+          "sha1": "f592f4f0a35fca37ba26696fb2937d08c51f711d",
+          "md5": "0cd1fd416e60fc4f53c2d012d25d833c"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 8,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.localToProject": "public",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.4.10"
+          }
+        },
+        {
+          "group": "com.squareup",
+          "module": "kotlinpoet",
+          "version": {
+            "requires": "1.7.2"
+          }
+        },
+        {
+          "group": "io.github.ysj001",
+          "module": "ycr-annotation",
+          "version": {
+            "requires": "1.0.1-SNAPSHOT"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "ycr-compiler-1.0.1-SNAPSHOT.jar",
+          "url": "ycr-compiler-1.0.1-SNAPSHOT.jar",
+          "size": 18111,
+          "sha512": "5babbb687eff7dd2c8209b02063bb2bdaf37aeac23ffcd1b2dc1184277d07c4125f4ebe1a9544ede2f380736647264c58c1a76574fe02e58b1158e104c89f255",
+          "sha256": "acd576aa8bcf41f02beefa2189201d90bebec1ac3f18dbd7b194208c9638425f",
+          "sha1": "f592f4f0a35fca37ba26696fb2937d08c51f711d",
+          "md5": "0cd1fd416e60fc4f53c2d012d25d833c"
+        }
+      ]
+    },
+    {
+      "name": "javadocElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "ycr-compiler-1.0.1-SNAPSHOT-javadoc.jar",
+          "url": "ycr-compiler-1.0.1-SNAPSHOT-javadoc.jar",
+          "size": 261,
+          "sha512": "0332b40b7bc6542b56dd492fef6c072fd3c0578231fe7eb76fd8d1ed1f0c066d8938eecd23904898aa234b6a5b9a148099da61c27ad4e0c81445ef4b1aa1a952",
+          "sha256": "29dc79d4329ee4267ed5f97266faa5c2e2f3597a8e3248cd5b05cf338e91a80b",
+          "sha1": "c5f1c66af4d4eb65a469d20f8d8b556b13e5a4f9",
+          "md5": "e44acb663a54572b9f7195f90278b08f"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "ycr-compiler-1.0.1-SNAPSHOT-sources.jar",
+          "url": "ycr-compiler-1.0.1-SNAPSHOT-sources.jar",
+          "size": 6843,
+          "sha512": "12a216ec24f84b26a42e02a7b4e4ac27a5510880dc1671838f739eea63e359057ca5f28a02de7a11b0662a805013bf1e58cf55389331ee856033aa61e2634772",
+          "sha256": "ff9ccdb666ab38b3680e638f2ce25de1119cddb9b6c10494fd0eabb5548ba8ea",
+          "sha1": "6e58a336612b2477e1576e51265d363f959ec0d9",
+          "md5": "840a46b7a08df2a50f83faad11a87f8b"
+        }
+      ]
+    }
+  ]
+}

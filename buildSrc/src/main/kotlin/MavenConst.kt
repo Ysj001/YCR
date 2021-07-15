@@ -9,11 +9,15 @@ import java.net.URI
  * Create time: 2021/6/28
  */
 
+const val MAVEN_CENTRAL_RELEASE = "https://s01.oss.sonatype.org/content/repositories/releases/"
+
+const val MAVEN_CENTRAL_SNAPSHOTS = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+
 val Project.MAVEN_LOCAL: URI
     get() = File(rootDir, "repos").toURI()
 
-const val LIB_VERSION = "1.0.0"
-const val LIB_GROUP_ID = "com.ysj.lib.ycr"
+const val LIB_VERSION = "1.0.1-SNAPSHOT"
+const val LIB_GROUP_ID = "io.github.ysj001"
 
 const val POM_URL = "https://github.com/Ysj001/YCR"
 

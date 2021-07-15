@@ -13,7 +13,7 @@ buildscript {
         classpath("com.android.tools.build:gradle:$ANDROID_GRADLE_VERSION")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$KOTLIN_VERSION")
 
-        classpath("$LIB_GROUP_ID:ycr-plugin:$LIB_VERSION")
+        classpath("$YCR_GROUP_ID:ycr-plugin:$YCR_VERSION")
 
         classpath("com.vanniktech:gradle-maven-publish-plugin:0.14.2")
         classpath("org.jetbrains.dokka:dokka-gradle-plugin:1.4.30")

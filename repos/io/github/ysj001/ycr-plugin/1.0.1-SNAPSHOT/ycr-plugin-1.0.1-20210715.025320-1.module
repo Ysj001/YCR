@@ -1,0 +1,105 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "io.github.ysj001",
+    "module": "ycr-plugin",
+    "version": "1.0.1-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "6.5",
+      "buildId": "n5p3ey772nfahcu7cn3rjhhaiu"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 8,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.localToProject": "public",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "files": [
+        {
+          "name": "ycr-plugin-1.0.1-SNAPSHOT.jar",
+          "url": "ycr-plugin-1.0.1-SNAPSHOT.jar",
+          "size": 59568,
+          "sha512": "012603713237be58dc9d5c23e7f6a3b3ad25d28d8d605d205650a23280595abd0af56de5278ab08276d356b52ce72e94ec47277a7460b51bffe372e153b5717c",
+          "sha256": "030c38561e48c2cde2417396fcf798c8dc497a4714af65cc8aa570b387070d3a",
+          "sha1": "077a3f865b360b5bb8cd1a444b9a59af72abb28a",
+          "md5": "fedfd4cca60c3cfe8789013181386cf8"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 8,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.localToProject": "public",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "files": [
+        {
+          "name": "ycr-plugin-1.0.1-SNAPSHOT.jar",
+          "url": "ycr-plugin-1.0.1-SNAPSHOT.jar",
+          "size": 59568,
+          "sha512": "012603713237be58dc9d5c23e7f6a3b3ad25d28d8d605d205650a23280595abd0af56de5278ab08276d356b52ce72e94ec47277a7460b51bffe372e153b5717c",
+          "sha256": "030c38561e48c2cde2417396fcf798c8dc497a4714af65cc8aa570b387070d3a",
+          "sha1": "077a3f865b360b5bb8cd1a444b9a59af72abb28a",
+          "md5": "fedfd4cca60c3cfe8789013181386cf8"
+        }
+      ]
+    },
+    {
+      "name": "javadocElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "ycr-plugin-1.0.1-SNAPSHOT-javadoc.jar",
+          "url": "ycr-plugin-1.0.1-SNAPSHOT-javadoc.jar",
+          "size": 261,
+          "sha512": "2de478eae0aa9b1f509fc81cb40bb3f9f3d81cf73c48d37e2035f568c939461f4435f5c8b8c48d52c7db426a05106a068ffd31bbbc258ae0fa0014c57658d16e",
+          "sha256": "fc36b5770449c57cf31603130ae6637478478a837bcf8385c8180c49b9a9dabd",
+          "sha1": "94002ed97134f18eb8eebe105c5bd19b653f0191",
+          "md5": "654192f1e01278b584a8ee0db3ef7a67"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "ycr-plugin-1.0.1-SNAPSHOT-sources.jar",
+          "url": "ycr-plugin-1.0.1-SNAPSHOT-sources.jar",
+          "size": 18123,
+          "sha512": "d7173e1ed8da5543f7e3f0f765cd89b86cf85de25fa2b5578599591c8a66a1dc14d3442bcff3ba9d48828215d1422f913c197e2dcd2541614119b447c49b4e51",
+          "sha256": "d75ee108a9f71c406eddd5d59b6a62519de45616ca5e33607ad9593a18335484",
+          "sha1": "da07ea9eb639a4b5ad2b1e696a63c3d61880aaa1",
+          "md5": "43e60dfc3fb651b854a0bfec58aa2de9"
+        }
+      ]
+    }
+  ]
+}

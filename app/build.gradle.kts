@@ -53,7 +53,7 @@ dependencies {
 //    implementation(fileTree("dir" to "libs", "include" to ["*.jar"]))
     implementation(project(":lib_base"))
 
-    kapt("$LIB_GROUP_ID:ycr-compiler:$LIB_VERSION")
+    kapt("$YCR_GROUP_ID:ycr-compiler:$YCR_VERSION")
 
     if (isRelease) appIds.forEach {
         val moduleName = it.key

@@ -1,4 +1,3 @@
-
 import com.android.build.gradle.LibraryExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
@@ -102,8 +101,22 @@ fun Project.mavenPublish(
                 }
             }
         }
-        repositories.maven {
-            url = reposPath
+        repositories {
+            maven {
+                name = "local"
+                url = reposPath
+            }
+            maven {
+                name = "mavenCentral"
+                setUrl(LIB_VERSION.run {
+                    if (endsWith("SNAPSHOT")) MAVEN_CENTRAL_SNAPSHOTS
+                    else MAVEN_CENTRAL_RELEASE
+                })
+                credentials {
+                    username = property("mavenCentralUserName").toString()
+                    password = property("mavenCentralPassword").toString()
+                }
+            }
         }
     }
     if (JavaVersion.current().isJava9Compatible) tasks.named<Javadoc>("javadoc") {
