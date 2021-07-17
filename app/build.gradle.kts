@@ -50,13 +50,15 @@ android {
 }
 
 dependencies {
-//    implementation(fileTree("dir" to "libs", "include" to ["*.jar"]))
+    implementation(fileTree("dir" to "libs", "include" to arrayOf("*.jar", "*.aar")))
     implementation(project(":lib_base"))
 
     kapt("$YCR_GROUP_ID:ycr-compiler:$YCR_VERSION")
 
     if (isRelease) appIds.forEach {
         val moduleName = it.key
-        if (moduleName != project.name) implementation(project(":$moduleName"))
+        if (moduleName == project.name || !rootProject.childProjects.containsKey(moduleName)) return@forEach
+        implementation(project(":$moduleName"))
+        println("release install module: $moduleName")
     }
 }

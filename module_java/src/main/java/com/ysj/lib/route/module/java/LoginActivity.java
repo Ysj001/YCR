@@ -6,6 +6,7 @@ import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.ysj.lib.base.YCRConst;
 import com.ysj.lib.base.mock.MockUserLogin;
 import com.ysj.lib.base.utils.ToastUtil;
 import com.ysj.lib.ycr.YCR;
@@ -30,7 +31,7 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
         Boolean loginSuccess = YCR.getInstance()
-                .build("/base/MockUserLogin")
+                .build(YCRConst.route.base_MockUserLogin)
                 .withRouteAction("login")
                 .withString("userName", userName)
                 .navigationSync(this);

@@ -3,6 +3,7 @@ package com.ysj.lib.route.module.m1
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import com.ysj.lib.base.YCRConst
 import com.ysj.lib.base.mock.MockUserLogin
 import com.ysj.lib.ycr.YCR
 import com.ysj.lib.ycr.annotation.Route
@@ -25,7 +26,7 @@ class UserCenterActivity : AppCompatActivity() {
 
     fun onLogoutClicked(view: View) {
         YCR.getInstance()
-            .build("/base/MockUserLogin")
+            .build(YCRConst.route.base_MockUserLogin)
             .withRouteAction("logout")
             .doOnFinished(::refreshUserInfo)
             .navigation(this)
@@ -34,7 +35,7 @@ class UserCenterActivity : AppCompatActivity() {
     fun onSetAgeClicked(view: View) {
         // 演示通过拦截器自动登录并修改年龄
         YCR.getInstance()
-            .build("/base/MockUserLogin")
+            .build(YCRConst.route.base_MockUserLogin)
             .withRouteAction("setAge")
             .withInt("age", 18)
             .doOnFinished(::refreshUserInfo)
@@ -43,7 +44,7 @@ class UserCenterActivity : AppCompatActivity() {
 
     private fun refreshUserInfo() {
         YCR.getInstance()
-            .build("/base/MockUserLogin")
+            .build(YCRConst.route.base_MockUserLogin)
             .withRouteAction("userInfo")
             .addOnResultCallback { userInfo: MockUserLogin.UserInfo? ->
                 runOnUiThread {

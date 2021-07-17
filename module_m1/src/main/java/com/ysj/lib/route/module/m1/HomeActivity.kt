@@ -3,6 +3,7 @@ package com.ysj.lib.route.module.m1
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import com.ysj.lib.base.YCRConst
 import com.ysj.lib.base.mock.LoginInterceptor
 import com.ysj.lib.base.mock.MockUserLogin
 import com.ysj.lib.base.utils.ToastUtil
@@ -27,7 +28,7 @@ class HomeActivity : AppCompatActivity() {
     fun interceptorDemo(view: View) {
         // 演示拦截器的使用
         YCR.getInstance()
-            .build("/m1/UserCenterActivity")
+            .build(YCRConst.route.m1_UserCenterActivity)
             .withInterceptor(object : IInterceptor {
                 // 演示局部拦截器
                 override fun onIntercept(postman: Postman, callback: InterceptorCallback) {
@@ -45,7 +46,7 @@ class HomeActivity : AppCompatActivity() {
                 ToastUtil.showShortToast(reason.msg)
                 if (reason.code != LoginInterceptor.INTERRUPT_CODE_NOT_LOGIN) return@doOnInterrupt
                 YCR.getInstance()
-                    .build("/java/LoginActivity")
+                    .build(YCRConst.route.java_LoginActivity)
                     .withRequestCode(1)
                     .addOnResultCallback { result: ActivityResult? ->
                         // 演示代替 activity 的 onActivityResult
@@ -63,7 +64,7 @@ class HomeActivity : AppCompatActivity() {
     fun injectParamDemo(view: View) {
         // 路由参数注入演示
         YCR.getInstance()
-            .build("/java/InjectParamActivity")
+            .build(YCRConst.route.java_InjectParamActivity)
             .withInt("i", 100)
             .withBoolean("b", true)
             .withString("str", "test")
@@ -75,7 +76,7 @@ class HomeActivity : AppCompatActivity() {
     fun transitionDemo(view: View) {
         // 演示设置转场效果
         YCR.getInstance()
-            .build("/m1/HomeActivity")
+            .build(YCRConst.route.m1_HomeActivity)
             .withTransition(R.anim.module_m1_entry, R.anim.module_m1_exit)
             .doOnFinished(::finish)
             .navigation(this)

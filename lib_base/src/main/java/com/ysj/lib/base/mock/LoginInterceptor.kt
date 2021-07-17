@@ -1,5 +1,6 @@
 package com.ysj.lib.base.mock
 
+import com.ysj.lib.base.YCRConst
 import com.ysj.lib.ycr.YCR
 import com.ysj.lib.ycr.callback.InterceptorCallback
 import com.ysj.lib.ycr.entity.InterruptReason
@@ -31,7 +32,7 @@ class LoginInterceptor : IGlobalInterceptor {
     private fun demoHandle1(postman: Postman, callback: InterceptorCallback) {
         val context = postman.getContext() ?: return
         val userInfo: MockUserLogin.UserInfo? = YCR.getInstance()
-            .build("/base/MockUserLogin")
+            .build(YCRConst.route.base_MockUserLogin)
             .withRouteAction("userInfo")
             .skipGlobalInterceptor()
             .navigationSync(context)
@@ -50,13 +51,13 @@ class LoginInterceptor : IGlobalInterceptor {
             return
         }
         val userInfo: MockUserLogin.UserInfo? = YCR.getInstance()
-            .build("/base/MockUserLogin")
+            .build(YCRConst.route.base_MockUserLogin)
             .withRouteAction("userInfo")
             .skipGlobalInterceptor()
             .navigationSync(context)
         if (userInfo == null) {
             YCR.getInstance()
-                .build("/base/MockUserLogin")
+                .build(YCRConst.route.base_MockUserLogin)
                 .withRouteAction("login")
                 .withString("userName", "Ysj")
                 .skipGlobalInterceptor()
