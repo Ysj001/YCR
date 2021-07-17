@@ -1,0 +1,77 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "io.github.ysj001",
+    "module": "ycr-api-dev",
+    "version": "1.0.1-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "6.5",
+      "buildId": "a2l3pb2ttngntfh473ymr2liye"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "io.github.ysj001",
+          "module": "ycr-annotation",
+          "version": {
+            "requires": "1.0.1-SNAPSHOT"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "ycr-api-dev-1.0.1-SNAPSHOT.aar",
+          "url": "ycr-api-dev-1.0.1-SNAPSHOT.aar",
+          "size": 111169,
+          "sha512": "11d4374d538dfd908c65d5262acccd158ae7e3ce4d6f31564fba16d557c3bd90ec6ed2f8346dd625a915eea88a6b4f76e740afb0bb3b45c70c45e334f98c7dd1",
+          "sha256": "d12e19ea5363ac3ae75f377a859eacae7811890521ad868efcccced38808d784",
+          "sha1": "24d18d4ae6f806f7fca3bcf6044893d020372408",
+          "md5": "1076b301e346066882194784cd6f80e0"
+        }
+      ]
+    },
+    {
+      "name": "releaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "io.github.ysj001",
+          "module": "ycr-annotation",
+          "version": {
+            "requires": "1.0.1-SNAPSHOT"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "ycr-api-dev-1.0.1-SNAPSHOT.aar",
+          "url": "ycr-api-dev-1.0.1-SNAPSHOT.aar",
+          "size": 111169,
+          "sha512": "11d4374d538dfd908c65d5262acccd158ae7e3ce4d6f31564fba16d557c3bd90ec6ed2f8346dd625a915eea88a6b4f76e740afb0bb3b45c70c45e334f98c7dd1",
+          "sha256": "d12e19ea5363ac3ae75f377a859eacae7811890521ad868efcccced38808d784",
+          "sha1": "24d18d4ae6f806f7fca3bcf6044893d020372408",
+          "md5": "1076b301e346066882194784cd6f80e0"
+        }
+      ]
+    }
+  ]
+}
