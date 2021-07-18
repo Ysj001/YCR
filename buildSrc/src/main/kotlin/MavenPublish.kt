@@ -27,14 +27,11 @@ import java.net.URI
  * - POM_PACKAGING
  */
 fun Project.mavenPublish() {
-    // 添加发布需要的 plugin
-    apply(plugin = "maven-publish")
-    apply(plugin = "signing")
     // 获取 module 中定义的发布信息
     val pomDesc = properties["POM_DESCRIPTION"] as String
     val pomAftId = properties["POM_ARTIFACT_ID"] as String
     val pomPkgType = properties["POM_PACKAGING"] as String
-    mavenPublish(MAVEN_LOCAL, pomDesc, pomAftId, pomPkgType)
+    mavenPublish(MAVEN_LOCAL, LIB_GROUP_ID, pomAftId, LIB_VERSION, pomDesc, pomPkgType)
 }
 
 /**
@@ -43,16 +40,23 @@ fun Project.mavenPublish() {
  * - [gradle-developers](https://docs.gradle.org/current/userguide/publishing_maven.html)
  * - [android-developers](https://developer.android.google.cn/studio/build/maven-publish-plugin#groovy)
  *
+ * @param groupId Sets the groupId for this publication.
+ * @param version Sets the version for this publication.
  * @param desc The description for the publication represented by this POM.
- * @param aftId Sets the artifactId for this publication.
+ * @param artifactId Sets the artifactId for this publication.
  * @param packaging Sets the packaging for the publication represented by this POM.
  */
 fun Project.mavenPublish(
     reposPath: URI,
+    groupId: String,
+    artifactId: String,
+    version: String,
     desc: String,
-    aftId: String,
     packaging: String
 ) = afterEvaluate {
+    // 添加发布需要的 plugin
+    apply(plugin = "maven-publish")
+    apply(plugin = "signing")
     // 判断 module 类型
     val isAndroidApp = project.plugins.hasPlugin("com.android.application")
     val isAndroidLib = project.plugins.hasPlugin("com.android.library")
@@ -71,9 +75,9 @@ fun Project.mavenPublish(
     extensions.configure<PublishingExtension>("publishing") {
         publications {
             create<MavenPublication>("mavenJava") {
-                groupId = LIB_GROUP_ID
-                artifactId = aftId
-                version = LIB_VERSION
+                this.groupId = groupId
+                this.artifactId = artifactId
+                this.version = version
                 when (packaging) {
                     "aar" -> from(components["release"])
                     "jar" -> from(components["java"])
@@ -81,7 +85,7 @@ fun Project.mavenPublish(
                 // android 的源码打包
                 if (isAndroidProject) artifact(LazyPublishArtifact(tasks.named("androidSourcesJar")))
                 pom {
-                    name.set(aftId)
+                    name.set(artifactId)
                     description.set(desc)
                     this.packaging = packaging
                     url.set(POM_URL)
@@ -108,7 +112,7 @@ fun Project.mavenPublish(
             }
             maven {
                 name = "mavenCentral"
-                setUrl(LIB_VERSION.run {
+                setUrl(version.run {
                     if (endsWith("SNAPSHOT")) MAVEN_CENTRAL_SNAPSHOTS
                     else MAVEN_CENTRAL_RELEASE
                 })
