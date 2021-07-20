@@ -1,6 +1,8 @@
 import com.android.build.gradle.LibraryExtension
+import org.gradle.api.Action
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
+import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.internal.artifacts.dsl.LazyPublishArtifact
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.publish.PublishingExtension
@@ -9,7 +11,6 @@ import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.external.javadoc.StandardJavadocDocletOptions
 import org.gradle.kotlin.dsl.*
-import java.net.URI
 
 /*
  * Maven 发布相关扩展
@@ -31,7 +32,23 @@ fun Project.mavenPublish() {
     val pomDesc = properties["POM_DESCRIPTION"] as String
     val pomAftId = properties["POM_ARTIFACT_ID"] as String
     val pomPkgType = properties["POM_PACKAGING"] as String
-    mavenPublish(MAVEN_LOCAL, LIB_GROUP_ID, pomAftId, LIB_VERSION, pomDesc, pomPkgType)
+    mavenPublish(LIB_GROUP_ID, pomAftId, LIB_VERSION, pomDesc, pomPkgType) {
+        maven {
+            name = "local"
+            url = MAVEN_LOCAL
+        }
+        maven {
+            name = "mavenCentral"
+            setUrl(LIB_VERSION.run {
+                if (endsWith("SNAPSHOT")) MAVEN_CENTRAL_SNAPSHOTS
+                else MAVEN_CENTRAL_RELEASE
+            })
+            credentials {
+                username = property("mavenCentralUserName").toString()
+                password = property("mavenCentralPassword").toString()
+            }
+        }
+    }
 }
 
 /**
@@ -45,14 +62,15 @@ fun Project.mavenPublish() {
  * @param desc The description for the publication represented by this POM.
  * @param artifactId Sets the artifactId for this publication.
  * @param packaging Sets the packaging for the publication represented by this POM.
+ * @param repository 配置 maven 仓库
  */
 fun Project.mavenPublish(
-    reposPath: URI,
     groupId: String,
     artifactId: String,
     version: String,
     desc: String,
-    packaging: String
+    packaging: String,
+    repository: Action<RepositoryHandler>
 ) = afterEvaluate {
     // 添加发布需要的 plugin
     apply(plugin = "maven-publish")
@@ -105,23 +123,7 @@ fun Project.mavenPublish(
                 }
             }
         }
-        repositories {
-            maven {
-                name = "local"
-                url = reposPath
-            }
-            maven {
-                name = "mavenCentral"
-                setUrl(version.run {
-                    if (endsWith("SNAPSHOT")) MAVEN_CENTRAL_SNAPSHOTS
-                    else MAVEN_CENTRAL_RELEASE
-                })
-                credentials {
-                    username = property("mavenCentralUserName").toString()
-                    password = property("mavenCentralPassword").toString()
-                }
-            }
-        }
+        repositories(repository)
     }
     if (JavaVersion.current().isJava9Compatible) tasks.named<Javadoc>("javadoc") {
         (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
