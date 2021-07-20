@@ -50,6 +50,23 @@ fun Project.applyComponentPublish() = afterEvaluate {
             }
         }
     }
+    // 发布该组件，并发布所有依赖该组件的组件
+    afterEvaluate {
+        tasks.forEach { task ->
+            val prefix = "publishAllPublicationsTo"
+            if (!task.name.startsWith(prefix)) return@forEach
+            tasks.register<Task>("componentPublishTo${task.name.substring(prefix.length)}") {
+                group = "publishing"
+                dependsOn(task.path)
+                componentDependency[project.name]?.forEach { projectName ->
+                    rootProject.findProject(projectName)
+                        ?.tasks
+                        ?.find { it.name == task.name }
+                        ?.also { dependsOn(it.path) }
+                }
+            }
+        }
+    }
 }
 
 tasks.register<Delete>("clean") {
