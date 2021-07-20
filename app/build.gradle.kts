@@ -47,18 +47,24 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
+    // lint 耗时，关掉
+    lintOptions {
+        isCheckReleaseBuilds = false
+    }
 }
 
 dependencies {
     implementation(fileTree("dir" to "libs", "include" to arrayOf("*.jar", "*.aar")))
-    implementation(project(":lib_base"))
-
     kapt("$YCR_GROUP_ID:ycr-compiler:$YCR_VERSION")
 
+//    implementation(project(":lib_base"))
+    import(":lib_base")
     if (isRelease) appIds.forEach {
         val moduleName = it.key
         if (moduleName == project.name || !rootProject.childProjects.containsKey(moduleName)) return@forEach
-        implementation(project(":$moduleName"))
+//        implementation(project(":$moduleName"))
+        import(":$moduleName")
         println("release install module: $moduleName")
     }
 }

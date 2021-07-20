@@ -36,7 +36,7 @@ android {
 
 dependencies {
 //    implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation(project(":lib_base"))
+    import(":lib_base")
 
     kapt("$YCR_GROUP_ID:ycr-compiler:$YCR_VERSION")
 }

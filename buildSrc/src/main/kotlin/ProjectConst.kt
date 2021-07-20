@@ -21,7 +21,7 @@ const val YCR_GROUP_ID = "io.github.ysj001"
  * false: 子模块可以独立运行
  * true ：打包整个项目 apk，子模块不可独立运行
  */
-const val isRelease = false
+const val isRelease = true
 
 // ------------------ 模块的 applicationId ------------------
 val appIds = mapOf(
