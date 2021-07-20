@@ -59,12 +59,12 @@ dependencies {
     kapt("$YCR_GROUP_ID:ycr-compiler:$YCR_VERSION")
 
 //    implementation(project(":lib_base"))
-    import(":lib_base")
+    import("lib_base")
     if (isRelease) appIds.forEach {
         val moduleName = it.key
         if (moduleName == project.name || !rootProject.childProjects.containsKey(moduleName)) return@forEach
 //        implementation(project(":$moduleName"))
-        import(":$moduleName")
+        import(moduleName)
         println("release install module: $moduleName")
     }
 }

@@ -1,9 +1,12 @@
+
 import org.gradle.api.Project
 import org.gradle.internal.impldep.org.codehaus.plexus.util.xml.pull.XmlPullParser
 import org.gradle.kotlin.dsl.project
 import java.io.File
 import java.io.InputStream
 import java.net.URI
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentSkipListSet
 
 /*
  * 定义组件相关扩展
@@ -27,31 +30,38 @@ const val COMPONENT_VERSION = "1.0.0-SNAPSHOT"
 
 private const val MAVEN_METADATA = "maven-metadata.xml"
 
+/** 组件被哪些 module 依赖了。key：组件，value：依赖该组件的 module */
+val componentDependency = ConcurrentHashMap<String, MutableSet<String>>()
+
 /**
  * 导入某个组件，优先使用 maven 中的，如果 maven 没有则使用源码
  *
- * @param name 组件的名字，":" 开头。如：:lib_base
+ * @param name 要导入的组件的 project 的 name
  * @param configName 导入方式
  */
 fun Project.import(
     name: String,
     configName: String = "implementation"
 ) = dependencies.run {
+    var modules = componentDependency[name]
+    if (modules == null) {
+        modules = ConcurrentSkipListSet()
+        componentDependency[name] = modules
+    }
+    modules.add(this@import.name)
     val old = System.currentTimeMillis()
-    val libPath = "$COMPONENT_GROUP_ID$name"
-        .replace(":", File.separator)
-        .replace(".", File.separator)
+    val libPath = "$COMPONENT_GROUP_ID${File.separator}$name".replace(".", File.separator)
     val remoteLibVersion = remoteLibMetadata("$MAVEN_COMPONENTS$libPath")?.use { it.parseVersion() }
-    deleteIdeaCacheLib(name.substring(1))
+    deleteIdeaCacheLib(name)
     val localLibDir = File(file(MAVEN_COMPONENT_LOCAL), libPath)
     val localLibVersion = localLibDir.localLibMetadata()?.use { it.parseVersion() }
     println("Component import process time: ${System.currentTimeMillis() - old}ms")
-    if (remoteLibVersion == null && localLibVersion == null) add(configName, project(name))
+    if (remoteLibVersion == null && localLibVersion == null) add(configName, project(":$name"))
     else {
         if (remoteLibVersion != null && localLibVersion != null && remoteLibVersion > localLibVersion) {
             delete(localLibDir)
         }
-        add(configName, "$COMPONENT_GROUP_ID$name:$COMPONENT_VERSION")
+        add(configName, "$COMPONENT_GROUP_ID:$name:$COMPONENT_VERSION")
     }
 }
 
