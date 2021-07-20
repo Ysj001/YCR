@@ -29,30 +29,24 @@ allprojects {
         gradlePluginPortal()
         mavenCentral()
     }
+    applyComponentPublish()
 }
 
-childProjects.values.forEach {
-    it.afterEvaluate {
-        val isAndroidLib = plugins.hasPlugin("com.android.library")
-        // 给所有 android-lib 工程添加 maven 发布功能
-        if (isAndroidLib) mavenPublish(
-            COMPONENT_GROUP_ID,
-            name,
-            COMPONENT_VERSION,
-            "${rootProject.name}-$name",
-            "aar"
-        ) {
-            maven {
-                name = "local"
-                url = MAVEN_COMPONENT_LOCAL
-            }
-            maven {
-                name = "nexus"
-                setUrl(MAVEN_COMPONENTS)
-                credentials {
-                    username = property("mavenCentralUserName").toString()
-                    password = property("mavenCentralPassword").toString()
-                }
+fun Project.applyComponentPublish() = afterEvaluate {
+    if (!plugins.hasPlugin("com.android.library")) return@afterEvaluate
+    // 给所有组件工程添加 maven 发布功能
+    val desc = "${rootProject.name}-$name"
+    mavenPublish(COMPONENT_GROUP_ID, name, COMPONENT_VERSION, desc, "aar") {
+        maven {
+            name = "local"
+            url = MAVEN_COMPONENT_LOCAL
+        }
+        maven {
+            name = "nexus"
+            setUrl(MAVEN_COMPONENTS)
+            credentials {
+                username = property("mavenCentralUserName").toString()
+                password = property("mavenCentralPassword").toString()
             }
         }
     }
