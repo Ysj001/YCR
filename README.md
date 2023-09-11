@@ -2,6 +2,8 @@
 
  [![Kotlin Version](https://img.shields.io/badge/Kotlin-1.4.10-blue.svg)](https://kotlinlang.org)   ![GitHub](https://img.shields.io/github/license/Ysj001/YCR)
 
+！！停止维护了！！由于 AGP8 已经不支持 Transform 接口，且基于字符协议的组件化方案存在协议难以管理和问题不好排查等因素，因此经过考虑后不再使用类似的方案，而是改用接口注入方案，详见 [*BCU modifier-component-di*](https://github.com/Ysj001/BytecodeUtil/tree/master/lib_modifier_component_di) 。
+
 YCR 是一个轻量级的，支持跨进程调用的，支持渐进式改造的组件化框架。
 
 YCR 的设计初衷在于减少项目的组件化改造成本。框架整体采用贴近原生的设计思路，在尽可能保留原生能力上做扩展，以最大程度的保留兼容性和扩展性。
